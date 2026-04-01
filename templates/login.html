@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Fake News Detector</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: #16213e; padding: 40px; border-radius: 15px; width: 400px; }
+        h2 { color: #e94560; margin-bottom: 25px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; background: #0f3460; color: white; font-size: 1em; }
+        .btn { width: 100%; padding: 12px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
+        .btn:hover { opacity: 0.8; }
+        .msg { color: #ff6b6b; text-align: center; margin-bottom: 15px; }
+        .link { text-align: center; margin-top: 15px; color: #aaa; }
+        .link a { color: #e94560; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🔍 Login</h2>
+        {% if msg %}
+        <p class="msg">{{ msg }}</p>
+        {% endif %}
+        <form method="POST">
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        <div class="link">
+            <p>Account nahi hai? <a href="/register">Register karo</a></p>
+        </div>
+    </div>
+</body>
+</html>

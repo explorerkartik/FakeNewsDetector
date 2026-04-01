@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector - Fake News Detector</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; padding: 30px; }
+        h1 { color: #e94560; text-align: center; margin-bottom: 30px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        textarea { width: 100%; padding: 15px; height: 200px; border: none; border-radius: 8px; background: #16213e; color: white; font-size: 1em; resize: none; }
+        .btn { width: 100%; padding: 15px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 15px; }
+        .btn:hover { opacity: 0.8; }
+        .result { margin-top: 30px; padding: 25px; border-radius: 15px; text-align: center; display: none; }
+        .real { background: #1a4731; border: 2px solid #51cf66; }
+        .fake { background: #4a1a1a; border: 2px solid #e94560; }
+        .verdict { font-size: 2.5em; font-weight: bold; margin-bottom: 10px; }
+        .score { font-size: 1.2em; color: #aaa; }
+        .nav { text-align: right; margin-bottom: 20px; }
+        .nav a { color: #e94560; text-decoration: none; margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/history">📋 History</a>
+            <a href="/logout">🚪 Logout</a>
+        </div>
+        <h1>🔍 Fake News Detector</h1>
+        <input type="text" id="news_url" placeholder="Ya URL paste karo..." style="width:100%; padding:12px; margin-top:15px; border:none; border-radius:8px; background:#16213e; color:white; font-size:1em;">
+<textarea id="news_text" placeholder="Yahan news text paste karo..."></textarea>
+        <button class="btn" onclick="detect()">🔍 Detect Karo</button>
+
+        <div class="result" id="result">
+            <div class="verdict" id="verdict"></div>
+            <div class="score" id="score"></div>
+        </div>
+    </div>
+
+    <script>
+        function detect() {
+            const text = document.getElementById('news_text').value;
+            const url = document.getElementById('news_url').value;
+
+            if (!text.trim() && !url.trim()) {
+                alert('Text ya URL kuch toh enter karo!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('news_text', text);
+            formData.append('news_url', url);
+
+            fetch('/detect', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                const resultDiv = document.getElementById('result');
+                const verdictDiv = document.getElementById('verdict');
+                const scoreDiv = document.getElementById('score');
+
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result ' + (data.verdict === 'REAL' ? 'real' : 'fake');
+                verdictDiv.textContent = data.verdict === 'REAL' ? '✅ REAL NEWS' : '❌ FAKE NEWS';
+                scoreDiv.textContent = 'Credibility Score: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
+            });
+        }
+    </script>
+</body>
+</html>

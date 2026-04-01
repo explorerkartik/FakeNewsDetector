@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Fake News Detector</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; padding: 30px; }
+        h1 { color: #e94560; text-align: center; margin-bottom: 30px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .nav { text-align: right; margin-bottom: 20px; }
+        .nav a { color: #e94560; text-decoration: none; margin-left: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #16213e; padding: 15px; text-align: left; color: #e94560; }
+        td { padding: 12px 15px; border-bottom: 1px solid #16213e; font-size: 0.9em; }
+        tr:hover { background: #16213e; }
+        .real { color: #51cf66; font-weight: bold; }
+        .fake { color: #e94560; font-weight: bold; }
+        .empty { text-align: center; padding: 50px; color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/detect" >🔍 Detector</a>
+            <a href="/logout">🚪 Logout</a>
+        </div>
+        <h1>📋 Analysis History</h1>
+        {% if records %}
+        <table>
+            <tr>
+                <th>News Text</th>
+                <th>Verdict</th>
+                <th>Score</th>
+                <th>Date</th>
+            </tr>
+            {% for record in records %}
+            <tr>
+                <td>{{ record[0][:100] }}...</td>
+                <td class="{{ record[1].lower() }}">{{ record[1] }}</td>
+                <td>{{ record[2] }}/100</td>
+                <td>{{ record[3] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <div class="empty">
+            <p>Abhi tak koi analysis nahi kiya! 🔍</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
