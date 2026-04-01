@@ -1,5 +1,4 @@
 flask==3.0.0
-flask-mysqldb==1.0.1
 flask-bcrypt==1.0.1
 flask-login==0.6.3
 flask-wtf==1.2.1
@@ -9,6 +8,8 @@ nltk==3.8.1
 beautifulsoup4==4.12.2
 requests==2.31.0
 python-dotenv==1.0.0
-textblob==0.17.1
 pandas==2.1.4
-numpy==1.26.2 
+numpy==1.26.2
+flask-sqlalchemy==3.1.1
+pymysql==1.1.0
+gunicorn==21.2.0
