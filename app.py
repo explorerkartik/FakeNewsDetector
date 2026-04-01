@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
-import pymysql
+import psycopg2
 import pickle, os, requests
 from bs4 import BeautifulSoup
 
@@ -20,12 +20,13 @@ with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
 def get_db():
-    return pymysql.connect(
-        host=os.getenv('MYSQL_HOST'),
-        user=os.getenv('MYSQL_USER'),
-        password=os.getenv('MYSQL_PASSWORD'),
-        db=os.getenv('MYSQL_DB'),
-        cursorclass=pymysql.cursors.DictCursor
+    return psycopg2.connect(
+        host=os.getenv('DB_HOST'),
+        port=os.getenv('DB_PORT'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        dbname=os.getenv('DB_NAME'),
+        sslmode='require'
     )
 
 class User(UserMixin):

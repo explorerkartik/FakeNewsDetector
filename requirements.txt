@@ -10,5 +10,5 @@ requests
 python-dotenv
 pandas
 numpy
-pymysql
+psycopg2-binary
 gunicorn
