@@ -109,8 +109,78 @@ def detector():
 def detect():
     text = request.form.get('news_text', '')
     url = request.form.get('news_url', '')
-
     if url:
         try:
             response = requests.get(url, timeout=10)
-            soup = BeautifulSoup
+            soup = BeautifulSoup(response.content, 'html.parser')
+            paragraphs = soup.find_all('p')
+            text = ' '.join([p.get_text() for p in paragraphs])
+        except Exception as e:
+            return jsonify({'error': 'Could not fetch content from URL!'})
+    if not text.strip():
+        return jsonify({'error': 'Please enter some text!'})
+    prediction = model.predict([text])[0]
+    confidence = max(model.predict_proba([text])[0]) * 100
+    credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
+                    (current_user.id, text[:500], prediction, credibility_score))
+        db.commit()
+        db.close()
+    except:
+        pass
+    return jsonify({
+        'verdict': prediction,
+        'credibility_score': credibility_score,
+        'confidence': round(confidence, 2)
+    })
+
+@app.route('/history')
+@login_required
+def history():
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("SELECT input_text, verdict, credibility_score, created_at FROM analysis_history WHERE user_id = %s ORDER BY created_at DESC", (current_user.id,))
+        records = cur.fetchall()
+        db.close()
+    except:
+        records = []
+    return render_template('history.html', records=records)
+
+@app.route('/admin')
+@login_required
+def admin():
+    try:
+        db = get_db()
+        cur = db.cursor()
+        cur.execute("SELECT COUNT(*) FROM users")
+        total_users = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM analysis_history")
+        total_analyses = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM analysis_history WHERE verdict = 'FAKE'")
+        total_fake = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM analysis_history WHERE verdict = 'REAL'")
+        total_real = cur.fetchone()[0]
+        cur2 = dict_cursor(db)
+        cur2.execute("SELECT username, email, created_at FROM users ORDER BY created_at DESC")
+        all_users = cur2.fetchall()
+        cur2.execute("""SELECT u.username, a.input_text, a.verdict, a.credibility_score, a.created_at
+                      FROM analysis_history a JOIN users u ON a.user_id = u.id
+                      ORDER BY a.created_at DESC LIMIT 20""")
+        recent_analyses = cur2.fetchall()
+        db.close()
+    except Exception as e:
+        return str(e)
+    return render_template('admin.html',
+        total_users=total_users,
+        total_analyses=total_analyses,
+        total_fake=total_fake,
+        total_real=total_real,
+        all_users=all_users,
+        recent_analyses=recent_analyses)
+
+if __name__ == '__main__':
+    app.run(debug=True)
