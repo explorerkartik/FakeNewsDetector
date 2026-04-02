@@ -23,7 +23,7 @@
 <body>
     <div class="container">
         <div class="nav">
-            <a href="/detect" >🔍 Detector</a>
+            <a href="/detector">🔍 Detector</a>
             <a href="/logout">🚪 Logout</a>
         </div>
         <h1>📋 Analysis History</h1>
@@ -37,16 +37,16 @@
             </tr>
             {% for record in records %}
             <tr>
-                <td>{{ record[0][:100] }}...</td>
-                <td class="{{ record[1].lower() }}">{{ record[1] }}</td>
-                <td>{{ record[2] }}/100</td>
-                <td>{{ record[3] }}</td>
+                <td>{{ record['input_text'][:100] }}...</td>
+                <td class="{{ record['verdict'].lower() }}">{{ record['verdict'] }}</td>
+                <td>{{ record['credibility_score'] }}/100</td>
+                <td>{{ record['created_at'] }}</td>
             </tr>
             {% endfor %}
         </table>
         {% else %}
         <div class="empty">
-            <p>Abhi tak koi analysis nahi kiya! 🔍</p>
+            <p>No analysis history yet! 🔍</p>
         </div>
         {% endif %}
     </div>

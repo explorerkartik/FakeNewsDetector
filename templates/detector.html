@@ -9,6 +9,7 @@
         body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; padding: 30px; }
         h1 { color: #e94560; text-align: center; margin-bottom: 30px; }
         .container { max-width: 800px; margin: 0 auto; }
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: none; border-radius: 8px; background: #16213e; color: white; font-size: 1em; }
         textarea { width: 100%; padding: 15px; height: 200px; border: none; border-radius: 8px; background: #16213e; color: white; font-size: 1em; resize: none; }
         .btn { width: 100%; padding: 15px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 15px; }
         .btn:hover { opacity: 0.8; }
@@ -25,12 +26,13 @@
     <div class="container">
         <div class="nav">
             <a href="/history">📋 History</a>
+            <a href="/admin">⚙️ Admin</a>
             <a href="/logout">🚪 Logout</a>
         </div>
         <h1>🔍 Fake News Detector</h1>
-        <input type="text" id="news_url" placeholder="Ya URL paste karo..." style="width:100%; padding:12px; margin-top:15px; border:none; border-radius:8px; background:#16213e; color:white; font-size:1em;">
-<textarea id="news_text" placeholder="Yahan news text paste karo..."></textarea>
-        <button class="btn" onclick="detect()">🔍 Detect Karo</button>
+        <input type="text" id="news_url" placeholder="Paste URL here...">
+        <textarea id="news_text" placeholder="Or paste news text here..."></textarea>
+        <button class="btn" onclick="detect()">🔍 Detect</button>
 
         <div class="result" id="result">
             <div class="verdict" id="verdict"></div>
@@ -44,7 +46,7 @@
             const url = document.getElementById('news_url').value;
 
             if (!text.trim() && !url.trim()) {
-                alert('Text ya URL kuch toh enter karo!');
+                alert('Please enter text or URL!');
                 return;
             }
 
