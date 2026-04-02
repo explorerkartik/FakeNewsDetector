@@ -6,37 +6,308 @@
     <title>Detector - Fake News Detector</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; padding: 30px; }
-        h1 { color: #e94560; text-align: center; margin-bottom: 30px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: none; border-radius: 8px; background: #16213e; color: white; font-size: 1em; }
-        textarea { width: 100%; padding: 15px; height: 200px; border: none; border-radius: 8px; background: #16213e; color: white; font-size: 1em; resize: none; }
-        .btn { width: 100%; padding: 15px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 15px; }
-        .btn:hover { opacity: 0.8; }
-        .result { margin-top: 30px; padding: 25px; border-radius: 15px; text-align: center; display: none; }
-        .real { background: #1a4731; border: 2px solid #51cf66; }
-        .fake { background: #4a1a1a; border: 2px solid #e94560; }
-        .verdict { font-size: 2.5em; font-weight: bold; margin-bottom: 10px; }
-        .score { font-size: 1.2em; color: #aaa; }
-        .nav { text-align: right; margin-bottom: 20px; }
-        .nav a { color: #e94560; text-decoration: none; margin-left: 20px; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .bg-circles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-circles span {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            animation: animate 20s linear infinite;
+            bottom: -150px;
+        }
+
+        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
+        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
+        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
+        .bg-circles span:nth-child(4) { width: 60px; height: 60px; left: 80%; background: rgba(100,100,255,0.15); animation-delay: 0s; animation-duration: 18s; }
+
+        @keyframes animate {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-logo {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .nav-logo span { color: #e94560; }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9em;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            background: linear-gradient(90deg, #e94560, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: rgba(255,255,255,0.5);
+            font-size: 1em;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .tab-label {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group span {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.07);
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #a855f7;
+            background: rgba(255,255,255,0.1);
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .divider {
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            margin: 15px 0;
+            font-size: 0.85em;
+            position: relative;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            height: 180px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.07);
+            color: white;
+            font-size: 1em;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #a855f7;
+            background: rgba(255,255,255,0.1);
+        }
+
+        textarea::placeholder { color: rgba(255,255,255,0.3); }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, #e94560, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(233,69,96,0.5);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .real {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1));
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        .fake {
+            background: linear-gradient(135deg, rgba(233,69,96,0.15), rgba(185,28,28,0.1));
+            border: 1px solid rgba(233,69,96,0.3);
+        }
+
+        .verdict-icon { font-size: 3.5em; margin-bottom: 10px; }
+
+        .verdict {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            color: rgba(255,255,255,0.6);
+            font-size: 1em;
+        }
+
+        .score-bar-container {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .real .score-bar { background: linear-gradient(90deg, #10b981, #34d399); }
+        .fake .score-bar { background: linear-gradient(90deg, #e94560, #f87171); }
     </style>
 </head>
 <body>
+    <div class="bg-circles">
+        <span></span><span></span><span></span><span></span>
+    </div>
+
     <div class="container">
         <div class="nav">
-            <a href="/history">📋 History</a>
-            <a href="/admin">⚙️ Admin</a>
-            <a href="/logout">🚪 Logout</a>
+            <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
+            <div class="nav-links">
+                <a href="/history">📋 History</a>
+                <a href="/admin">⚙️ Admin</a>
+                <a href="/logout">🚪 Logout</a>
+            </div>
         </div>
-        <h1>🔍 Fake News Detector</h1>
-        <input type="text" id="news_url" placeholder="Paste URL here...">
-        <textarea id="news_text" placeholder="Or paste news text here..."></textarea>
-        <button class="btn" onclick="detect()">🔍 Detect</button>
 
-        <div class="result" id="result">
-            <div class="verdict" id="verdict"></div>
-            <div class="score" id="score"></div>
+        <div class="hero">
+            <h1>Detect Fake News Instantly</h1>
+            <p>Paste a URL or news text below and let AI do the rest</p>
+        </div>
+
+        <div class="card">
+            <div class="tab-label">🔗 Enter URL</div>
+            <div class="input-group">
+                <span>🌐</span>
+                <input type="text" id="news_url" placeholder="https://example.com/news-article">
+            </div>
+
+            <div class="divider">OR</div>
+
+            <div class="tab-label">📝 Paste News Text</div>
+            <textarea id="news_text" placeholder="Paste the news article text here..."></textarea>
+
+            <button class="btn" onclick="detect()">🔍 Analyze Now</button>
+
+            <div class="result" id="result">
+                <div class="verdict-icon" id="verdict-icon"></div>
+                <div class="verdict" id="verdict"></div>
+                <div class="score" id="score"></div>
+                <div class="score-bar-container">
+                    <div class="score-bar" id="score-bar" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -46,9 +317,13 @@
             const url = document.getElementById('news_url').value;
 
             if (!text.trim() && !url.trim()) {
-                alert('Please enter text or URL!');
+                alert('Please enter a URL or news text!');
                 return;
             }
+
+            const btn = document.querySelector('.btn');
+            btn.textContent = '⏳ Analyzing...';
+            btn.disabled = true;
 
             const formData = new FormData();
             formData.append('news_text', text);
@@ -60,18 +335,34 @@
             })
             .then(res => res.json())
             .then(data => {
+                btn.textContent = '🔍 Analyze Now';
+                btn.disabled = false;
+
                 if (data.error) {
                     alert(data.error);
                     return;
                 }
+
                 const resultDiv = document.getElementById('result');
+                const verdictIcon = document.getElementById('verdict-icon');
                 const verdictDiv = document.getElementById('verdict');
                 const scoreDiv = document.getElementById('score');
+                const scoreBar = document.getElementById('score-bar');
 
                 resultDiv.style.display = 'block';
                 resultDiv.className = 'result ' + (data.verdict === 'REAL' ? 'real' : 'fake');
-                verdictDiv.textContent = data.verdict === 'REAL' ? '✅ REAL NEWS' : '❌ FAKE NEWS';
+                verdictIcon.textContent = data.verdict === 'REAL' ? '✅' : '❌';
+                verdictDiv.textContent = data.verdict === 'REAL' ? 'REAL NEWS' : 'FAKE NEWS';
                 scoreDiv.textContent = 'Credibility Score: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
+
+                setTimeout(() => {
+                    scoreBar.style.width = data.credibility_score + '%';
+                }, 100);
+            })
+            .catch(() => {
+                btn.textContent = '🔍 Analyze Now';
+                btn.disabled = false;
+                alert('Something went wrong!');
             });
         }
     </script>

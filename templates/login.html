@@ -6,30 +6,186 @@
     <title>Login - Fake News Detector</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .card { background: #16213e; padding: 40px; border-radius: 15px; width: 400px; }
-        h2 { color: #e94560; margin-bottom: 25px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; background: #0f3460; color: white; font-size: 1em; }
-        .btn { width: 100%; padding: 12px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
-        .btn:hover { opacity: 0.8; }
-        .msg { color: #ff6b6b; text-align: center; margin-bottom: 15px; }
-        .link { text-align: center; margin-top: 15px; color: #aaa; }
-        .link a { color: #e94560; text-decoration: none; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-circles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-circles span {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            animation: animate 20s linear infinite;
+            bottom: -150px;
+        }
+
+        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
+        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
+        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
+
+        @keyframes animate {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 50px 40px;
+            border-radius: 25px;
+            width: 420px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: white;
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .sub {
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+
+        .msg {
+            background: rgba(233,69,96,0.15);
+            border: 1px solid rgba(233,69,96,0.3);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .success {
+            background: rgba(81,207,102,0.15);
+            border: 1px solid rgba(81,207,102,0.3);
+            color: #51cf66;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group span {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1em;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.07);
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #e94560;
+            background: rgba(255,255,255,0.1);
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #e94560, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(233,69,96,0.4);
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9em;
+        }
+
+        .link a {
+            color: #e94560;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
+    <div class="bg-circles">
+        <span></span><span></span><span></span>
+    </div>
+
     <div class="card">
-        <h2>🔍 Login</h2>
+        <div class="logo">🔍</div>
+        <h2>Welcome Back</h2>
+        <p class="sub">Login to detect fake news</p>
+
         {% if msg %}
-        <p class="msg">{{ msg }}</p>
+        <div class="msg {% if 'successful' in msg %}success{% endif %}">{{ msg }}</div>
         {% endif %}
+
         <form method="POST" action="/login">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit" class="btn">Login</button>
+            <div class="input-group">
+                <span>📧</span>
+                <input type="email" name="email" placeholder="Email Address" required>
+            </div>
+            <div class="input-group">
+                <span>🔒</span>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn">Login →</button>
         </form>
+
         <div class="link">
-            <p>Don't have an account? <a href="/register">Register here</a></p>
+            Don't have an account? <a href="/register">Register here</a>
         </div>
     </div>
 </body>

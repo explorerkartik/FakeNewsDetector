@@ -3,24 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fake News Detector</title>
+    <title>Fake News Detector - AI Powered</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; text-align: center; padding: 50px; }
-        h1 { font-size: 3em; color: #e94560; margin-bottom: 20px; }
-        p { font-size: 1.2em; color: #aaa; margin-bottom: 30px; }
-        .btn { padding: 15px 40px; margin: 10px; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; text-decoration: none; }
-        .btn-primary { background: #e94560; color: white; }
-        .btn-secondary { background: transparent; color: white; border: 2px solid white; }
-        .btn:hover { opacity: 0.8; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .bg-circles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-circles span {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            animation: animate 20s linear infinite;
+            bottom: -150px;
+        }
+
+        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
+        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
+        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
+        .bg-circles span:nth-child(4) { width: 60px; height: 60px; left: 40%; background: rgba(100,100,255,0.15); animation-delay: 0s; animation-duration: 18s; }
+        .bg-circles span:nth-child(5) { width: 20px; height: 20px; left: 65%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
+        .bg-circles span:nth-child(6) { width: 110px; height: 110px; left: 75%; background: rgba(100,100,255,0.1); animation-delay: 3s; }
+
+        @keyframes animate {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 5em;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(90deg, #e94560, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0 40px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            backdrop-filter: blur(10px);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat h3 {
+            font-size: 2em;
+            font-weight: 800;
+            color: #e94560;
+        }
+
+        .stat p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85em;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #e94560, #a855f7);
+            color: white;
+            box-shadow: 0 10px 30px rgba(233,69,96,0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(233,69,96,0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 <body>
-    <h1>🔍 Fake News Detector</h1>
-    <p>AI-Powered News Verification System</p>
-    <p>Detect fake news instantly using Machine Learning & NLP</p>
-    <br>
-    <a href="/register" class="btn btn-primary">Get Started</a>
-    <a href="/login" class="btn btn-secondary">Login</a>
+    <div class="bg-circles">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="container">
+        <div class="logo">🔍</div>
+        <h1>Fake News Detector</h1>
+        <p class="subtitle">AI-Powered News Verification using Machine Learning & NLP</p>
+
+        <div class="badges">
+            <span class="badge">🤖 AI Powered</span>
+            <span class="badge">⚡ Real-time Analysis</span>
+            <span class="badge">🔗 URL Detection</span>
+            <span class="badge">📊 Credibility Score</span>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <h3>98.96%</h3>
+                <p>Model Accuracy</p>
+            </div>
+            <div class="stat">
+                <h3>44K+</h3>
+                <p>Articles Trained</p>
+            </div>
+            <div class="stat">
+                <h3>2</h3>
+                <p>ML Algorithms</p>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <a href="/register" class="btn btn-primary">🚀 Get Started</a>
+            <a href="/login" class="btn btn-secondary">🔑 Login</a>
+        </div>
+    </div>
 </body>
 </html>

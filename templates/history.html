@@ -6,49 +6,206 @@
     <title>History - Fake News Detector</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; padding: 30px; }
-        h1 { color: #e94560; text-align: center; margin-bottom: 30px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .nav { text-align: right; margin-bottom: 20px; }
-        .nav a { color: #e94560; text-decoration: none; margin-left: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #16213e; padding: 15px; text-align: left; color: #e94560; }
-        td { padding: 12px 15px; border-bottom: 1px solid #16213e; font-size: 0.9em; }
-        tr:hover { background: #16213e; }
-        .real { color: #51cf66; font-weight: bold; }
-        .fake { color: #e94560; font-weight: bold; }
-        .empty { text-align: center; padding: 50px; color: #aaa; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .bg-circles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-circles span {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            animation: animate 20s linear infinite;
+            bottom: -150px;
+        }
+
+        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
+        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
+        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
+
+        @keyframes animate {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-logo {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .nav-logo span { color: #e94560; }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9em;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(90deg, #e94560, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9em;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+
+        .badge-real {
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #10b981;
+        }
+
+        .badge-fake {
+            background: rgba(233,69,96,0.15);
+            border: 1px solid rgba(233,69,96,0.3);
+            color: #e94560;
+        }
+
+        .score-pill {
+            background: rgba(168,85,247,0.15);
+            border: 1px solid rgba(168,85,247,0.3);
+            color: #a855f7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .empty .icon { font-size: 4em; margin-bottom: 15px; }
     </style>
 </head>
 <body>
+    <div class="bg-circles">
+        <span></span><span></span><span></span>
+    </div>
+
     <div class="container">
         <div class="nav">
-            <a href="/detector">🔍 Detector</a>
-            <a href="/logout">🚪 Logout</a>
+            <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
+            <div class="nav-links">
+                <a href="/detector">🔍 Detector</a>
+                <a href="/logout">🚪 Logout</a>
+            </div>
         </div>
+
         <h1>📋 Analysis History</h1>
-        {% if records %}
-        <table>
-            <tr>
-                <th>News Text</th>
-                <th>Verdict</th>
-                <th>Score</th>
-                <th>Date</th>
-            </tr>
-            {% for record in records %}
-            <tr>
-                <td>{{ record['input_text'][:100] }}...</td>
-                <td class="{{ record['verdict'].lower() }}">{{ record['verdict'] }}</td>
-                <td>{{ record['credibility_score'] }}/100</td>
-                <td>{{ record['created_at'] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% else %}
-        <div class="empty">
-            <p>No analysis history yet! 🔍</p>
+
+        <div class="card">
+            {% if records %}
+            <table>
+                <tr>
+                    <th>News Text</th>
+                    <th>Verdict</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                </tr>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record['input_text'][:100] }}...</td>
+                    <td>
+                        <span class="badge badge-{{ record['verdict'].lower() }}">
+                            {{ '✅' if record['verdict'] == 'REAL' else '❌' }} {{ record['verdict'] }}
+                        </span>
+                    </td>
+                    <td><span class="score-pill">{{ record['credibility_score'] }}/100</span></td>
+                    <td>{{ record['created_at'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <div class="empty">
+                <div class="icon">📭</div>
+                <p>No analysis history yet!</p>
+                <p>Go detect some news!</p>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </body>
 </html>
