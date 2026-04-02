@@ -3,6 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
 import psycopg2
+import psycopg2.extras
 import pickle, os, requests
 from bs4 import BeautifulSoup
 
@@ -20,7 +21,7 @@ with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
 def get_db():
-    return psycopg2.connect(
+    conn = psycopg2.connect(
         host=os.getenv('DB_HOST'),
         port=os.getenv('DB_PORT'),
         user=os.getenv('DB_USER'),
@@ -28,6 +29,8 @@ def get_db():
         dbname=os.getenv('DB_NAME'),
         sslmode='require'
     )
+    conn.cursor_factory = psycopg2.extras.RealDictCursor
+    return conn
 
 class User(UserMixin):
     def __init__(self, id, username, email):
