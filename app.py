@@ -16,7 +16,6 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Model load karo
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
@@ -29,8 +28,10 @@ def get_db():
         dbname=os.getenv('DB_NAME'),
         sslmode='require'
     )
-    conn.cursor_factory = psycopg2.extras.RealDictCursor
     return conn
+
+def dict_cursor(conn):
+    return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
 class User(UserMixin):
     def __init__(self, id, username, email):
@@ -40,13 +41,16 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    db = get_db()
-    cur = db.cursor()
-    cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-    user = cur.fetchone()
-    db.close()
-    if user:
-        return User(user['id'], user['username'], user['email'])
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+        user = cur.fetchone()
+        db.close()
+        if user:
+            return User(user['id'], user['username'], user['email'])
+    except:
+        pass
     return None
 
 @app.route('/')
@@ -56,31 +60,37 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
-        db = get_db()
-        cur = db.cursor()
-        cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (username, email, password))
-        db.commit()
-        db.close()
-        return render_template('login.html', msg='Registration successful! Please login.')
+        try:
+            username = request.form['username']
+            email = request.form['email']
+            password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+            db = get_db()
+            cur = dict_cursor(db)
+            cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (username, email, password))
+            db.commit()
+            db.close()
+            return render_template('login.html', msg='Registration successful! Please login.')
+        except Exception as e:
+            return render_template('register.html', msg='Username or email already exists!')
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        db = get_db()
-        cur = db.cursor()
-        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
-        user = cur.fetchone()
-        db.close()
-        if user and bcrypt.check_password_hash(user['password'], password):
-            login_user(User(user['id'], user['username'], user['email']))
-            return redirect('/detector')
-        return render_template('login.html', msg='Invalid credentials!')
+        try:
+            email = request.form['email']
+            password = request.form['password']
+            db = get_db()
+            cur = dict_cursor(db)
+            cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user = cur.fetchone()
+            db.close()
+            if user and bcrypt.check_password_hash(user['password'], password):
+                login_user(User(user['id'], user['username'], user['email']))
+                return redirect('/detector')
+            return render_template('login.html', msg='Invalid credentials!')
+        except Exception as e:
+            return render_template('login.html', msg='Error: ' + str(e))
     return render_template('login.html')
 
 @app.route('/logout')
@@ -116,12 +126,15 @@ def detect():
     confidence = max(model.predict_proba([text])[0]) * 100
     credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
 
-    db = get_db()
-    cur = db.cursor()
-    cur.execute("INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
-                (current_user.id, text[:500], prediction, credibility_score))
-    db.commit()
-    db.close()
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
+                    (current_user.id, text[:500], prediction, credibility_score))
+        db.commit()
+        db.close()
+    except:
+        pass
 
     return jsonify({
         'verdict': prediction,
@@ -132,11 +145,14 @@ def detect():
 @app.route('/history')
 @login_required
 def history():
-    db = get_db()
-    cur = db.cursor()
-    cur.execute("SELECT input_text, verdict, credibility_score, created_at FROM analysis_history WHERE user_id = %s ORDER BY created_at DESC", (current_user.id,))
-    records = cur.fetchall()
-    db.close()
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("SELECT input_text, verdict, credibility_score, created_at FROM analysis_history WHERE user_id = %s ORDER BY created_at DESC", (current_user.id,))
+        records = cur.fetchall()
+        db.close()
+    except:
+        records = []
     return render_template('history.html', records=records)
 
 if __name__ == '__main__':
