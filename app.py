@@ -155,5 +155,43 @@ def history():
         records = []
     return render_template('history.html', records=records)
 
+@app.route('/admin')
+@login_required
+def admin():
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        
+        cur.execute("SELECT COUNT(*) as total FROM users")
+        total_users = cur.fetchone()['count']
+        
+        cur.execute("SELECT COUNT(*) as total FROM analysis_history")
+        total_analyses = cur.fetchone()['count']
+        
+        cur.execute("SELECT COUNT(*) as total FROM analysis_history WHERE verdict = 'FAKE'")
+        total_fake = cur.fetchone()['count']
+        
+        cur.execute("SELECT COUNT(*) as total FROM analysis_history WHERE verdict = 'REAL'")
+        total_real = cur.fetchone()['count']
+        
+        cur.execute("SELECT u.username, u.email, u.created_at FROM users u ORDER BY u.created_at DESC")
+        all_users = cur.fetchall()
+        
+        cur.execute("SELECT u.username, a.input_text, a.verdict, a.credibility_score, a.created_at FROM analysis_history a JOIN users u ON a.user_id = u.id ORDER BY a.created_at DESC LIMIT 20")
+        recent_analyses = cur.fetchall()
+        
+        db.close()
+    except Exception as e:
+        return str(e)
+    
+    return render_template('admin.html', 
+        total_users=total_users,
+        total_analyses=total_analyses,
+        total_fake=total_fake,
+        total_real=total_real,
+        all_users=all_users,
+        recent_analyses=recent_analyses
+    )
+
 if __name__ == '__main__':
     app.run(debug=True)
