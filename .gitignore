@@ -1,1 +1,3 @@
-venv/ 
+venv/
+.env
+create_tables.py
