@@ -1,6 +1,17 @@
 import psycopg2
+import os
+from dotenv import load_dotenv
 
-conn = psycopg2.connect('postgres://avnadmin:AVNS_Cq5FyI0livtu_ypdkGZ@pg-9c5f9fb-tiwarikartik43-3387.e.aivencloud.com:18975/defaultdb?sslmode=require')
+load_dotenv()
+
+conn = psycopg2.connect(
+    host=os.getenv('DB_HOST'),
+    port=os.getenv('DB_PORT'),
+    user=os.getenv('DB_USER'),
+    password=os.getenv('DB_PASSWORD'),
+    dbname=os.getenv('DB_NAME'),
+    sslmode='require'
+)
 cur = conn.cursor()
 
 cur.execute('''CREATE TABLE IF NOT EXISTS users (
