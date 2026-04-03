@@ -12,5 +12,6 @@ pandas
 numpy
 psycopg2-binary
 gunicorn
-googletrans==4.0.0-rc1
+deep-translator==1.11.4
 requests
+langdetect==1.0.9

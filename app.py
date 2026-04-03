@@ -2,8 +2,8 @@ from flask import Flask, render_template, request, jsonify, redirect
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
-from googletrans import Translator
-from urllib.parse import urlparse
+from deep_translator import GoogleTranslator
+from langdetect import detect as detect_languagefrom urllib.parse import urlparse
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests
@@ -32,7 +32,6 @@ LANGUAGE_DISPLAY_NAMES = {
     'mr': 'Marathi',
     'gu': 'Gujarati',
     'pa': 'Punjabi',
-    'bho': 'Bhojpuri',
     'bn': 'Bengali',
     'ml': 'Malayalam',
     'kn': 'Kannada',
@@ -42,12 +41,11 @@ LANGUAGE_DISPLAY_NAMES = {
 
 def translate_to_english(text):
     try:
-        detected = translator.detect(text)
-        lang_code = detected.lang
+        lang_code = detect_language(text)
         lang_name = LANGUAGE_DISPLAY_NAMES.get(lang_code, lang_code)
         if lang_code != 'en':
-            translated = translator.translate(text, dest='en')
-            return translated.text, lang_name
+            translated = GoogleTranslator(source='auto', target='en').translate(text)
+            return translated, lang_name
         return text, 'English'
     except:
         return text, 'English'
