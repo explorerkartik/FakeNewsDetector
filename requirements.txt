@@ -12,3 +12,5 @@ pandas
 numpy
 psycopg2-binary
 gunicorn
+googletrans==4.0.0-rc1
+requests

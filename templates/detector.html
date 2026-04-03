@@ -56,19 +56,10 @@
             gap: 10px;
         }
 
-        .nav-logo {
-            color: white;
-            font-size: 1.2em;
-            font-weight: 700;
-        }
-
+        .nav-logo { color: white; font-size: 1.2em; font-weight: 700; }
         .nav-logo span { color: #e94560; }
 
-        .nav-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+        .nav-links { display: flex; flex-wrap: wrap; gap: 8px; }
 
         .nav-links a {
             color: rgba(255,255,255,0.7);
@@ -80,15 +71,9 @@
             transition: all 0.3s;
         }
 
-        .nav-links a:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
 
-        .hero {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .hero { text-align: center; margin-bottom: 30px; }
 
         .hero h1 {
             font-size: 2em;
@@ -99,10 +84,7 @@
             margin-bottom: 10px;
         }
 
-        .hero p {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.95em;
-        }
+        .hero p { color: rgba(255,255,255,0.5); font-size: 0.95em; }
 
         .card {
             background: rgba(255,255,255,0.05);
@@ -121,10 +103,7 @@
             text-transform: uppercase;
         }
 
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
+        .input-group { position: relative; margin-bottom: 20px; }
 
         .input-group span {
             position: absolute;
@@ -210,13 +189,10 @@
             margin-top: 20px;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(233,69,96,0.5);
-        }
-
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(233,69,96,0.5); }
         .btn:active { transform: translateY(0); }
 
+        /* ── RESULT CARD ── */
         .result {
             margin-top: 25px;
             padding: 25px;
@@ -242,18 +218,8 @@
         }
 
         .verdict-icon { font-size: 3em; margin-bottom: 10px; }
-
-        .verdict {
-            font-size: 2em;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 10px;
-        }
-
-        .score {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.95em;
-        }
+        .verdict { font-size: 2em; font-weight: 800; color: white; margin-bottom: 10px; }
+        .score { color: rgba(255,255,255,0.6); font-size: 0.95em; }
 
         .score-bar-container {
             margin-top: 15px;
@@ -263,14 +229,67 @@
             overflow: hidden;
         }
 
-        .score-bar {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 1s ease;
-        }
-
+        .score-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
         .real .score-bar { background: linear-gradient(90deg, #10b981, #34d399); }
         .fake .score-bar { background: linear-gradient(90deg, #e94560, #f87171); }
+
+        /* ── EXTRA INFO CARDS ── */
+        .info-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-top: 16px;
+            text-align: left;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .info-card h3 {
+            color: white;
+            font-size: 1em;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-card p { color: rgba(255,255,255,0.7); font-size: 0.88em; margin: 4px 0; }
+        .info-card.green { border-left: 4px solid #10b981; }
+        .info-card.yellow { border-left: 4px solid #f59e0b; }
+        .info-card.red { border-left: 4px solid #e94560; }
+        .info-card.blue { border-left: 4px solid #3b82f6; }
+        .info-card.purple { border-left: 4px solid #a855f7; }
+
+        .lang-badge {
+            display: inline-block;
+            background: rgba(168,85,247,0.2);
+            border: 1px solid rgba(168,85,247,0.4);
+            color: #c084fc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-top: 6px;
+        }
+
+        .fact-item {
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 10px 0;
+        }
+
+        .fact-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .fact-item a { color: #60a5fa; text-decoration: none; }
+        .fact-item a:hover { text-decoration: underline; }
+
+        .rating-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin-left: 6px;
+        }
 
         @media (max-width: 600px) {
             .hero h1 { font-size: 1.5em; }
@@ -296,7 +315,7 @@
 
         <div class="hero">
             <h1>Detect Fake News Instantly</h1>
-            <p>Paste a URL or news text below and let AI do the rest</p>
+            <p>Paste a URL or news text below — supports Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi & more</p>
         </div>
 
         <div class="card">
@@ -309,10 +328,11 @@
             <div class="divider">OR</div>
 
             <div class="tab-label">📝 Paste News Text</div>
-            <textarea id="news_text" placeholder="Paste the news article text here..."></textarea>
+            <textarea id="news_text" placeholder="Paste the news article text here... (Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi, Bhojpuri, Haryanvi supported)"></textarea>
 
             <button class="btn" onclick="detect()">🔍 Analyze Now</button>
 
+            <!-- MAIN RESULT -->
             <div class="result" id="result">
                 <div class="verdict-icon" id="verdict-icon"></div>
                 <div class="verdict" id="verdict"></div>
@@ -321,13 +341,36 @@
                     <div class="score-bar" id="score-bar" style="width: 0%"></div>
                 </div>
             </div>
+
+            <!-- LANGUAGE DETECTION -->
+            <div class="info-card purple" id="lang-card" style="display:none;">
+                <h3>🌐 Language Detected</h3>
+                <p>Input language: <span class="lang-badge" id="lang-name"></span></p>
+                <p style="margin-top:8px; color:rgba(255,255,255,0.45); font-size:0.82em;">
+                    Automatically translated to English for analysis
+                </p>
+            </div>
+
+            <!-- SOURCE REPUTATION -->
+            <div class="info-card" id="reputation-card" style="display:none;">
+                <h3>🏛️ Source Reputation</h3>
+                <p id="reputation-label" style="font-size:1em; font-weight:600; color:white;"></p>
+                <p id="reputation-desc"></p>
+            </div>
+
+            <!-- FACT CHECK RESULTS -->
+            <div class="info-card blue" id="fact-card" style="display:none;">
+                <h3>✅ Fact-Check Results</h3>
+                <div id="fact-list"></div>
+            </div>
+
         </div>
     </div>
 
     <script>
         function detect() {
             const text = document.getElementById('news_text').value;
-            const url = document.getElementById('news_url').value;
+            const url  = document.getElementById('news_url').value;
 
             if (!text.trim() && !url.trim()) {
                 alert('Please enter a URL or news text!');
@@ -337,6 +380,12 @@
             const btn = document.querySelector('.btn');
             btn.textContent = '⏳ Analyzing...';
             btn.disabled = true;
+
+            // Hide previous results
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('lang-card').style.display = 'none';
+            document.getElementById('reputation-card').style.display = 'none';
+            document.getElementById('fact-card').style.display = 'none';
 
             const formData = new FormData();
             formData.append('news_text', text);
@@ -351,26 +400,56 @@
                 btn.textContent = '🔍 Analyze Now';
                 btn.disabled = false;
 
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
+                if (data.error) { alert(data.error); return; }
 
-                const resultDiv = document.getElementById('result');
-                const verdictIcon = document.getElementById('verdict-icon');
-                const verdictDiv = document.getElementById('verdict');
-                const scoreDiv = document.getElementById('score');
-                const scoreBar = document.getElementById('score-bar');
-
+                // ── Main Result ──
+                const resultDiv  = document.getElementById('result');
                 resultDiv.style.display = 'block';
                 resultDiv.className = 'result ' + (data.verdict === 'REAL' ? 'real' : 'fake');
-                verdictIcon.textContent = data.verdict === 'REAL' ? '✅' : '❌';
-                verdictDiv.textContent = data.verdict === 'REAL' ? 'REAL NEWS' : 'FAKE NEWS';
-                scoreDiv.textContent = 'Credibility Score: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
-
+                document.getElementById('verdict-icon').textContent = data.verdict === 'REAL' ? '✅' : '❌';
+                document.getElementById('verdict').textContent = data.verdict === 'REAL' ? 'REAL NEWS' : 'FAKE NEWS';
+                document.getElementById('score').textContent =
+                    'Credibility Score: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
                 setTimeout(() => {
-                    scoreBar.style.width = data.credibility_score + '%';
+                    document.getElementById('score-bar').style.width = data.credibility_score + '%';
                 }, 100);
+
+                // ── Language Card ──
+                if (data.detected_lang && data.detected_lang !== 'English') {
+                    document.getElementById('lang-name').textContent = data.detected_lang;
+                    document.getElementById('lang-card').style.display = 'block';
+                }
+
+                // ── Source Reputation Card ──
+                if (data.reputation && data.reputation.found) {
+                    const rep = data.reputation;
+                    const repCard = document.getElementById('reputation-card');
+                    repCard.style.display = 'block';
+                    repCard.className = 'info-card ' +
+                        (rep.tier === 1 ? 'green' : rep.tier === 2 ? 'yellow' : 'red');
+                    document.getElementById('reputation-label').textContent = rep.label;
+                    document.getElementById('reputation-desc').textContent = rep.desc;
+                }
+
+                // ── Fact Check Card ──
+                if (data.fact_results && data.fact_results.length > 0) {
+                    const factList = document.getElementById('fact-list');
+                    factList.innerHTML = '';
+                    data.fact_results.forEach(item => {
+                        factList.innerHTML += `
+                            <div class="fact-item">
+                                <p style="color:white; font-size:0.9em; margin-bottom:4px;">${item.text}</p>
+                                <p>
+                                    Rating: <span class="rating-badge">${item.rating}</span>
+                                    &nbsp;|&nbsp;
+                                    Source: ${item.url
+                                        ? `<a href="${item.url}" target="_blank">${item.source}</a>`
+                                        : item.source}
+                                </p>
+                            </div>`;
+                    });
+                    document.getElementById('fact-card').style.display = 'block';
+                }
             })
             .catch(() => {
                 btn.textContent = '🔍 Analyze Now';

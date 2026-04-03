@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify, redirect
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
+from googletrans import Translator
+from urllib.parse import urlparse
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests
@@ -19,6 +21,95 @@ login_manager.login_view = 'login'
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
+# ── TRANSLATOR SETUP ─────────────────────────────────────
+translator = Translator()
+
+LANGUAGE_DISPLAY_NAMES = {
+    'en': 'English',
+    'hi': 'Hindi / Haryanvi',
+    'ta': 'Tamil',
+    'te': 'Telugu',
+    'mr': 'Marathi',
+    'gu': 'Gujarati',
+    'pa': 'Punjabi',
+    'bho': 'Bhojpuri',
+    'bn': 'Bengali',
+    'ml': 'Malayalam',
+    'kn': 'Kannada',
+    'ur': 'Urdu',
+    'or': 'Odia',
+}
+
+def translate_to_english(text):
+    try:
+        detected = translator.detect(text)
+        lang_code = detected.lang
+        lang_name = LANGUAGE_DISPLAY_NAMES.get(lang_code, lang_code)
+        if lang_code != 'en':
+            translated = translator.translate(text, dest='en')
+            return translated.text, lang_name
+        return text, 'English'
+    except:
+        return text, 'English'
+
+# ── FACT CHECK API ───────────────────────────────────────
+FACT_CHECK_API_KEY = os.getenv('FACT_CHECK_API_KEY')
+
+def check_facts(text):
+    try:
+        short_query = ' '.join(text.split()[:10])
+        url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
+        params = {
+            'query': short_query,
+            'key': FACT_CHECK_API_KEY,
+            'languageCode': 'en'
+        }
+        response = requests.get(url, params=params, timeout=5)
+        data = response.json()
+        results = []
+        for claim in data.get('claims', [])[:3]:
+            review = claim.get('claimReview', [{}])[0]
+            results.append({
+                'text': claim.get('text', '')[:120],
+                'rating': review.get('textualRating', 'Unknown'),
+                'source': review.get('publisher', {}).get('name', ''),
+                'url': review.get('url', '')
+            })
+        return results
+    except:
+        return []
+
+# ── SOURCE REPUTATION DATABASE ───────────────────────────
+SOURCE_REPUTATION = {
+    # Tier 1 — Credible
+    'thehindu.com':       {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
+    'hindustantimes.com': {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
+    'ndtv.com':           {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Indian news channel'},
+    'aajtak.in':          {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Indian news channel'},
+    'bbc.com':            {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'International broadcaster'},
+    'reuters.com':        {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'International wire service'},
+    'indianexpress.com':  {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
+    'timesofindia.com':   {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
+    'ptinews.com':        {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Press Trust of India'},
+    'ani.co.in':          {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'ANI News Agency'},
+    # Tier 2 — Satire
+    'theonion.com':       {'tier': 2, 'label': '😄 Satire', 'desc': 'Satirical website'},
+    'fakingnews.com':     {'tier': 2, 'label': '😄 Satire', 'desc': 'Indian satire website'},
+    # Tier 3 — Known Fake
+    'postcard.news':      {'tier': 3, 'label': '❌ Known Misinformation', 'desc': 'Flagged by AltNews'},
+}
+
+def check_source_reputation(url):
+    try:
+        domain = urlparse(url).netloc.replace('www.', '')
+        if domain in SOURCE_REPUTATION:
+            info = SOURCE_REPUTATION[domain]
+            return {'found': True, **info}
+        return {'found': False}
+    except:
+        return {'found': False}
+
+# ── DATABASE ─────────────────────────────────────────────
 def get_db():
     conn = psycopg2.connect(
         host=os.getenv('DB_HOST'),
@@ -33,6 +124,7 @@ def get_db():
 def dict_cursor(conn):
     return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
+# ── USER MODEL ───────────────────────────────────────────
 class User(UserMixin):
     def __init__(self, id, username, email):
         self.id = id
@@ -53,6 +145,7 @@ def load_user(user_id):
         pass
     return None
 
+# ── ROUTES ───────────────────────────────────────────────
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -66,7 +159,8 @@ def register():
             password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
             db = get_db()
             cur = dict_cursor(db)
-            cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (username, email, password))
+            cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
+                        (username, email, password))
             db.commit()
             db.close()
             return render_template('login.html', msg='Registration successful! Please login.')
@@ -108,7 +202,9 @@ def detector():
 @login_required
 def detect():
     text = request.form.get('news_text', '')
-    url = request.form.get('news_url', '')
+    url  = request.form.get('news_url', '')
+
+    # URL se text fetch karo
     if url:
         try:
             response = requests.get(url, timeout=10)
@@ -117,24 +213,48 @@ def detect():
             text = ' '.join([p.get_text() for p in paragraphs])
         except Exception as e:
             return jsonify({'error': 'Could not fetch content from URL!'})
+
     if not text.strip():
         return jsonify({'error': 'Please enter some text!'})
-    prediction = model.predict([text])[0]
-    confidence = max(model.predict_proba([text])[0]) * 100
+
+    # ── Translate to English ──
+    english_text, detected_lang = translate_to_english(text)
+
+    # ── ML Prediction ──
+    prediction = model.predict([english_text])[0]
+    confidence = max(model.predict_proba([english_text])[0]) * 100
     credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+
+    # ── Source Reputation Check ──
+    reputation = {}
+    if url:
+        reputation = check_source_reputation(url)
+        if reputation.get('tier') == 3:
+            credibility_score = max(0, credibility_score - 20)
+
+    # ── Fact Check ──
+    fact_results = check_facts(english_text)
+
+    # ── Save to DB ──
     try:
         db = get_db()
         cur = dict_cursor(db)
-        cur.execute("INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
-                    (current_user.id, text[:500], prediction, credibility_score))
+        cur.execute(
+            "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
+            (current_user.id, text[:500], prediction, credibility_score)
+        )
         db.commit()
         db.close()
     except:
         pass
+
     return jsonify({
         'verdict': prediction,
         'credibility_score': credibility_score,
-        'confidence': round(confidence, 2)
+        'confidence': round(confidence, 2),
+        'detected_lang': detected_lang,
+        'reputation': reputation,
+        'fact_results': fact_results
     })
 
 @app.route('/history')
@@ -143,7 +263,10 @@ def history():
     try:
         db = get_db()
         cur = dict_cursor(db)
-        cur.execute("SELECT input_text, verdict, credibility_score, created_at FROM analysis_history WHERE user_id = %s ORDER BY created_at DESC", (current_user.id,))
+        cur.execute(
+            "SELECT input_text, verdict, credibility_score, created_at FROM analysis_history WHERE user_id = %s ORDER BY created_at DESC",
+            (current_user.id,)
+        )
         records = cur.fetchall()
         db.close()
     except:
@@ -168,8 +291,8 @@ def admin():
         cur2.execute("SELECT username, email, created_at FROM users ORDER BY created_at DESC")
         all_users = cur2.fetchall()
         cur2.execute("""SELECT u.username, a.input_text, a.verdict, a.credibility_score, a.created_at
-                      FROM analysis_history a JOIN users u ON a.user_id = u.id
-                      ORDER BY a.created_at DESC LIMIT 20""")
+                        FROM analysis_history a JOIN users u ON a.user_id = u.id
+                        ORDER BY a.created_at DESC LIMIT 20""")
         recent_analyses = cur2.fetchall()
         db.close()
     except Exception as e:
