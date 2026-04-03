@@ -11,7 +11,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             min-height: 100vh;
-            padding: 30px;
+            padding: 20px;
         }
 
         .bg-circles {
@@ -50,23 +50,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .nav-logo {
             color: white;
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: 700;
         }
 
         .nav-logo span { color: #e94560; }
 
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         .nav-links a {
             color: rgba(255,255,255,0.7);
             text-decoration: none;
-            margin-left: 20px;
-            font-size: 0.9em;
-            padding: 8px 16px;
+            font-size: 0.85em;
+            padding: 7px 14px;
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.1);
             transition: all 0.3s;
@@ -78,12 +85,12 @@
         }
 
         h1 {
-            font-size: 2.2em;
+            font-size: 1.8em;
             font-weight: 800;
             background: linear-gradient(90deg, #e94560, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
@@ -91,8 +98,8 @@
             background: rgba(255,255,255,0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 25px;
-            padding: 30px;
+            border-radius: 20px;
+            padding: 20px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.3);
             overflow-x: auto;
         }
@@ -100,33 +107,35 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 500px;
         }
 
         th {
-            padding: 15px;
+            padding: 12px 15px;
             text-align: left;
             color: rgba(255,255,255,0.5);
-            font-size: 0.8em;
+            font-size: 0.75em;
             text-transform: uppercase;
             letter-spacing: 1px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         td {
-            padding: 15px;
+            padding: 12px 15px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             color: rgba(255,255,255,0.8);
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: rgba(255,255,255,0.03); }
 
         .badge {
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
             font-size: 0.8em;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .badge-real {
@@ -145,19 +154,26 @@
             background: rgba(168,85,247,0.15);
             border: 1px solid rgba(168,85,247,0.3);
             color: #a855f7;
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
             font-size: 0.8em;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .empty {
             text-align: center;
-            padding: 60px;
+            padding: 50px 20px;
             color: rgba(255,255,255,0.3);
         }
 
-        .empty .icon { font-size: 4em; margin-bottom: 15px; }
+        .empty .icon { font-size: 3.5em; margin-bottom: 15px; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.4em; }
+            .nav-logo { font-size: 1em; }
+            .card { padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -187,7 +203,7 @@
                 </tr>
                 {% for record in records %}
                 <tr>
-                    <td>{{ record['input_text'][:100] }}...</td>
+                    <td>{{ record['input_text'][:80] }}...</td>
                     <td>
                         <span class="badge badge-{{ record['verdict'].lower() }}">
                             {{ '✅' if record['verdict'] == 'REAL' else '❌' }} {{ record['verdict'] }}
