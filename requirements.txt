@@ -16,3 +16,5 @@ deep-translator==1.11.4
 requests
 langdetect==1.0.9
 anthropic
+groq
+
