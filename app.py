@@ -6,7 +6,7 @@ from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
 from indian_facts import check_indian_facts, get_credibility_boost
-import anthropic
+from groq import Groq
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests, json
@@ -24,10 +24,10 @@ login_manager.login_view = 'login'
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-# -- CLAUDE/ANTHROPIC SETUP --
-claude_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+# -- GROQ SETUP --
+groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
-def analyze_with_claude(text):
+def analyze_with_groq(text):
     try:
         prompt = f"""You are a highly accurate fact-verification expert with complete knowledge of India and the world up to 2026.
 
@@ -66,13 +66,14 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
   "facts": ["fact1", "fact2"]
 }}"""
 
-        message = claude_client.messages.create(
-            model="claude-haiku-4-5-20251001",
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
-            messages=[{"role": "user", "content": prompt}]
+            temperature=0.1
         )
 
-        response_text = message.content[0].text.strip()
+        response_text = response.choices[0].message.content.strip()
 
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0].strip()
@@ -93,7 +94,7 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
             'gemini_facts': result.get('facts', [])
         }
     except Exception as e:
-        print(f"Claude error: {e}")
+        print(f"Groq error: {e}")
         return None
 
 # -- LANGUAGE SETUP --
@@ -263,14 +264,14 @@ def detect():
         return jsonify({'error': 'Please enter some text!'})
 
     english_text, detected_lang = translate_to_english(text)
-    claude_result = analyze_with_claude(english_text)
+    groq_result = analyze_with_groq(english_text)
 
-    if claude_result:
-        prediction = claude_result['verdict']
-        credibility_score = claude_result['credibility_score']
-        confidence = claude_result['confidence']
-        gemini_reason = claude_result['reason']
-        gemini_facts = claude_result['gemini_facts']
+    if groq_result:
+        prediction = groq_result['verdict']
+        credibility_score = groq_result['credibility_score']
+        confidence = groq_result['confidence']
+        gemini_reason = groq_result['reason']
+        gemini_facts = groq_result['gemini_facts']
         indian_facts_matched = check_indian_facts(english_text)
     else:
         prediction = model.predict([english_text])[0]
