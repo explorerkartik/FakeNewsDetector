@@ -89,7 +89,7 @@
         </div>
         <div class="hero">
             <h1>Detect Fake News Instantly</h1>
-            <p>Powered by Gemini AI • Supports Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi & more</p>
+            <p>Powered by Grok AI • Supports Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi & more</p>
         </div>
         <div class="card">
             <div class="tab-label">🔗 Enter URL</div>
@@ -114,7 +114,7 @@
 
             <!-- GEMINI ANALYSIS -->
             <div class="info-card teal" id="gemini-card" style="display:none;">
-                <h3>🤖 AI Analysis <span class="powered-badge">Gemini AI</span></h3>
+                <h3>🤖 AI Analysis <span class="powered-badge">Grok AI</span></h3>
                 <p id="gemini-reason"></p>
                 <div id="gemini-facts-list" style="margin-top:10px;"></div>
             </div>
@@ -154,7 +154,7 @@
             if (!text.trim() && !url.trim()) { alert('Please enter a URL or news text!'); return; }
 
             const btn = document.querySelector('.btn');
-            btn.textContent = '⏳ Analyzing with Gemini AI...';
+            btn.textContent = '⏳ Analyzing with Grok AI...';
             btn.disabled = true;
 
             ['result','gemini-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
