@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
+from indian_facts import check_indian_facts, get_credibility_boost
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests
@@ -218,6 +219,14 @@ def detect():
     confidence = max(model.predict_proba([english_text])[0]) * 100
     credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
 
+    # ── Indian Facts Check ──
+    indian_facts_matched = check_indian_facts(english_text)
+    facts_boost = get_credibility_boost(english_text)
+    if facts_boost > 0:
+        credibility_score = min(100, credibility_score + facts_boost)
+        if credibility_score >= 50:
+            prediction = 'REAL'
+
     # ── Source Reputation ──
     reputation = {}
     if url:
@@ -225,7 +234,7 @@ def detect():
         if reputation.get('tier') == 3:
             credibility_score = max(0, credibility_score - 20)
 
-    # ── Fact Check ──
+    # ── Fact Check API ──
     fact_results = check_facts(english_text)
 
     # ── Save to DB ──
@@ -247,7 +256,8 @@ def detect():
         'confidence': round(confidence, 2),
         'detected_lang': detected_lang,
         'reputation': reputation,
-        'fact_results': fact_results
+        'fact_results': fact_results,
+        'indian_facts': indian_facts_matched
     })
 
 @app.route('/history')
