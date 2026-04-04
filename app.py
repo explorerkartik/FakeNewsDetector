@@ -100,20 +100,7 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
         print(f"Groq error: {e}")
         return None
 
-# -- CRICKET KEYWORDS --
-CRICKET_KEYWORDS = [
-    'cricket', 'ipl', 'match', 'wicket', 'batting', 'bowling',
-    'test match', 'odi', 't20', 'bcci', 'runs', 'over', 'innings',
-    'six', 'four', 'stumped', 'lbw', 'yorker', 'bouncer',
-    'dc', 'mi', 'csk', 'rcb', 'kkr', 'srh', 'rr', 'pbks', 'lsg', 'gt',
-    'delhi capitals', 'mumbai indians', 'chennai', 'bangalore',
-    'kohli', 'rohit', 'dhoni', 'bumrah', 'pandya'
-]
-
-def is_cricket_news(text):
-    text_lower = text.lower()
-    return any(kw in text_lower for kw in CRICKET_KEYWORDS)
-
+# -- CRICKET LIVE SCORES --
 def get_cricket_scores():
     try:
         url = "https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live"
@@ -348,8 +335,8 @@ def detect():
 
     fact_results = check_facts(english_text)
 
-    # -- Cricket Live Scores --
-    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
+    # -- Cricket Live Scores (always fetch) --
+    cricket_scores = get_cricket_scores()
 
     try:
         db = get_db()
