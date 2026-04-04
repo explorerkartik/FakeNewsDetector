@@ -6,22 +6,14 @@
     <title>Detector - Fake News Detector</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            padding: 20px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 20px; }
         .bg-circles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
         .bg-circles span { position: absolute; display: block; border-radius: 50%; animation: animate 20s linear infinite; bottom: -150px; }
         .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
         .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
         .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
         .bg-circles span:nth-child(4) { width: 60px; height: 60px; left: 80%; background: rgba(100,100,255,0.15); animation-delay: 0s; animation-duration: 18s; }
-        @keyframes animate {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
-        }
+        @keyframes animate { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; } }
         .container { position: relative; z-index: 1; max-width: 850px; margin: 0 auto; }
         .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
         .nav-logo { color: white; font-size: 1.2em; font-weight: 700; }
@@ -41,8 +33,7 @@
         input::placeholder { color: rgba(255,255,255,0.3); }
         .divider { text-align: center; color: rgba(255,255,255,0.3); margin: 15px 0; font-size: 0.85em; position: relative; }
         .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 45%; height: 1px; background: rgba(255,255,255,0.1); }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
+        .divider::before { left: 0; } .divider::after { right: 0; }
         textarea { width: 100%; padding: 15px; height: 160px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.07); color: white; font-size: 1em; resize: none; font-family: inherit; transition: all 0.3s; }
         textarea:focus { outline: none; border-color: #a855f7; background: rgba(255,255,255,0.1); }
         textarea::placeholder { color: rgba(255,255,255,0.3); }
@@ -62,29 +53,32 @@
         .fake .score-bar { background: linear-gradient(90deg, #e94560, #f87171); }
         .info-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 18px 22px; margin-top: 16px; text-align: left; animation: fadeIn 0.5s ease; }
         .info-card h3 { color: white; font-size: 1em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .info-card p { color: rgba(255,255,255,0.7); font-size: 0.88em; margin: 4px 0; }
+        .info-card p { color: rgba(255,255,255,0.7); font-size: 0.88em; margin: 4px 0; line-height: 1.5; }
         .info-card.green { border-left: 4px solid #10b981; }
         .info-card.yellow { border-left: 4px solid #f59e0b; }
         .info-card.red { border-left: 4px solid #e94560; }
         .info-card.blue { border-left: 4px solid #3b82f6; }
         .info-card.purple { border-left: 4px solid #a855f7; }
         .info-card.orange { border-left: 4px solid #f97316; }
+        .info-card.teal { border-left: 4px solid #14b8a6; }
         .lang-badge { display: inline-block; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin-top: 6px; }
         .fact-item { border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px 0; }
         .fact-item:last-child { border-bottom: none; padding-bottom: 0; }
         .fact-item a { color: #60a5fa; text-decoration: none; }
         .fact-item a:hover { text-decoration: underline; }
         .rating-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 600; background: rgba(255,255,255,0.1); color: white; margin-left: 6px; }
+        .gemini-fact { padding: 6px 0; color: rgba(255,255,255,0.8); font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .gemini-fact:last-child { border-bottom: none; }
+        .gemini-fact::before { content: '✦ '; color: #14b8a6; }
         .indian-fact-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); font-size: 0.88em; line-height: 1.5; }
         .indian-fact-item:last-child { border-bottom: none; }
         .indian-fact-item::before { content: '🇮🇳 '; }
+        .powered-badge { display: inline-block; background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.3); color: #5eead4; padding: 3px 10px; border-radius: 10px; font-size: 0.75em; margin-left: 8px; vertical-align: middle; }
         @media (max-width: 600px) { .hero h1 { font-size: 1.5em; } .nav-logo { font-size: 1em; } .card { padding: 20px; } .verdict { font-size: 1.6em; } }
     </style>
 </head>
 <body>
-    <div class="bg-circles">
-        <span></span><span></span><span></span><span></span>
-    </div>
+    <div class="bg-circles"><span></span><span></span><span></span><span></span></div>
     <div class="container">
         <div class="nav">
             <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
@@ -95,7 +89,7 @@
         </div>
         <div class="hero">
             <h1>Detect Fake News Instantly</h1>
-            <p>Supports Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi, Bhojpuri & more | Indian facts database included</p>
+            <p>Powered by Gemini AI • Supports Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi & more</p>
         </div>
         <div class="card">
             <div class="tab-label">🔗 Enter URL</div>
@@ -105,7 +99,7 @@
             </div>
             <div class="divider">OR</div>
             <div class="tab-label">📝 Paste News Text</div>
-            <textarea id="news_text" placeholder="Paste news text here... (Hindi, Tamil, Telugu, Marathi, Gujarati, Punjabi, Bhojpuri supported)"></textarea>
+            <textarea id="news_text" placeholder="Paste news text here... Politics, Geography, Sports, Science, Government Schemes, Daily News — sab kuch detect hoga!"></textarea>
             <button class="btn" onclick="detect()">🔍 Analyze Now</button>
 
             <!-- MAIN RESULT -->
@@ -116,6 +110,13 @@
                 <div class="score-bar-container">
                     <div class="score-bar" id="score-bar" style="width: 0%"></div>
                 </div>
+            </div>
+
+            <!-- GEMINI ANALYSIS -->
+            <div class="info-card teal" id="gemini-card" style="display:none;">
+                <h3>🤖 AI Analysis <span class="powered-badge">Gemini AI</span></h3>
+                <p id="gemini-reason"></p>
+                <div id="gemini-facts-list" style="margin-top:10px;"></div>
             </div>
 
             <!-- LANGUAGE DETECTION -->
@@ -138,7 +139,7 @@
                 <p id="reputation-desc"></p>
             </div>
 
-            <!-- FACT CHECK RESULTS -->
+            <!-- FACT CHECK -->
             <div class="info-card blue" id="fact-card" style="display:none;">
                 <h3>✅ Fact-Check Results</h3>
                 <div id="fact-list"></div>
@@ -153,14 +154,12 @@
             if (!text.trim() && !url.trim()) { alert('Please enter a URL or news text!'); return; }
 
             const btn = document.querySelector('.btn');
-            btn.textContent = '⏳ Analyzing...';
+            btn.textContent = '⏳ Analyzing with Gemini AI...';
             btn.disabled = true;
 
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('lang-card').style.display = 'none';
-            document.getElementById('indian-facts-card').style.display = 'none';
-            document.getElementById('reputation-card').style.display = 'none';
-            document.getElementById('fact-card').style.display = 'none';
+            ['result','gemini-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
 
             const formData = new FormData();
             formData.append('news_text', text);
@@ -181,6 +180,19 @@
                 document.getElementById('verdict').textContent = data.verdict === 'REAL' ? 'REAL NEWS' : 'FAKE NEWS';
                 document.getElementById('score').textContent = 'Credibility Score: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
                 setTimeout(() => { document.getElementById('score-bar').style.width = data.credibility_score + '%'; }, 100);
+
+                // Gemini Analysis
+                if (data.gemini_reason) {
+                    document.getElementById('gemini-reason').textContent = data.gemini_reason;
+                    const gfl = document.getElementById('gemini-facts-list');
+                    gfl.innerHTML = '';
+                    if (data.gemini_facts && data.gemini_facts.length > 0) {
+                        data.gemini_facts.forEach(f => {
+                            gfl.innerHTML += `<div class="gemini-fact">${f}</div>`;
+                        });
+                    }
+                    document.getElementById('gemini-card').style.display = 'block';
+                }
 
                 // Language
                 if (data.detected_lang && data.detected_lang !== 'English') {

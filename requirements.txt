@@ -15,3 +15,4 @@ gunicorn
 deep-translator==1.11.4
 requests
 langdetect==1.0.9
+google-generativeai==0.8.3

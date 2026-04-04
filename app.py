@@ -6,9 +6,10 @@ from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
 from indian_facts import check_indian_facts, get_credibility_boost
+import google.generativeai as genai
 import psycopg2
 import psycopg2.extras
-import pickle, os, requests
+import pickle, os, requests, json
 from bs4 import BeautifulSoup
 
 load_dotenv()
@@ -22,6 +23,66 @@ login_manager.login_view = 'login'
 
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
+
+# ── GEMINI SETUP ─────────────────────────────────────────
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+
+def analyze_with_gemini(text):
+    try:
+        prompt = f"""You are a fake news detection expert with complete knowledge of Indian and global facts up to 2026.
+
+Analyze this news/text and determine if it is REAL or FAKE:
+
+"{text}"
+
+Consider:
+- Indian politics (PM, CM, Ministers, parties)
+- Indian geography (capitals, states, cities)
+- Current affairs up to 2026
+- Government schemes
+- Science and technology
+- Sports
+- International news
+- Historical facts
+- War and defense
+- Education and jobs
+- AI and technology
+
+Respond ONLY in this exact JSON format:
+{{
+  "verdict": "REAL" or "FAKE",
+  "credibility_score": (number between 0-100),
+  "confidence": (number between 0-100),
+  "reason": "Brief explanation in 1-2 sentences",
+  "facts": ["fact1", "fact2"]
+}}
+
+Rules:
+- If the statement contains correct verifiable facts → REAL with high score
+- If the statement contains false information → FAKE with low score
+- If it is an opinion or unverifiable claim → score between 40-60
+- Be especially accurate about Indian facts"""
+
+        response = gemini_model.generate_content(prompt)
+        response_text = response.text.strip()
+
+        # Clean response
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+
+        result = json.loads(response_text)
+        return {
+            'verdict': result.get('verdict', 'REAL'),
+            'credibility_score': int(result.get('credibility_score', 70)),
+            'confidence': float(result.get('confidence', 70)),
+            'reason': result.get('reason', ''),
+            'gemini_facts': result.get('facts', [])
+        }
+    except Exception as e:
+        return None
 
 # ── LANGUAGE SETUP ───────────────────────────────────────
 LANGUAGE_DISPLAY_NAMES = {
@@ -159,7 +220,7 @@ def register():
             db.commit()
             db.close()
             return render_template('login.html', msg='Registration successful! Please login.')
-        except Exception as e:
+        except:
             return render_template('register.html', msg='Username or email already exists!')
     return render_template('register.html')
 
@@ -205,7 +266,7 @@ def detect():
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all('p')
             text = ' '.join([p.get_text() for p in paragraphs])
-        except Exception as e:
+        except:
             return jsonify({'error': 'Could not fetch content from URL!'})
 
     if not text.strip():
@@ -214,18 +275,39 @@ def detect():
     # ── Translate to English ──
     english_text, detected_lang = translate_to_english(text)
 
-    # ── ML Prediction ──
-    prediction = model.predict([english_text])[0]
-    confidence = max(model.predict_proba([english_text])[0]) * 100
-    credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+    # ── Gemini Analysis (Primary) ──
+    gemini_result = analyze_with_gemini(english_text)
 
-    # ── Indian Facts Check ──
-    indian_facts_matched = check_indian_facts(english_text)
-    facts_boost = get_credibility_boost(english_text)
-    if facts_boost > 0:
-        credibility_score = min(100, credibility_score + facts_boost)
-        if credibility_score >= 50:
+    if gemini_result:
+        # Gemini se results lo
+        prediction = gemini_result['verdict']
+        credibility_score = gemini_result['credibility_score']
+        confidence = gemini_result['confidence']
+        gemini_reason = gemini_result['reason']
+        gemini_facts = gemini_result['gemini_facts']
+    else:
+        # Fallback — old ML model
+        prediction = model.predict([english_text])[0]
+        confidence = max(model.predict_proba([english_text])[0]) * 100
+        credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+        gemini_reason = ''
+        gemini_facts = []
+
+        # Indian facts boost (only for fallback)
+        indian_facts_matched = check_indian_facts(english_text)
+        facts_boost = get_credibility_boost(english_text)
+        if facts_boost >= 40:
+            credibility_score = min(100, 70 + (facts_boost - 40))
             prediction = 'REAL'
+        elif facts_boost >= 20:
+            credibility_score = min(100, credibility_score + facts_boost)
+            if credibility_score >= 45:
+                prediction = 'REAL'
+        else:
+            credibility_score = min(100, credibility_score + facts_boost)
+
+    # ── Indian Facts ──
+    indian_facts_matched = check_indian_facts(english_text)
 
     # ── Source Reputation ──
     reputation = {}
@@ -257,7 +339,9 @@ def detect():
         'detected_lang': detected_lang,
         'reputation': reputation,
         'fact_results': fact_results,
-        'indian_facts': indian_facts_matched
+        'indian_facts': indian_facts_matched,
+        'gemini_reason': gemini_reason,
+        'gemini_facts': gemini_facts
     })
 
 @app.route('/history')
