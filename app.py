@@ -3,7 +3,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
-from langdetect import detect as detect_languagefrom urllib.parse import urlparse
+from langdetect import detect as detect_language
+from urllib.parse import urlparse
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests
@@ -21,9 +22,7 @@ login_manager.login_view = 'login'
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-# ── TRANSLATOR SETUP ─────────────────────────────────────
-translator = Translator()
-
+# ── LANGUAGE SETUP ───────────────────────────────────────
 LANGUAGE_DISPLAY_NAMES = {
     'en': 'English',
     'hi': 'Hindi / Haryanvi',
@@ -79,7 +78,6 @@ def check_facts(text):
 
 # ── SOURCE REPUTATION DATABASE ───────────────────────────
 SOURCE_REPUTATION = {
-    # Tier 1 — Credible
     'thehindu.com':       {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
     'hindustantimes.com': {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
     'ndtv.com':           {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Indian news channel'},
@@ -90,10 +88,8 @@ SOURCE_REPUTATION = {
     'timesofindia.com':   {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
     'ptinews.com':        {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Press Trust of India'},
     'ani.co.in':          {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'ANI News Agency'},
-    # Tier 2 — Satire
     'theonion.com':       {'tier': 2, 'label': '😄 Satire', 'desc': 'Satirical website'},
     'fakingnews.com':     {'tier': 2, 'label': '😄 Satire', 'desc': 'Indian satire website'},
-    # Tier 3 — Known Fake
     'postcard.news':      {'tier': 3, 'label': '❌ Known Misinformation', 'desc': 'Flagged by AltNews'},
 }
 
@@ -202,7 +198,6 @@ def detect():
     text = request.form.get('news_text', '')
     url  = request.form.get('news_url', '')
 
-    # URL se text fetch karo
     if url:
         try:
             response = requests.get(url, timeout=10)
@@ -223,7 +218,7 @@ def detect():
     confidence = max(model.predict_proba([english_text])[0]) * 100
     credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
 
-    # ── Source Reputation Check ──
+    # ── Source Reputation ──
     reputation = {}
     if url:
         reputation = check_source_reputation(url)
