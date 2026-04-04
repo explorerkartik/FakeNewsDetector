@@ -67,9 +67,9 @@
         .fact-item a { color: #60a5fa; text-decoration: none; }
         .fact-item a:hover { text-decoration: underline; }
         .rating-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 600; background: rgba(255,255,255,0.1); color: white; margin-left: 6px; }
-        .gemini-fact { padding: 6px 0; color: rgba(255,255,255,0.8); font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .gemini-fact:last-child { border-bottom: none; }
-        .gemini-fact::before { content: '✦ '; color: #14b8a6; }
+        .grok-fact { padding: 6px 0; color: rgba(255,255,255,0.8); font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .grok-fact:last-child { border-bottom: none; }
+        .grok-fact::before { content: '✦ '; color: #14b8a6; }
         .indian-fact-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); font-size: 0.88em; line-height: 1.5; }
         .indian-fact-item:last-child { border-bottom: none; }
         .indian-fact-item::before { content: '🇮🇳 '; }
@@ -112,11 +112,11 @@
                 </div>
             </div>
 
-            <!-- GEMINI ANALYSIS -->
-            <div class="info-card teal" id="gemini-card" style="display:none;">
+            <!-- GROK ANALYSIS -->
+            <div class="info-card teal" id="grok-card" style="display:none;">
                 <h3>🤖 AI Analysis <span class="powered-badge">Grok AI</span></h3>
-                <p id="gemini-reason"></p>
-                <div id="gemini-facts-list" style="margin-top:10px;"></div>
+                <p id="grok-reason"></p>
+                <div id="grok-facts-list" style="margin-top:10px;"></div>
             </div>
 
             <!-- LANGUAGE DETECTION -->
@@ -157,7 +157,7 @@
             btn.textContent = '⏳ Analyzing with Grok AI...';
             btn.disabled = true;
 
-            ['result','gemini-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
+            ['result','grok-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
                 document.getElementById(id).style.display = 'none';
             });
 
@@ -181,17 +181,17 @@
                 document.getElementById('score').textContent = 'Credibility Score: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
                 setTimeout(() => { document.getElementById('score-bar').style.width = data.credibility_score + '%'; }, 100);
 
-                // Gemini Analysis
-                if (data.gemini_reason) {
-                    document.getElementById('gemini-reason').textContent = data.gemini_reason;
-                    const gfl = document.getElementById('gemini-facts-list');
+                // Grok Analysis
+                if (data.grok_reason) {
+                    document.getElementById('grok-reason').textContent = data.grok_reason;
+                    const gfl = document.getElementById('grok-facts-list');
                     gfl.innerHTML = '';
-                    if (data.gemini_facts && data.gemini_facts.length > 0) {
-                        data.gemini_facts.forEach(f => {
-                            gfl.innerHTML += `<div class="gemini-fact">${f}</div>`;
+                    if (data.grok_facts && data.grok_facts.length > 0) {
+                        data.grok_facts.forEach(f => {
+                            gfl.innerHTML += `<div class="grok-fact">${f}</div>`;
                         });
                     }
-                    document.getElementById('gemini-card').style.display = 'block';
+                    document.getElementById('grok-card').style.display = 'block';
                 }
 
                 // Language
