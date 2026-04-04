@@ -9,6 +9,7 @@ import psycopg2
 import psycopg2.extras
 import pickle, os, requests, json
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 load_dotenv()
 
@@ -25,42 +26,117 @@ with open('model.pkl', 'rb') as f:
 # ── GROK SETUP ───────────────────────────────────────────
 GROK_API_KEY = os.getenv('GROK_API_KEY')
 
+# ── ABBREVIATIONS DICTIONARY ─────────────────────────────
+ABBREVIATIONS = {
+    # IPL Teams
+    "dc": "Delhi Capitals",
+    "mi": "Mumbai Indians",
+    "csk": "Chennai Super Kings",
+    "rcb": "Royal Challengers Bengaluru",
+    "kkr": "Kolkata Knight Riders",
+    "srh": "Sunrisers Hyderabad",
+    "rr": "Rajasthan Royals",
+    "pbks": "Punjab Kings",
+    "lsg": "Lucknow Super Giants",
+    "gt": "Gujarat Titans",
+    # Cricket
+    "bcci": "Board of Control for Cricket in India",
+    "icc": "International Cricket Council",
+    "odi": "One Day International cricket",
+    "t20": "Twenty20 cricket",
+    "ipl": "Indian Premier League",
+    # Politics
+    "pm": "Prime Minister",
+    "cm": "Chief Minister",
+    "bjp": "Bharatiya Janata Party",
+    "inc": "Indian National Congress",
+    "aap": "Aam Aadmi Party",
+    "sp": "Samajwadi Party",
+    "bsp": "Bahujan Samaj Party",
+    "nda": "National Democratic Alliance",
+    "upa": "United Progressive Alliance",
+    "mla": "Member of Legislative Assembly",
+    "mp": "Member of Parliament",
+    # Sports
+    "isl": "Indian Super League football",
+    "pkl": "Pro Kabaddi League",
+    "hil": "Hockey India League",
+    # Others
+    "isro": "Indian Space Research Organisation",
+    "rbi": "Reserve Bank of India",
+    "cbi": "Central Bureau of Investigation",
+    "ed": "Enforcement Directorate",
+    "upi": "Unified Payments Interface",
+    "gst": "Goods and Services Tax",
+    "cji": "Chief Justice of India",
+    "nsa": "National Security Advisor",
+    "cds": "Chief of Defence Staff",
+    "iit": "Indian Institute of Technology",
+    "iim": "Indian Institute of Management",
+    "upsc": "Union Public Service Commission",
+    "ssc": "Staff Selection Commission",
+    "neet": "National Eligibility cum Entrance Test",
+    "jee": "Joint Entrance Examination",
+}
+
+def expand_abbreviations(text):
+    """Expand abbreviations in text before sending to Grok"""
+    words = text.split()
+    expanded = []
+    for word in words:
+        clean_word = word.lower().strip('.,!?')
+        if clean_word in ABBREVIATIONS:
+            expanded.append(f"{word} ({ABBREVIATIONS[clean_word]})")
+        else:
+            expanded.append(word)
+    return ' '.join(expanded)
+
 def analyze_with_grok(text):
     try:
+        # Expand abbreviations first
+        expanded_text = expand_abbreviations(text)
+        today = datetime.now().strftime("%d %B %Y")
+
         headers = {
             "Authorization": f"Bearer {GROK_API_KEY}",
             "Content-Type": "application/json"
         }
         payload = {
             "model": "grok-3-latest",
-            "search": True,
             "messages": [
                 {
                     "role": "system",
-                    "content": """You are a fake news detection expert with real-time internet access and complete knowledge up to today's date. You know everything about:
-- Indian politics (PM, CM, Ministers, parties, elections)
-- Indian geography (capitals, states, cities)
-- Current affairs and today's news
-- Government schemes
-- Science and technology and AI
-- Cricket, IPL, Football, Hockey, Badminton, Wrestling, Boxing, Tennis, Chess, Olympics, Commonwealth Games, Asian Games
-- Today's live match results and sports scores
-- International news and world affairs
-- Historical facts
-- War and defense
-- Education and jobs
-- Indian economy, budget, RBI
-- Bollywood and entertainment
-- Awards (Bharat Ratna, Padma, Nobel, Oscar)
-Always respond in the exact JSON format requested."""
+                    "content": f"""You are a fake news detection expert. Today's date is {today}.
+
+You have complete knowledge about:
+- Indian politics: PM Narendra Modi, all state CMs, Ministers, BJP, Congress, AAP, SP, BSP
+- IPL 2025: All teams — MI (Mumbai Indians), DC (Delhi Capitals), CSK (Chennai Super Kings), RCB (Royal Challengers Bengaluru), KKR (Kolkata Knight Riders), SRH (Sunrisers Hyderabad), RR (Rajasthan Royals), PBKS (Punjab Kings), LSG (Lucknow Super Giants), GT (Gujarat Titans)
+- Cricket: Virat Kohli, Rohit Sharma, MS Dhoni, Hardik Pandya, Jasprit Bumrah
+- Chess: D Gukesh (World Champion 2024), Viswanathan Anand
+- Olympics, Asian Games, Commonwealth Games
+- Football: ISL, FIFA, Sunil Chhetri
+- Badminton: PV Sindhu, Saina Nehwal, Lakshya Sen
+- Hockey, Wrestling, Boxing, Tennis, Kabaddi
+- Indian geography: all state capitals, major cities
+- Government schemes, science, technology, AI
+- Current affairs up to {today}
+
+Always expand abbreviations and understand context fully before judging."""
                 },
                 {
                     "role": "user",
-                    "content": f"""Analyze this news/text and determine if it is REAL or FAKE. Use your real-time internet access to verify facts:
+                    "content": f"""Analyze this news/text and determine if it is REAL or FAKE.
+Today's date: {today}
 
-"{text}"
+Original text: "{text}"
+Expanded text: "{expanded_text}"
 
-Respond ONLY in this exact JSON format, nothing else:
+Important: 
+- If asking about recent match results or live events, say you cannot verify real-time results but assess based on known facts
+- Expand all abbreviations (DC=Delhi Capitals, MI=Mumbai Indians, etc.)
+- Be accurate about Indian facts
+
+Respond ONLY in this exact JSON format:
 {{
   "verdict": "REAL" or "FAKE",
   "credibility_score": (number 0-100),
@@ -70,11 +146,10 @@ Respond ONLY in this exact JSON format, nothing else:
 }}
 
 Rules:
-- Correct verifiable facts → REAL, high score (75-100)
-- False information → FAKE, low score (0-35)
-- Opinion/unverifiable → score 40-60
-- Use live search to verify today's news, match results, breaking news
-- Be especially accurate about Indian facts, sports, politics"""
+- Correct verifiable facts → REAL (75-100)
+- False information → FAKE (0-35)
+- Recent unverifiable events → score 45-65
+- Opinion → score 40-60"""
                 }
             ],
             "temperature": 0.1,
