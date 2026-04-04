@@ -5,11 +5,12 @@ from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
+from indian_facts import check_indian_facts, get_credibility_boost
+from groq import Groq
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests, json
 from bs4 import BeautifulSoup
-from datetime import datetime
 
 load_dotenv()
 
@@ -23,153 +24,69 @@ login_manager.login_view = 'login'
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-# ── GROK SETUP ───────────────────────────────────────────
-GROK_API_KEY = os.getenv('GROK_API_KEY')
+# -- GROQ SETUP --
+groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
-# ── ABBREVIATIONS DICTIONARY ─────────────────────────────
-ABBREVIATIONS = {
-    # IPL Teams
-    "dc": "Delhi Capitals",
-    "mi": "Mumbai Indians",
-    "csk": "Chennai Super Kings",
-    "rcb": "Royal Challengers Bengaluru",
-    "kkr": "Kolkata Knight Riders",
-    "srh": "Sunrisers Hyderabad",
-    "rr": "Rajasthan Royals",
-    "pbks": "Punjab Kings",
-    "lsg": "Lucknow Super Giants",
-    "gt": "Gujarat Titans",
-    # Cricket
-    "bcci": "Board of Control for Cricket in India",
-    "icc": "International Cricket Council",
-    "odi": "One Day International cricket",
-    "t20": "Twenty20 cricket",
-    "ipl": "Indian Premier League",
-    # Politics
-    "pm": "Prime Minister",
-    "cm": "Chief Minister",
-    "bjp": "Bharatiya Janata Party",
-    "inc": "Indian National Congress",
-    "aap": "Aam Aadmi Party",
-    "sp": "Samajwadi Party",
-    "bsp": "Bahujan Samaj Party",
-    "nda": "National Democratic Alliance",
-    "upa": "United Progressive Alliance",
-    "mla": "Member of Legislative Assembly",
-    "mp": "Member of Parliament",
-    # Sports
-    "isl": "Indian Super League football",
-    "pkl": "Pro Kabaddi League",
-    "hil": "Hockey India League",
-    # Others
-    "isro": "Indian Space Research Organisation",
-    "rbi": "Reserve Bank of India",
-    "cbi": "Central Bureau of Investigation",
-    "ed": "Enforcement Directorate",
-    "upi": "Unified Payments Interface",
-    "gst": "Goods and Services Tax",
-    "cji": "Chief Justice of India",
-    "nsa": "National Security Advisor",
-    "cds": "Chief of Defence Staff",
-    "iit": "Indian Institute of Technology",
-    "iim": "Indian Institute of Management",
-    "upsc": "Union Public Service Commission",
-    "ssc": "Staff Selection Commission",
-    "neet": "National Eligibility cum Entrance Test",
-    "jee": "Joint Entrance Examination",
-}
+# -- RAPIDAPI SETUP --
+RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')
 
-def expand_abbreviations(text):
-    """Expand abbreviations in text before sending to Grok"""
-    words = text.split()
-    expanded = []
-    for word in words:
-        clean_word = word.lower().strip('.,!?')
-        if clean_word in ABBREVIATIONS:
-            expanded.append(f"{word} ({ABBREVIATIONS[clean_word]})")
-        else:
-            expanded.append(word)
-    return ' '.join(expanded)
-
-def analyze_with_grok(text):
+def analyze_with_groq(text):
     try:
-        # Expand abbreviations first
-        expanded_text = expand_abbreviations(text)
-        today = datetime.now().strftime("%d %B %Y")
+        prompt = f"""You are a highly accurate fact-verification expert with complete knowledge of India and the world up to 2026.
 
-        headers = {
-            "Authorization": f"Bearer {GROK_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": "grok-3-latest",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": f"""You are a fake news detection expert. Today's date is {today}.
+Your job is to verify whether the given statement/news is REAL (factually correct) or FAKE (factually incorrect or misleading).
 
-You have complete knowledge about:
-- Indian politics: PM Narendra Modi, all state CMs, Ministers, BJP, Congress, AAP, SP, BSP
-- IPL 2025: All teams — MI (Mumbai Indians), DC (Delhi Capitals), CSK (Chennai Super Kings), RCB (Royal Challengers Bengaluru), KKR (Kolkata Knight Riders), SRH (Sunrisers Hyderabad), RR (Rajasthan Royals), PBKS (Punjab Kings), LSG (Lucknow Super Giants), GT (Gujarat Titans)
-- Cricket: Virat Kohli, Rohit Sharma, MS Dhoni, Hardik Pandya, Jasprit Bumrah
-- Chess: D Gukesh (World Champion 2024), Viswanathan Anand
-- Olympics, Asian Games, Commonwealth Games
-- Football: ISL, FIFA, Sunil Chhetri
-- Badminton: PV Sindhu, Saina Nehwal, Lakshya Sen
-- Hockey, Wrestling, Boxing, Tennis, Kabaddi
-- Indian geography: all state capitals, major cities
-- Government schemes, science, technology, AI
-- Current affairs up to {today}
+STATEMENT TO VERIFY:
+"{text}"
 
-Always expand abbreviations and understand context fully before judging."""
-                },
-                {
-                    "role": "user",
-                    "content": f"""Analyze this news/text and determine if it is REAL or FAKE.
-Today's date: {today}
+IMPORTANT RULES:
+1. If the statement contains CORRECT, VERIFIABLE FACTS -> verdict must be "REAL" with credibility_score 85-100
+2. If the statement is PARTIALLY correct -> verdict "REAL" with score 60-80
+3. If the statement contains CLEARLY FALSE information -> verdict "FAKE" with score 0-40
+4. If the statement is unverifiable opinion -> score 45-65
+5. DO NOT be biased toward FAKE - most factual statements are REAL
 
-Original text: "{text}"
-Expanded text: "{expanded_text}"
+INDIAN KNOWLEDGE BASE:
+- Capitals: Ranchi=Jharkhand, Patna=Bihar, Lucknow=UP, Mumbai=Maharashtra, Delhi=India, Bhopal=MP, Jaipur=Rajasthan, Chennai=TN, Hyderabad=Telangana, Bengaluru=Karnataka
+- PM: Narendra Modi (BJP), President: Droupadi Murmu
+- States: India has 28 states and 8 UTs
+- Operation Sindoor: Indian military operation 2025
+- Government schemes: PM Kisan, Ayushman Bharat, Jan Dhan, etc.
 
-Important: 
-- If asking about recent match results or live events, say you cannot verify real-time results but assess based on known facts
-- Expand all abbreviations (DC=Delhi Capitals, MI=Mumbai Indians, etc.)
-- Be accurate about Indian facts
+EXAMPLES:
+- "Ranchi is the capital of Jharkhand" -> REAL, score: 98
+- "Patna is the capital of Bihar" -> REAL, score: 98
+- "Delhi is capital of India" -> REAL, score: 99
+- "Mumbai is capital of India" -> FAKE, score: 5
+- "Modi is PM of India" -> REAL, score: 97
 
-Respond ONLY in this exact JSON format:
+Respond ONLY in this exact JSON format (no markdown, no extra text):
 {{
-  "verdict": "REAL" or "FAKE",
-  "credibility_score": (number 0-100),
-  "confidence": (number 0-100),
+  "verdict": "REAL",
+  "credibility_score": 95,
+  "confidence": 95,
   "reason": "Brief explanation in 1-2 sentences",
-  "facts": ["relevant fact 1", "relevant fact 2"]
-}}
+  "facts": ["fact1", "fact2"]
+}}"""
 
-Rules:
-- Correct verifiable facts → REAL (75-100)
-- False information → FAKE (0-35)
-- Recent unverifiable events → score 45-65
-- Opinion → score 40-60"""
-                }
-            ],
-            "temperature": 0.1,
-            "max_tokens": 500
-        }
-
-        response = requests.post(
-            "https://api.x.ai/v1/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=20
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+            temperature=0.1
         )
 
-        data = response.json()
-        response_text = data['choices'][0]['message']['content'].strip()
+        response_text = response.choices[0].message.content.strip()
 
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0].strip()
         elif '```' in response_text:
             response_text = response_text.split('```')[1].split('```')[0].strip()
+
+        start = response_text.find('{')
+        end = response_text.rfind('}') + 1
+        if start != -1 and end > start:
+            response_text = response_text[start:end]
 
         result = json.loads(response_text)
         return {
@@ -177,25 +94,64 @@ Rules:
             'credibility_score': int(result.get('credibility_score', 70)),
             'confidence': float(result.get('confidence', 70)),
             'reason': result.get('reason', ''),
-            'grok_facts': result.get('facts', [])
+            'gemini_facts': result.get('facts', [])
         }
     except Exception as e:
+        print(f"Groq error: {e}")
         return None
 
-# ── LANGUAGE SETUP ───────────────────────────────────────
+# -- CRICKET KEYWORDS --
+CRICKET_KEYWORDS = [
+    'cricket', 'ipl', 'match', 'wicket', 'batting', 'bowling',
+    'test match', 'odi', 't20', 'bcci', 'runs', 'over', 'innings',
+    'six', 'four', 'stumped', 'lbw', 'yorker', 'bouncer',
+    'dc', 'mi', 'csk', 'rcb', 'kkr', 'srh', 'rr', 'pbks', 'lsg', 'gt',
+    'delhi capitals', 'mumbai indians', 'chennai', 'bangalore',
+    'kohli', 'rohit', 'dhoni', 'bumrah', 'pandya'
+]
+
+def is_cricket_news(text):
+    text_lower = text.lower()
+    return any(kw in text_lower for kw in CRICKET_KEYWORDS)
+
+def get_cricket_scores():
+    try:
+        url = "https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live"
+        headers = {
+            "X-RapidAPI-Key": RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "cricbuzz-cricket.p.rapidapi.com"
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        data = response.json()
+        matches = []
+        for match_type in data.get("typeMatches", []):
+            for series in match_type.get("seriesMatches", []):
+                series_data = series.get("seriesAdWrapper", {})
+                for m in series_data.get("matches", []):
+                    info = m.get("matchInfo", {})
+                    score = m.get("matchScore", {})
+                    t1 = info.get("team1", {})
+                    t2 = info.get("team2", {})
+                    t1i = score.get("team1Score", {}).get("inngs1", {})
+                    t2i = score.get("team2Score", {}).get("inngs1", {})
+                    matches.append({
+                        "team1": t1.get("teamSName", t1.get("teamName", "Team 1")),
+                        "team2": t2.get("teamSName", t2.get("teamName", "Team 2")),
+                        "status": info.get("status", "Live"),
+                        "seriesName": series_data.get("seriesName", ""),
+                        "t1score": f"{t1i.get('runs','-')}/{t1i.get('wickets','-')} ({t1i.get('overs','-')} ov)" if t1i else "-",
+                        "t2score": f"{t2i.get('runs','-')}/{t2i.get('wickets','-')} ({t2i.get('overs','-')} ov)" if t2i else "-",
+                    })
+        return matches[:5]
+    except:
+        return []
+
+# -- LANGUAGE SETUP --
 LANGUAGE_DISPLAY_NAMES = {
-    'en': 'English',
-    'hi': 'Hindi / Haryanvi',
-    'ta': 'Tamil',
-    'te': 'Telugu',
-    'mr': 'Marathi',
-    'gu': 'Gujarati',
-    'pa': 'Punjabi',
-    'bn': 'Bengali',
-    'ml': 'Malayalam',
-    'kn': 'Kannada',
-    'ur': 'Urdu',
-    'or': 'Odia',
+    'en': 'English', 'hi': 'Hindi / Haryanvi', 'ta': 'Tamil',
+    'te': 'Telugu', 'mr': 'Marathi', 'gu': 'Gujarati',
+    'pa': 'Punjabi', 'bn': 'Bengali', 'ml': 'Malayalam',
+    'kn': 'Kannada', 'ur': 'Urdu', 'or': 'Odia',
 }
 
 def translate_to_english(text):
@@ -209,18 +165,14 @@ def translate_to_english(text):
     except:
         return text, 'English'
 
-# ── FACT CHECK API ───────────────────────────────────────
+# -- FACT CHECK API --
 FACT_CHECK_API_KEY = os.getenv('FACT_CHECK_API_KEY')
 
 def check_facts(text):
     try:
         short_query = ' '.join(text.split()[:10])
         url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
-        params = {
-            'query': short_query,
-            'key': FACT_CHECK_API_KEY,
-            'languageCode': 'en'
-        }
+        params = {'query': short_query, 'key': FACT_CHECK_API_KEY, 'languageCode': 'en'}
         response = requests.get(url, params=params, timeout=5)
         data = response.json()
         results = []
@@ -236,49 +188,41 @@ def check_facts(text):
     except:
         return []
 
-# ── SOURCE REPUTATION DATABASE ───────────────────────────
+# -- SOURCE REPUTATION --
 SOURCE_REPUTATION = {
-    'thehindu.com':       {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
-    'hindustantimes.com': {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
-    'ndtv.com':           {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Indian news channel'},
-    'aajtak.in':          {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Indian news channel'},
-    'bbc.com':            {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'International broadcaster'},
-    'reuters.com':        {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'International wire service'},
-    'indianexpress.com':  {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
-    'timesofindia.com':   {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Major Indian newspaper'},
-    'ptinews.com':        {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'Press Trust of India'},
-    'ani.co.in':          {'tier': 1, 'label': '✅ Highly Credible', 'desc': 'ANI News Agency'},
-    'theonion.com':       {'tier': 2, 'label': '😄 Satire', 'desc': 'Satirical website'},
-    'fakingnews.com':     {'tier': 2, 'label': '😄 Satire', 'desc': 'Indian satire website'},
-    'postcard.news':      {'tier': 3, 'label': '❌ Known Misinformation', 'desc': 'Flagged by AltNews'},
+    'thehindu.com':       {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'hindustantimes.com': {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'ndtv.com':           {'tier': 1, 'label': 'Highly Credible', 'desc': 'Indian news channel'},
+    'aajtak.in':          {'tier': 1, 'label': 'Highly Credible', 'desc': 'Indian news channel'},
+    'bbc.com':            {'tier': 1, 'label': 'Highly Credible', 'desc': 'International broadcaster'},
+    'reuters.com':        {'tier': 1, 'label': 'Highly Credible', 'desc': 'International wire service'},
+    'indianexpress.com':  {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'timesofindia.com':   {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'theonion.com':       {'tier': 2, 'label': 'Satire', 'desc': 'Satirical website'},
+    'postcard.news':      {'tier': 3, 'label': 'Known Misinformation', 'desc': 'Flagged by AltNews'},
 }
 
 def check_source_reputation(url):
     try:
         domain = urlparse(url).netloc.replace('www.', '')
         if domain in SOURCE_REPUTATION:
-            info = SOURCE_REPUTATION[domain]
-            return {'found': True, **info}
+            return {'found': True, **SOURCE_REPUTATION[domain]}
         return {'found': False}
     except:
         return {'found': False}
 
-# ── DATABASE ─────────────────────────────────────────────
+# -- DATABASE --
 def get_db():
-    conn = psycopg2.connect(
-        host=os.getenv('DB_HOST'),
-        port=os.getenv('DB_PORT'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        dbname=os.getenv('DB_NAME'),
-        sslmode='require'
+    return psycopg2.connect(
+        host=os.getenv('DB_HOST'), port=os.getenv('DB_PORT'),
+        user=os.getenv('DB_USER'), password=os.getenv('DB_PASSWORD'),
+        dbname=os.getenv('DB_NAME'), sslmode='require'
     )
-    return conn
 
 def dict_cursor(conn):
     return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-# ── USER MODEL ───────────────────────────────────────────
+# -- USER MODEL --
 class User(UserMixin):
     def __init__(self, id, username, email):
         self.id = id
@@ -299,7 +243,7 @@ def load_user(user_id):
         pass
     return None
 
-# ── ROUTES ───────────────────────────────────────────────
+# -- ROUTES --
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -313,8 +257,7 @@ def register():
             password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
             db = get_db()
             cur = dict_cursor(db)
-            cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
-                        (username, email, password))
+            cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (username, email, password))
             db.commit()
             db.close()
             return render_template('login.html', msg='Registration successful! Please login.')
@@ -362,45 +305,52 @@ def detect():
         try:
             response = requests.get(url, timeout=10)
             soup = BeautifulSoup(response.content, 'html.parser')
-            paragraphs = soup.find_all('p')
-            text = ' '.join([p.get_text() for p in paragraphs])
+            text = ' '.join([p.get_text() for p in soup.find_all('p')])
         except:
             return jsonify({'error': 'Could not fetch content from URL!'})
 
     if not text.strip():
         return jsonify({'error': 'Please enter some text!'})
 
-    # ── Translate to English ──
     english_text, detected_lang = translate_to_english(text)
+    groq_result = analyze_with_groq(english_text)
 
-    # ── Grok Analysis ──
-    grok_result = analyze_with_grok(english_text)
-
-    if grok_result:
-        prediction = grok_result['verdict']
-        credibility_score = grok_result['credibility_score']
-        confidence = grok_result['confidence']
-        grok_reason = grok_result['reason']
-        grok_facts = grok_result['grok_facts']
+    if groq_result:
+        prediction = groq_result['verdict']
+        credibility_score = groq_result['credibility_score']
+        confidence = groq_result['confidence']
+        gemini_reason = groq_result['reason']
+        gemini_facts = groq_result['gemini_facts']
+        indian_facts_matched = check_indian_facts(english_text)
     else:
-        # Fallback — old ML model
         prediction = model.predict([english_text])[0]
         confidence = max(model.predict_proba([english_text])[0]) * 100
         credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
-        grok_reason = ''
-        grok_facts = []
+        gemini_reason = ''
+        gemini_facts = []
+        indian_facts_matched = check_indian_facts(english_text)
+        facts_boost = get_credibility_boost(english_text)
+        if facts_boost >= 40:
+            credibility_score = min(100, 70 + (facts_boost - 40))
+            prediction = 'REAL'
+        elif facts_boost >= 20:
+            credibility_score = min(100, credibility_score + facts_boost)
+            if credibility_score >= 45:
+                prediction = 'REAL'
+        else:
+            credibility_score = min(100, credibility_score + facts_boost)
 
-    # ── Source Reputation ──
     reputation = {}
     if url:
         reputation = check_source_reputation(url)
         if reputation.get('tier') == 3:
             credibility_score = max(0, credibility_score - 20)
 
-    # ── Fact Check API ──
     fact_results = check_facts(english_text)
 
-    # ── Save to DB ──
+    # -- Cricket Live Scores --
+    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
+
     try:
         db = get_db()
         cur = dict_cursor(db)
@@ -420,8 +370,10 @@ def detect():
         'detected_lang': detected_lang,
         'reputation': reputation,
         'fact_results': fact_results,
-        'grok_reason': grok_reason,
-        'grok_facts': grok_facts
+        'indian_facts': indian_facts_matched,
+        'gemini_reason': gemini_reason,
+        'gemini_facts': gemini_facts,
+        'cricket_scores': cricket_scores
     })
 
 @app.route('/history')
@@ -465,12 +417,9 @@ def admin():
     except Exception as e:
         return str(e)
     return render_template('admin.html',
-        total_users=total_users,
-        total_analyses=total_analyses,
-        total_fake=total_fake,
-        total_real=total_real,
-        all_users=all_users,
-        recent_analyses=recent_analyses)
+        total_users=total_users, total_analyses=total_analyses,
+        total_fake=total_fake, total_real=total_real,
+        all_users=all_users, recent_analyses=recent_analyses)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)

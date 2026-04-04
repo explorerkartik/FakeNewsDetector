@@ -61,6 +61,7 @@
         .info-card.purple { border-left: 4px solid #a855f7; }
         .info-card.orange { border-left: 4px solid #f97316; }
         .info-card.teal { border-left: 4px solid #14b8a6; }
+        .info-card.cricket { border-left: 4px solid #22c55e; }
         .lang-badge { display: inline-block; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin-top: 6px; }
         .fact-item { border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px 0; }
         .fact-item:last-child { border-bottom: none; padding-bottom: 0; }
@@ -74,6 +75,14 @@
         .indian-fact-item:last-child { border-bottom: none; }
         .indian-fact-item::before { content: '🇮🇳 '; }
         .powered-badge { display: inline-block; background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.3); color: #5eead4; padding: 3px 10px; border-radius: 10px; font-size: 0.75em; margin-left: 8px; vertical-align: middle; }
+        /* Cricket Widget */
+        .match-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; }
+        .match-card:last-child { margin-bottom: 0; }
+        .match-teams { color: white; font-size: 0.95em; font-weight: 600; margin-bottom: 6px; }
+        .match-scores { display: flex; gap: 16px; margin-bottom: 6px; }
+        .match-scores span { color: #86efac; font-size: 0.88em; background: rgba(34,197,94,0.1); padding: 2px 10px; border-radius: 8px; }
+        .match-status { color: rgba(255,255,255,0.45); font-size: 0.78em; }
+        .match-series { color: rgba(255,255,255,0.35); font-size: 0.75em; margin-bottom: 4px; }
         @media (max-width: 600px) { .hero h1 { font-size: 1.5em; } .nav-logo { font-size: 1em; } .card { padding: 20px; } .verdict { font-size: 1.6em; } }
     </style>
 </head>
@@ -119,6 +128,12 @@
                 <div id="grok-facts-list" style="margin-top:10px;"></div>
             </div>
 
+            <!-- CRICKET LIVE SCORES -->
+            <div class="info-card cricket" id="cricket-card" style="display:none;">
+                <h3>🏏 Live Cricket Scores</h3>
+                <div id="cricket-list"></div>
+            </div>
+
             <!-- LANGUAGE DETECTION -->
             <div class="info-card purple" id="lang-card" style="display:none;">
                 <h3>🌐 Language Detected</h3>
@@ -157,7 +172,7 @@
             btn.textContent = '⏳ Analyzing with Grok AI...';
             btn.disabled = true;
 
-            ['result','grok-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
+            ['result','grok-card','cricket-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
                 document.getElementById(id).style.display = 'none';
             });
 
@@ -192,6 +207,25 @@
                         });
                     }
                     document.getElementById('grok-card').style.display = 'block';
+                }
+
+                // Cricket Live Scores
+                if (data.cricket_scores && data.cricket_scores.length > 0) {
+                    const cl = document.getElementById('cricket-list');
+                    cl.innerHTML = '';
+                    data.cricket_scores.forEach(m => {
+                        cl.innerHTML += `
+                            <div class="match-card">
+                                <div class="match-series">${m.seriesName}</div>
+                                <div class="match-teams">🏏 ${m.team1} vs ${m.team2}</div>
+                                <div class="match-scores">
+                                    <span>${m.team1}: ${m.t1score}</span>
+                                    <span>${m.team2}: ${m.t2score}</span>
+                                </div>
+                                <div class="match-status">${m.status}</div>
+                            </div>`;
+                    });
+                    document.getElementById('cricket-card').style.display = 'block';
                 }
 
                 // Language
