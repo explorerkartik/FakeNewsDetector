@@ -6,7 +6,7 @@ from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
 from indian_facts import check_indian_facts, get_credibility_boost
-import google.generativeai as genai
+
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests, json
