@@ -26,7 +26,7 @@ with open('model.pkl', 'rb') as f:
 
 # ── GEMINI SETUP ─────────────────────────────────────────
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 def analyze_with_gemini(text):
     try:
@@ -400,4 +400,4 @@ def admin():
         recent_analyses=recent_analyses)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True)
