@@ -30,48 +30,58 @@ gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 def analyze_with_gemini(text):
     try:
-        prompt = f"""You are a fake news detection expert with complete knowledge of Indian and global facts up to 2026.
+        prompt = f"""You are a highly accurate fact-verification expert with complete, up-to-date knowledge of India and the world up to 2026.
 
-Analyze this news/text and determine if it is REAL or FAKE:
+Your job is to verify whether the given statement/news is REAL (factually correct) or FAKE (factually incorrect or misleading).
 
+STATEMENT TO VERIFY:
 "{text}"
 
-Consider:
-- Indian politics (PM, CM, Ministers, parties)
-- Indian geography (capitals, states, cities)
-- Current affairs up to 2026
-- Government schemes
-- Science and technology
-- Sports
-- International news
-- Historical facts
-- War and defense
-- Education and jobs
-- AI and technology
+IMPORTANT RULES — READ CAREFULLY:
+1. If the statement contains CORRECT, VERIFIABLE FACTS → verdict must be "REAL" with credibility_score 85-100
+2. If the statement is PARTIALLY correct → verdict "REAL" with score 60-80
+3. If the statement contains CLEARLY FALSE information → verdict "FAKE" with score 0-40
+4. If the statement is unverifiable opinion → score 45-65
+5. DO NOT be biased toward "FAKE" — most factual statements are REAL
 
-Respond ONLY in this exact JSON format:
+INDIAN KNOWLEDGE BASE (use this to verify):
+- Capitals: Ranchi=Jharkhand, Patna=Bihar, Lucknow=UP, Mumbai=Maharashtra, Delhi=India, Bhopal=MP, Jaipur=Rajasthan, Chennai=TN, Hyderabad=Telangana, Bengaluru=Karnataka
+- PM: Narendra Modi (BJP), President: Droupadi Murmu
+- States: India has 28 states and 8 UTs
+- Operation Sindoor: Indian military operation 2025
+- Major rivers, mountains, historical facts are verifiable
+- Government schemes: PM Kisan, Ayushman Bharat, Jan Dhan, etc.
+
+EXAMPLES:
+- "Ranchi is the capital of Jharkhand" → REAL, score: 98
+- "Patna is the capital of Bihar" → REAL, score: 98
+- "Delhi is capital of India" → REAL, score: 99
+- "Mumbai is capital of India" → FAKE, score: 5
+- "Modi is PM of India" → REAL, score: 97
+
+Respond ONLY in this exact JSON format (no markdown, no extra text):
 {{
-  "verdict": "REAL" or "FAKE",
-  "credibility_score": (number between 0-100),
-  "confidence": (number between 0-100),
-  "reason": "Brief explanation in 1-2 sentences",
-  "facts": ["fact1", "fact2"]
-}}
-
-Rules:
-- If the statement contains correct verifiable facts → REAL with high score
-- If the statement contains false information → FAKE with low score
-- If it is an opinion or unverifiable claim → score between 40-60
-- Be especially accurate about Indian facts"""
+  "verdict": "REAL",
+  "credibility_score": 95,
+  "confidence": 95,
+  "reason": "Ranchi is indeed the capital of Jharkhand, one of India's 28 states.",
+  "facts": ["Jharkhand was carved out of Bihar on November 15, 2000", "Ranchi serves as the capital city of Jharkhand"]
+}}"""
 
         response = gemini_model.generate_content(prompt)
         response_text = response.text.strip()
 
-        # Clean response
+        # Clean JSON response
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0].strip()
         elif '```' in response_text:
             response_text = response_text.split('```')[1].split('```')[0].strip()
+
+        # Remove any leading/trailing garbage
+        start = response_text.find('{')
+        end = response_text.rfind('}') + 1
+        if start != -1 and end > start:
+            response_text = response_text[start:end]
 
         result = json.loads(response_text)
         return {
@@ -82,6 +92,7 @@ Rules:
             'gemini_facts': result.get('facts', [])
         }
     except Exception as e:
+        print(f"Gemini error: {e}")
         return None
 
 # ── LANGUAGE SETUP ───────────────────────────────────────
@@ -279,12 +290,12 @@ def detect():
     gemini_result = analyze_with_gemini(english_text)
 
     if gemini_result:
-        # Gemini se results lo
         prediction = gemini_result['verdict']
         credibility_score = gemini_result['credibility_score']
         confidence = gemini_result['confidence']
         gemini_reason = gemini_result['reason']
         gemini_facts = gemini_result['gemini_facts']
+        indian_facts_matched = check_indian_facts(english_text)
     else:
         # Fallback — old ML model
         prediction = model.predict([english_text])[0]
@@ -293,7 +304,6 @@ def detect():
         gemini_reason = ''
         gemini_facts = []
 
-        # Indian facts boost (only for fallback)
         indian_facts_matched = check_indian_facts(english_text)
         facts_boost = get_credibility_boost(english_text)
         if facts_boost >= 40:
@@ -305,9 +315,6 @@ def detect():
                 prediction = 'REAL'
         else:
             credibility_score = min(100, credibility_score + facts_boost)
-
-    # ── Indian Facts ──
-    indian_facts_matched = check_indian_facts(english_text)
 
     # ── Source Reputation ──
     reputation = {}
