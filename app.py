@@ -26,7 +26,7 @@ with open('model.pkl', 'rb') as f:
 
 # ── GEMINI SETUP ─────────────────────────────────────────
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+gemini_model = genai.GenerativeModel('gemini-2.0-flash')
 
 def analyze_with_gemini(text):
     try:
