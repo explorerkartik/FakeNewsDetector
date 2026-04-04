@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
-from indian_facts import check_indian_facts, get_credibility_boost
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests, json
@@ -34,21 +33,22 @@ def analyze_with_grok(text):
         }
         payload = {
             "model": "grok-3-latest",
+            "search": True,
             "messages": [
                 {
                     "role": "system",
-                    "content": """You are a fake news detection expert with complete knowledge of Indian and global facts up to 2026. You know everything about:
+                    "content": """You are a fake news detection expert with real-time internet access and complete knowledge up to today's date. You know everything about:
 - Indian politics (PM, CM, Ministers, parties, elections)
-- Indian geography (capitals, states, cities, rivers, mountains)
-- Current affairs up to 2026
-- Government schemes (PM Awas, Jan Dhan, Ayushman Bharat, etc)
-- Science and technology
-- Cricket, IPL, Football, Hockey, Badminton, Wrestling, Boxing, Tennis, Olympics, Commonwealth Games
+- Indian geography (capitals, states, cities)
+- Current affairs and today's news
+- Government schemes
+- Science and technology and AI
+- Cricket, IPL, Football, Hockey, Badminton, Wrestling, Boxing, Tennis, Chess, Olympics, Commonwealth Games, Asian Games
+- Today's live match results and sports scores
 - International news and world affairs
-- Historical facts (Indian and world history)
-- War and defense (Operation Sindoor, Kargil, etc)
+- Historical facts
+- War and defense
 - Education and jobs
-- AI and technology
 - Indian economy, budget, RBI
 - Bollywood and entertainment
 - Awards (Bharat Ratna, Padma, Nobel, Oscar)
@@ -56,7 +56,7 @@ Always respond in the exact JSON format requested."""
                 },
                 {
                     "role": "user",
-                    "content": f"""Analyze this news/text and determine if it is REAL or FAKE:
+                    "content": f"""Analyze this news/text and determine if it is REAL or FAKE. Use your real-time internet access to verify facts:
 
 "{text}"
 
@@ -73,6 +73,7 @@ Rules:
 - Correct verifiable facts → REAL, high score (75-100)
 - False information → FAKE, low score (0-35)
 - Opinion/unverifiable → score 40-60
+- Use live search to verify today's news, match results, breaking news
 - Be especially accurate about Indian facts, sports, politics"""
                 }
             ],
@@ -84,13 +85,12 @@ Rules:
             "https://api.x.ai/v1/chat/completions",
             headers=headers,
             json=payload,
-            timeout=15
+            timeout=20
         )
 
         data = response.json()
         response_text = data['choices'][0]['message']['content'].strip()
 
-        # Clean response
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0].strip()
         elif '```' in response_text:
@@ -298,7 +298,7 @@ def detect():
     # ── Translate to English ──
     english_text, detected_lang = translate_to_english(text)
 
-    # ── Grok Analysis (Primary) ──
+    # ── Grok Analysis ──
     grok_result = analyze_with_grok(english_text)
 
     if grok_result:
@@ -314,21 +314,6 @@ def detect():
         credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
         grok_reason = ''
         grok_facts = []
-
-        # Indian facts boost
-        facts_boost = get_credibility_boost(english_text)
-        if facts_boost >= 40:
-            credibility_score = min(100, 70 + (facts_boost - 40))
-            prediction = 'REAL'
-        elif facts_boost >= 20:
-            credibility_score = min(100, credibility_score + facts_boost)
-            if credibility_score >= 45:
-                prediction = 'REAL'
-        else:
-            credibility_score = min(100, credibility_score + facts_boost)
-
-    # ── Indian Facts ──
-    indian_facts_matched = check_indian_facts(english_text)
 
     # ── Source Reputation ──
     reputation = {}
@@ -360,7 +345,6 @@ def detect():
         'detected_lang': detected_lang,
         'reputation': reputation,
         'fact_results': fact_results,
-        'indian_facts': indian_facts_matched,
         'grok_reason': grok_reason,
         'grok_facts': grok_facts
     })
