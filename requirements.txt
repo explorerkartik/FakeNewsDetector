@@ -17,8 +17,6 @@ requests
 langdetect==1.0.9
 anthropic
 groq
-deepface
-opencv-python-headless
 pillow
-tf-keras
+
 
