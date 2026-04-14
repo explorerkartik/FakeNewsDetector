@@ -1,605 +1,514 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detector - Fake News Detector</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 20px; }
-        .bg-circles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
-        .bg-circles span { position: absolute; display: block; border-radius: 50%; animation: animate 20s linear infinite; bottom: -150px; }
-        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
-        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
-        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
-        .bg-circles span:nth-child(4) { width: 60px; height: 60px; left: 80%; background: rgba(100,100,255,0.15); animation-delay: 0s; animation-duration: 18s; }
-        @keyframes animate { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; } }
-        .container { position: relative; z-index: 1; max-width: 850px; margin: 0 auto; }
-        .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
-        .nav-logo { color: white; font-size: 1.2em; font-weight: 700; }
-        .nav-logo span { color: #e94560; }
-        .nav-links { display: flex; flex-wrap: wrap; gap: 8px; }
-        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
-        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
-        .hero { text-align: center; margin-bottom: 30px; }
-        .hero h1 { font-size: 2em; font-weight: 800; background: linear-gradient(90deg, #e94560, #a855f7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-        .hero p { color: rgba(255,255,255,0.5); font-size: 0.95em; }
-        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+from flask import Flask, render_template, request, jsonify, redirect
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from dotenv import load_dotenv
+from deep_translator import GoogleTranslator
+from langdetect import detect as detect_language
+from urllib.parse import urlparse
+from indian_facts import check_indian_facts, get_credibility_boost
+from groq import Groq
+import psycopg2
+import psycopg2.extras
+import pickle, os, requests, json
+from bs4 import BeautifulSoup
+import base64
 
-        /* TABS */
-        .tabs { display: flex; gap: 8px; margin-bottom: 25px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 6px; }
-        .tab-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); font-size: 0.9em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .tab-btn.active { background: linear-gradient(90deg, #e94560, #a855f7); color: white; box-shadow: 0 4px 15px rgba(233,69,96,0.3); }
-        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.08); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+load_dotenv()
 
-        .tab-label { color: rgba(255,255,255,0.6); font-size: 0.8em; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
-        .input-group { position: relative; margin-bottom: 20px; }
-        .input-group span { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.1em; }
-        input[type="text"] { width: 100%; padding: 14px 14px 14px 45px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.07); color: white; font-size: 1em; transition: all 0.3s; }
-        input[type="text"]:focus { outline: none; border-color: #a855f7; background: rgba(255,255,255,0.1); }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-        .divider { text-align: center; color: rgba(255,255,255,0.3); margin: 15px 0; font-size: 0.85em; position: relative; }
-        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 45%; height: 1px; background: rgba(255,255,255,0.1); }
-        .divider::before { left: 0; } .divider::after { right: 0; }
-        textarea { width: 100%; padding: 15px; height: 160px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.07); color: white; font-size: 1em; resize: none; font-family: inherit; transition: all 0.3s; }
-        textarea:focus { outline: none; border-color: #a855f7; background: rgba(255,255,255,0.1); }
-        textarea::placeholder { color: rgba(255,255,255,0.3); }
-        .btn { width: 100%; padding: 15px; background: linear-gradient(90deg, #e94560, #a855f7); color: white; border: none; border-radius: 12px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s; letter-spacing: 1px; margin-top: 20px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(233,69,96,0.5); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
 
-        /* FILE UPLOAD */
-        .upload-area { border: 2px dashed rgba(255,255,255,0.2); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; }
-        .upload-area:hover { border-color: #a855f7; background: rgba(168,85,247,0.05); }
-        .upload-area.dragover { border-color: #e94560; background: rgba(233,69,96,0.05); }
-        .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-icon { font-size: 3em; margin-bottom: 10px; }
-        .upload-area h3 { color: white; font-size: 1.1em; margin-bottom: 8px; }
-        .upload-area p { color: rgba(255,255,255,0.4); font-size: 0.85em; }
-        .preview-container { margin-top: 15px; display: none; }
-        .preview-container img, .preview-container video { max-width: 100%; max-height: 250px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .file-info { margin-top: 10px; color: rgba(255,255,255,0.6); font-size: 0.85em; }
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-        /* RESULTS */
-        .result { margin-top: 25px; padding: 25px; border-radius: 20px; text-align: center; display: none; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .real { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1)); border: 1px solid rgba(16,185,129,0.3); }
-        .fake { background: linear-gradient(135deg, rgba(233,69,96,0.15), rgba(185,28,28,0.1)); border: 1px solid rgba(233,69,96,0.3); }
-        .warning { background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1)); border: 1px solid rgba(245,158,11,0.3); }
-        .verdict-icon { font-size: 3em; margin-bottom: 10px; }
-        .verdict { font-size: 2em; font-weight: 800; color: white; margin-bottom: 10px; }
-        .score { color: rgba(255,255,255,0.6); font-size: 0.95em; }
-        .score-bar-container { margin-top: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px; overflow: hidden; }
-        .score-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
-        .real .score-bar { background: linear-gradient(90deg, #10b981, #34d399); }
-        .fake .score-bar { background: linear-gradient(90deg, #e94560, #f87171); }
-        .warning .score-bar { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+with open('model.pkl', 'rb') as f:
+    model = pickle.load(f)
 
-        .info-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 18px 22px; margin-top: 16px; text-align: left; animation: fadeIn 0.5s ease; }
-        .info-card h3 { color: white; font-size: 1em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .info-card p { color: rgba(255,255,255,0.7); font-size: 0.88em; margin: 4px 0; line-height: 1.5; }
-        .info-card.green { border-left: 4px solid #10b981; }
-        .info-card.yellow { border-left: 4px solid #f59e0b; }
-        .info-card.red { border-left: 4px solid #e94560; }
-        .info-card.blue { border-left: 4px solid #3b82f6; }
-        .info-card.purple { border-left: 4px solid #a855f7; }
-        .info-card.orange { border-left: 4px solid #f97316; }
-        .info-card.teal { border-left: 4px solid #14b8a6; }
-        .info-card.cricket { border-left: 4px solid #22c55e; }
-        .info-card.deepfake { border-left: 4px solid #f43f5e; }
-        .info-card.ai-gen { border-left: 4px solid #8b5cf6; }
+groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')
+SIGHTENGINE_USER = os.getenv('SIGHTENGINE_USER')
+SIGHTENGINE_SECRET = os.getenv('SIGHTENGINE_SECRET')
 
-        .lang-badge { display: inline-block; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin-top: 6px; }
-        .fact-item { border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px 0; }
-        .fact-item:last-child { border-bottom: none; }
-        .fact-item a { color: #60a5fa; text-decoration: none; }
-        .rating-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 600; background: rgba(255,255,255,0.1); color: white; margin-left: 6px; }
-        .grok-fact { padding: 6px 0; color: rgba(255,255,255,0.8); font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .grok-fact:last-child { border-bottom: none; }
-        .grok-fact::before { content: '✦ '; color: #14b8a6; }
-        .indian-fact-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); font-size: 0.88em; }
-        .indian-fact-item:last-child { border-bottom: none; }
-        .indian-fact-item::before { content: '🇮🇳 '; }
-        .powered-badge { display: inline-block; background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.3); color: #5eead4; padding: 3px 10px; border-radius: 10px; font-size: 0.75em; margin-left: 8px; vertical-align: middle; }
+def analyze_with_groq(text):
+    try:
+        prompt = f"""You are a highly accurate fact-verification expert with complete knowledge of India and the world up to 2026.
 
-        /* Cricket */
-        .match-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; }
-        .match-card:last-child { margin-bottom: 0; }
-        .match-teams { color: white; font-size: 0.95em; font-weight: 600; margin-bottom: 6px; }
-        .match-scores { display: flex; gap: 16px; margin-bottom: 6px; flex-wrap: wrap; }
-        .match-scores span { color: #86efac; font-size: 0.88em; background: rgba(34,197,94,0.1); padding: 2px 10px; border-radius: 8px; }
-        .match-status { color: rgba(255,255,255,0.45); font-size: 0.78em; }
-        .match-series { color: rgba(255,255,255,0.35); font-size: 0.75em; margin-bottom: 4px; }
+Your job is to verify whether the given statement/news is REAL (factually correct) or FAKE (factually incorrect or misleading).
 
-        /* Deepfake result cards */
-        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .analysis-item { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; text-align: center; }
-        .analysis-item .label { color: rgba(255,255,255,0.5); font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-        .analysis-item .value { color: white; font-size: 1.1em; font-weight: 700; }
-        .analysis-item .value.danger { color: #f87171; }
-        .analysis-item .value.safe { color: #34d399; }
-        .analysis-item .value.warning { color: #fbbf24; }
-        .face-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 12px; margin-top: 10px; }
-        .face-info p { color: rgba(255,255,255,0.7); font-size: 0.85em; margin: 3px 0; }
+STATEMENT TO VERIFY:
+"{text}"
 
-        @media (max-width: 600px) {
-            .hero h1 { font-size: 1.5em; }
-            .nav-logo { font-size: 1em; }
-            .card { padding: 20px; }
-            .verdict { font-size: 1.6em; }
-            .tab-btn { font-size: 0.8em; padding: 10px 4px; }
-            .analysis-grid { grid-template-columns: 1fr; }
+IMPORTANT RULES:
+1. If the statement contains CORRECT, VERIFIABLE FACTS -> verdict must be "REAL" with credibility_score 85-100
+2. If the statement is PARTIALLY correct -> verdict "REAL" with score 60-80
+3. If the statement contains CLEARLY FALSE information -> verdict "FAKE" with score 0-40
+4. If the statement is unverifiable opinion -> score 45-65
+5. DO NOT be biased toward FAKE - most factual statements are REAL
+
+INDIAN KNOWLEDGE BASE:
+- Capitals: Ranchi=Jharkhand, Patna=Bihar, Lucknow=UP, Mumbai=Maharashtra, Delhi=India, Bhopal=MP, Jaipur=Rajasthan, Chennai=TN, Hyderabad=Telangana, Bengaluru=Karnataka
+- PM: Narendra Modi (BJP), President: Droupadi Murmu
+- States: India has 28 states and 8 UTs
+- IPL 2025 Winner: Royal Challengers Bengaluru (RCB)
+- Operation Sindoor: Indian military operation 2025
+
+Respond ONLY in this exact JSON format (no markdown, no extra text):
+{{
+  "verdict": "REAL",
+  "credibility_score": 95,
+  "confidence": 95,
+  "reason": "Brief explanation in 1-2 sentences",
+  "facts": ["fact1", "fact2"]
+}}"""
+
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+            temperature=0.1
+        )
+        response_text = response.choices[0].message.content.strip()
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+        start = response_text.find('{')
+        end = response_text.rfind('}') + 1
+        if start != -1 and end > start:
+            response_text = response_text[start:end]
+        result = json.loads(response_text)
+        return {
+            'verdict': result.get('verdict', 'REAL'),
+            'credibility_score': int(result.get('credibility_score', 70)),
+            'confidence': float(result.get('confidence', 70)),
+            'reason': result.get('reason', ''),
+            'gemini_facts': result.get('facts', [])
         }
-    </style>
-</head>
-<body>
-    <div class="bg-circles"><span></span><span></span><span></span><span></span></div>
-    <div class="container">
-        <div class="nav">
-            <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
-            <div class="nav-links">
-                <a href="/history">📋 History</a>
-                <a href="/logout">🚪 Logout</a>
-            </div>
-        </div>
-        <div class="hero">
-            <h1>Detect Fake News Instantly</h1>
-            <p>AI Powered • Text • Image Deepfake • Video Deepfake • 12 Languages</p>
-        </div>
+    except Exception as e:
+        print(f"Groq error: {e}")
+        return None
 
-        <div class="card">
-            <!-- TABS -->
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('text')">📝 Text / URL</button>
-                <button class="tab-btn" onclick="switchTab('image')">🖼️ Image</button>
-                <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
-            </div>
+CRICKET_KEYWORDS = [
+    'cricket', 'ipl', 'match', 'wicket', 'batting', 'bowling',
+    'test match', 'odi', 't20', 'bcci', 'runs', 'over', 'innings',
+    'dc', 'mi', 'csk', 'rcb', 'kkr', 'srh', 'rr', 'pbks', 'lsg', 'gt',
+    'delhi capitals', 'mumbai indians', 'chennai', 'bangalore',
+    'kohli', 'rohit', 'dhoni', 'bumrah', 'pandya'
+]
 
-            <!-- TEXT TAB -->
-            <div class="tab-content active" id="tab-text">
-                <div class="tab-label">🔗 Enter URL</div>
-                <div class="input-group">
-                    <span>🌐</span>
-                    <input type="text" id="news_url" placeholder="https://example.com/news-article">
-                </div>
-                <div class="divider">OR</div>
-                <div class="tab-label">📝 Paste News Text</div>
-                <textarea id="news_text" placeholder="Paste news text here... Politics, Geography, Sports, Science — sab kuch detect hoga!"></textarea>
-                <button class="btn" onclick="detectText()">🔍 Analyze Now</button>
+def is_cricket_news(text):
+    return any(kw in text.lower() for kw in CRICKET_KEYWORDS)
 
-                <!-- TEXT RESULTS -->
-                <div class="result" id="text-result">
-                    <div class="verdict-icon" id="verdict-icon"></div>
-                    <div class="verdict" id="verdict"></div>
-                    <div class="score" id="score"></div>
-                    <div class="score-bar-container">
-                        <div class="score-bar" id="score-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="info-card teal" id="grok-card" style="display:none;">
-                    <h3>🤖 AI Analysis <span class="powered-badge">Groq AI</span></h3>
-                    <p id="grok-reason"></p>
-                    <div id="grok-facts-list" style="margin-top:10px;"></div>
-                </div>
-                <div class="info-card cricket" id="cricket-card" style="display:none;">
-                    <h3>🏏 Live Cricket Scores</h3>
-                    <div id="cricket-list"></div>
-                </div>
-                <div class="info-card purple" id="lang-card" style="display:none;">
-                    <h3>🌐 Language Detected</h3>
-                    <p>Input language: <span class="lang-badge" id="lang-name"></span></p>
-                    <p style="margin-top:8px; color:rgba(255,255,255,0.45); font-size:0.82em;">Auto-translated to English for analysis</p>
-                </div>
-                <div class="info-card orange" id="indian-facts-card" style="display:none;">
-                    <h3>🇮🇳 Indian Facts Database Match</h3>
-                    <div id="indian-facts-list"></div>
-                </div>
-                <div class="info-card" id="reputation-card" style="display:none;">
-                    <h3>🏛️ Source Reputation</h3>
-                    <p id="reputation-label" style="font-size:1em; font-weight:600; color:white;"></p>
-                    <p id="reputation-desc"></p>
-                </div>
-                <div class="info-card blue" id="fact-card" style="display:none;">
-                    <h3>✅ Fact-Check Results</h3>
-                    <div id="fact-list"></div>
-                </div>
-            </div>
-
-            <!-- IMAGE TAB -->
-            <div class="tab-content" id="tab-image">
-                <div class="tab-label">🖼️ Upload Image to Analyze</div>
-                <div class="upload-area" id="image-upload-area">
-                    <input type="file" id="image-input" accept="image/*" onchange="handleImageSelect(event)">
-                    <div class="upload-icon">🖼️</div>
-                    <h3>Drop image here or click to upload</h3>
-                    <p>Supports PNG, JPG, JPEG, GIF, WEBP • Max 10MB</p>
-                    <p style="margin-top:8px; color:rgba(168,85,247,0.8); font-size:0.8em;">Detects: AI Generated Images • Deepfakes • Face Analysis</p>
-                </div>
-                <div class="preview-container" id="image-preview-container">
-                    <img id="image-preview" src="" alt="Preview">
-                    <div class="file-info" id="image-file-info"></div>
-                </div>
-                <button class="btn" onclick="detectImage()" id="image-btn" disabled>🔍 Analyze Image</button>
-
-                <!-- IMAGE RESULTS -->
-                <div class="result" id="image-result">
-                    <div class="verdict-icon" id="image-verdict-icon"></div>
-                    <div class="verdict" id="image-verdict"></div>
-                    <div class="score" id="image-score"></div>
-                    <div class="score-bar-container">
-                        <div class="score-bar" id="image-score-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="info-card ai-gen" id="sightengine-image-card" style="display:none;">
-                    <h3>🤖 AI Generation Detection <span class="powered-badge">Sightengine</span></h3>
-                    <div class="analysis-grid">
-                        <div class="analysis-item">
-                            <div class="label">AI Generated Score</div>
-                            <div class="value" id="ai-gen-score">—</div>
-                        </div>
-                        <div class="analysis-item">
-                            <div class="label">Verdict</div>
-                            <div class="value" id="ai-gen-verdict">—</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-card blue" id="deepface-card" style="display:none;">
-                    <h3>👤 Face Analysis <span class="powered-badge">DeepFace</span></h3>
-                    <div id="deepface-content"></div>
-                </div>
-            </div>
-
-            <!-- VIDEO TAB -->
-            <div class="tab-content" id="tab-video">
-                <div class="tab-label">🎥 Upload Video to Analyze</div>
-                <div class="upload-area" id="video-upload-area">
-                    <input type="file" id="video-input" accept="video/*" onchange="handleVideoSelect(event)">
-                    <div class="upload-icon">🎥</div>
-                    <h3>Drop video here or click to upload</h3>
-                    <p>Supports MP4, AVI, MOV, MKV, WEBM • Max 50MB</p>
-                    <p style="margin-top:8px; color:rgba(233,69,96,0.8); font-size:0.8em;">Detects: Deepfake Faces • AI Generated Video • Face Swap</p>
-                </div>
-                <div class="preview-container" id="video-preview-container">
-                    <video id="video-preview" controls></video>
-                    <div class="file-info" id="video-file-info"></div>
-                </div>
-                <button class="btn" onclick="detectVideo()" id="video-btn" disabled>🔍 Analyze Video</button>
-
-                <!-- VIDEO RESULTS -->
-                <div class="result" id="video-result">
-                    <div class="verdict-icon" id="video-verdict-icon"></div>
-                    <div class="verdict" id="video-verdict"></div>
-                    <div class="score" id="video-score"></div>
-                    <div class="score-bar-container">
-                        <div class="score-bar" id="video-score-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="info-card deepfake" id="sightengine-video-card" style="display:none;">
-                    <h3>🎭 Deepfake Detection <span class="powered-badge">Sightengine</span></h3>
-                    <div class="analysis-grid">
-                        <div class="analysis-item">
-                            <div class="label">Frames Analyzed</div>
-                            <div class="value" id="video-frames">—</div>
-                        </div>
-                        <div class="analysis-item">
-                            <div class="label">Avg Deepfake Score</div>
-                            <div class="value" id="video-avg-score">—</div>
-                        </div>
-                        <div class="analysis-item">
-                            <div class="label">Max Deepfake Score</div>
-                            <div class="value" id="video-max-score">—</div>
-                        </div>
-                        <div class="analysis-item">
-                            <div class="label">Confidence</div>
-                            <div class="value" id="video-confidence">—</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ── TAB SWITCHING ──────────────────────────────────────────
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            event.currentTarget.classList.add('active');
+def get_cricket_scores():
+    try:
+        url = "https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live"
+        headers = {
+            "X-RapidAPI-Key": RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "cricbuzz-cricket.p.rapidapi.com"
         }
+        response = requests.get(url, headers=headers, timeout=10)
+        data = response.json()
+        matches = []
+        for match_type in data.get("typeMatches", []):
+            for series in match_type.get("seriesMatches", []):
+                series_data = series.get("seriesAdWrapper", {})
+                for m in series_data.get("matches", []):
+                    info = m.get("matchInfo", {})
+                    score = m.get("matchScore", {})
+                    t1 = info.get("team1", {})
+                    t2 = info.get("team2", {})
+                    t1i = score.get("team1Score", {}).get("inngs1", {})
+                    t2i = score.get("team2Score", {}).get("inngs1", {})
+                    matches.append({
+                        "team1": t1.get("teamSName", t1.get("teamName", "Team 1")),
+                        "team2": t2.get("teamSName", t2.get("teamName", "Team 2")),
+                        "status": info.get("status", "Live"),
+                        "seriesName": series_data.get("seriesName", ""),
+                        "t1score": f"{t1i.get('runs','-')}/{t1i.get('wickets','-')} ({t1i.get('overs','-')} ov)" if t1i else "-",
+                        "t2score": f"{t2i.get('runs','-')}/{t2i.get('wickets','-')} ({t2i.get('overs','-')} ov)" if t2i else "-",
+                    })
+        return matches[:5]
+    except:
+        return []
 
-        // ── TEXT DETECTION ─────────────────────────────────────────
-        function detectText() {
-            const text = document.getElementById('news_text').value;
-            const url  = document.getElementById('news_url').value;
-            if (!text.trim() && !url.trim()) { alert('Please enter a URL or news text!'); return; }
-
-            const btn = document.querySelector('#tab-text .btn');
-            btn.textContent = '⏳ Analyzing with Groq AI...';
-            btn.disabled = true;
-
-            ['text-result','grok-card','cricket-card','lang-card','indian-facts-card','reputation-card','fact-card'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
-
-            const formData = new FormData();
-            formData.append('news_text', text);
-            formData.append('news_url', url);
-
-            fetch('/detect', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                btn.textContent = '🔍 Analyze Now';
-                btn.disabled = false;
-                if (data.error) { alert(data.error); return; }
-
-                const resultDiv = document.getElementById('text-result');
-                resultDiv.style.display = 'block';
-                resultDiv.className = 'result ' + (data.verdict === 'REAL' ? 'real' : 'fake');
-                document.getElementById('verdict-icon').textContent = data.verdict === 'REAL' ? '✅' : '❌';
-                document.getElementById('verdict').textContent = data.verdict === 'REAL' ? 'REAL NEWS' : 'FAKE NEWS';
-                document.getElementById('score').textContent = 'Credibility: ' + data.credibility_score + '/100 | Confidence: ' + data.confidence + '%';
-                setTimeout(() => { document.getElementById('score-bar').style.width = data.credibility_score + '%'; }, 100);
-
-                if (data.grok_reason) {
-                    document.getElementById('grok-reason').textContent = data.grok_reason;
-                    const gfl = document.getElementById('grok-facts-list');
-                    gfl.innerHTML = '';
-                    if (data.grok_facts && data.grok_facts.length > 0) {
-                        data.grok_facts.forEach(f => { gfl.innerHTML += `<div class="grok-fact">${f}</div>`; });
-                    }
-                    document.getElementById('grok-card').style.display = 'block';
-                }
-
-                if (data.cricket_scores && data.cricket_scores.length > 0) {
-                    const cl = document.getElementById('cricket-list');
-                    cl.innerHTML = '';
-                    data.cricket_scores.forEach(m => {
-                        cl.innerHTML += `<div class="match-card">
-                            <div class="match-series">${m.seriesName}</div>
-                            <div class="match-teams">🏏 ${m.team1} vs ${m.team2}</div>
-                            <div class="match-scores"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div>
-                            <div class="match-status">${m.status}</div>
-                        </div>`;
-                    });
-                    document.getElementById('cricket-card').style.display = 'block';
-                }
-
-                if (data.detected_lang && data.detected_lang !== 'English') {
-                    document.getElementById('lang-name').textContent = data.detected_lang;
-                    document.getElementById('lang-card').style.display = 'block';
-                }
-
-                if (data.indian_facts && data.indian_facts.length > 0) {
-                    const list = document.getElementById('indian-facts-list');
-                    list.innerHTML = '';
-                    data.indian_facts.forEach(fact => { list.innerHTML += `<div class="indian-fact-item">${fact}</div>`; });
-                    document.getElementById('indian-facts-card').style.display = 'block';
-                }
-
-                if (data.reputation && data.reputation.found) {
-                    const rep = data.reputation;
-                    const repCard = document.getElementById('reputation-card');
-                    repCard.style.display = 'block';
-                    repCard.className = 'info-card ' + (rep.tier === 1 ? 'green' : rep.tier === 2 ? 'yellow' : 'red');
-                    document.getElementById('reputation-label').textContent = rep.label;
-                    document.getElementById('reputation-desc').textContent = rep.desc;
-                }
-
-                if (data.fact_results && data.fact_results.length > 0) {
-                    const factList = document.getElementById('fact-list');
-                    factList.innerHTML = '';
-                    data.fact_results.forEach(item => {
-                        factList.innerHTML += `<div class="fact-item">
-                            <p style="color:white; font-size:0.9em; margin-bottom:4px;">${item.text}</p>
-                            <p>Rating: <span class="rating-badge">${item.rating}</span>
-                            &nbsp;|&nbsp; Source: ${item.url ? `<a href="${item.url}" target="_blank">${item.source}</a>` : item.source}</p>
-                        </div>`;
-                    });
-                    document.getElementById('fact-card').style.display = 'block';
-                }
-            })
-            .catch(() => {
-                btn.textContent = '🔍 Analyze Now';
-                btn.disabled = false;
-                alert('Something went wrong!');
-            });
-        }
-
-        // ── IMAGE HANDLING ─────────────────────────────────────────
-        function handleImageSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const maxSize = 10 * 1024 * 1024;
-            if (file.size > maxSize) {
-                alert('Image too large! Max size is 10MB');
-                event.target.value = '';
-                return;
+def analyze_image_sightengine(image_file):
+    try:
+        response = requests.post(
+            'https://api.sightengine.com/1.0/check.json',
+            files={'media': image_file},
+            data={
+                'models': 'genai',
+                'api_user': SIGHTENGINE_USER,
+                'api_secret': SIGHTENGINE_SECRET
+            },
+            timeout=30
+        )
+        data = response.json()
+        if data.get('status') == 'success':
+            genai_score = data.get('type', {}).get('ai_generated', 0)
+            is_ai = genai_score > 0.5
+            return {
+                'source': 'Sightengine',
+                'ai_generated_score': round(genai_score * 100, 1),
+                'is_fake': is_ai,
+                'verdict': 'AI GENERATED / FAKE' if is_ai else 'LIKELY REAL',
+                'confidence': round(genai_score * 100 if is_ai else (1 - genai_score) * 100, 1)
             }
+        return None
+    except Exception as e:
+        print(f"Sightengine image error: {e}")
+        return None
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('image-preview').src = e.target.result;
-                document.getElementById('image-preview-container').style.display = 'block';
-                document.getElementById('image-file-info').textContent = `📁 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-                document.getElementById('image-btn').disabled = false;
-            };
-            reader.readAsDataURL(file);
-
-            // Reset results
-            ['image-result', 'sightengine-image-card', 'deepface-card'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
-        }
-
-        function detectImage() {
-            const fileInput = document.getElementById('image-input');
-            if (!fileInput.files[0]) { alert('Please select an image!'); return; }
-
-            const btn = document.getElementById('image-btn');
-            btn.textContent = '⏳ Analyzing Image...';
-            btn.disabled = true;
-
-            ['image-result', 'sightengine-image-card', 'deepface-card'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
-
-            const formData = new FormData();
-            formData.append('image', fileInput.files[0]);
-
-            fetch('/detect-image', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                btn.textContent = '🔍 Analyze Image';
-                btn.disabled = false;
-                if (data.error) { alert(data.error); return; }
-
-                // Main result
-                const resultDiv = document.getElementById('image-result');
-                resultDiv.style.display = 'block';
-                const isFake = data.final_verdict.includes('FAKE') || data.final_verdict.includes('AI');
-                const isWarning = data.overall_score >= 30 && data.overall_score < 50;
-                resultDiv.className = 'result ' + (isFake ? 'fake' : isWarning ? 'warning' : 'real');
-                document.getElementById('image-verdict-icon').textContent = isFake ? '⚠️' : '✅';
-                document.getElementById('image-verdict').textContent = data.final_verdict;
-                document.getElementById('image-score').textContent = `AI Generated Score: ${data.overall_score}%`;
-                setTimeout(() => { document.getElementById('image-score-bar').style.width = data.overall_score + '%'; }, 100);
-
-                // Sightengine results
-                if (data.sightengine) {
-                    const se = data.sightengine;
-                    const scoreEl = document.getElementById('ai-gen-score');
-                    scoreEl.textContent = se.ai_generated_score + '%';
-                    scoreEl.className = 'value ' + (se.is_fake ? 'danger' : 'safe');
-                    const verdictEl = document.getElementById('ai-gen-verdict');
-                    verdictEl.textContent = se.verdict;
-                    verdictEl.className = 'value ' + (se.is_fake ? 'danger' : 'safe');
-                    document.getElementById('sightengine-image-card').style.display = 'block';
+def analyze_video_sightengine(video_file):
+    try:
+        response = requests.post(
+            'https://api.sightengine.com/1.0/video/check-sync.json',
+            files={'media': video_file},
+            data={
+                'models': 'deepfake',
+                'api_user': SIGHTENGINE_USER,
+                'api_secret': SIGHTENGINE_SECRET
+            },
+            timeout=120
+        )
+        data = response.json()
+        if data.get('status') == 'success':
+            frames = data.get('data', {}).get('frames', [])
+            if frames:
+                deepfake_scores = [f.get('deepfake', {}).get('score', 0) for f in frames]
+                avg_score = sum(deepfake_scores) / len(deepfake_scores)
+                max_score = max(deepfake_scores)
+                is_deepfake = avg_score > 0.5
+                return {
+                    'source': 'Sightengine',
+                    'frames_analyzed': len(frames),
+                    'avg_deepfake_score': round(avg_score * 100, 1),
+                    'max_deepfake_score': round(max_score * 100, 1),
+                    'is_deepfake': is_deepfake,
+                    'verdict': 'DEEPFAKE DETECTED' if is_deepfake else 'LIKELY AUTHENTIC',
+                    'confidence': round(avg_score * 100 if is_deepfake else (1 - avg_score) * 100, 1)
                 }
+        return None
+    except Exception as e:
+        print(f"Sightengine video error: {e}")
+        return None
 
-                // DeepFace results
-                if (data.deepface) {
-                    const df = data.deepface;
-                    const content = document.getElementById('deepface-content');
-                    if (df.face_detected) {
-                        content.innerHTML = `
-                            <div class="face-info">
-                                <p>👤 <strong>Face Detected:</strong> Yes</p>
-                                <p>😊 <strong>Emotion:</strong> ${df.emotion || 'Unknown'}</p>
-                                <p>🎂 <strong>Estimated Age:</strong> ${df.age || 'Unknown'}</p>
-                                <p>⚧ <strong>Gender:</strong> ${df.gender || 'Unknown'}</p>
-                            </div>`;
-                    } else {
-                        content.innerHTML = `<div class="face-info"><p>👤 No face detected in this image</p><p style="color:rgba(255,255,255,0.45); font-size:0.8em; margin-top:6px;">${df.note || ''}</p></div>`;
-                    }
-                    document.getElementById('deepface-card').style.display = 'block';
-                }
+LANGUAGE_DISPLAY_NAMES = {
+    'en': 'English', 'hi': 'Hindi / Haryanvi', 'ta': 'Tamil',
+    'te': 'Telugu', 'mr': 'Marathi', 'gu': 'Gujarati',
+    'pa': 'Punjabi', 'bn': 'Bengali', 'ml': 'Malayalam',
+    'kn': 'Kannada', 'ur': 'Urdu', 'or': 'Odia',
+}
+
+def translate_to_english(text):
+    try:
+        lang_code = detect_language(text)
+        lang_name = LANGUAGE_DISPLAY_NAMES.get(lang_code, lang_code)
+        if lang_code != 'en':
+            translated = GoogleTranslator(source='auto', target='en').translate(text)
+            return translated, lang_name
+        return text, 'English'
+    except:
+        return text, 'English'
+
+FACT_CHECK_API_KEY = os.getenv('FACT_CHECK_API_KEY')
+
+def check_facts(text):
+    try:
+        short_query = ' '.join(text.split()[:10])
+        url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
+        params = {'query': short_query, 'key': FACT_CHECK_API_KEY, 'languageCode': 'en'}
+        response = requests.get(url, params=params, timeout=5)
+        data = response.json()
+        results = []
+        for claim in data.get('claims', [])[:3]:
+            review = claim.get('claimReview', [{}])[0]
+            results.append({
+                'text': claim.get('text', '')[:120],
+                'rating': review.get('textualRating', 'Unknown'),
+                'source': review.get('publisher', {}).get('name', ''),
+                'url': review.get('url', '')
             })
-            .catch(() => {
-                btn.textContent = '🔍 Analyze Image';
-                btn.disabled = false;
-                alert('Image analysis failed!');
-            });
-        }
+        return results
+    except:
+        return []
 
-        // ── VIDEO HANDLING ─────────────────────────────────────────
-        function handleVideoSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+SOURCE_REPUTATION = {
+    'thehindu.com':       {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'hindustantimes.com': {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'ndtv.com':           {'tier': 1, 'label': 'Highly Credible', 'desc': 'Indian news channel'},
+    'aajtak.in':          {'tier': 1, 'label': 'Highly Credible', 'desc': 'Indian news channel'},
+    'bbc.com':            {'tier': 1, 'label': 'Highly Credible', 'desc': 'International broadcaster'},
+    'reuters.com':        {'tier': 1, 'label': 'Highly Credible', 'desc': 'International wire service'},
+    'indianexpress.com':  {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'timesofindia.com':   {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
+    'theonion.com':       {'tier': 2, 'label': 'Satire', 'desc': 'Satirical website'},
+    'postcard.news':      {'tier': 3, 'label': 'Known Misinformation', 'desc': 'Flagged by AltNews'},
+}
 
-            const maxSize = 50 * 1024 * 1024;
-            if (file.size > maxSize) {
-                alert('Video too large! Max size is 50MB');
-                event.target.value = '';
-                return;
-            }
+def check_source_reputation(url):
+    try:
+        domain = urlparse(url).netloc.replace('www.', '')
+        if domain in SOURCE_REPUTATION:
+            return {'found': True, **SOURCE_REPUTATION[domain]}
+        return {'found': False}
+    except:
+        return {'found': False}
 
-            const videoEl = document.getElementById('video-preview');
-            videoEl.src = URL.createObjectURL(file);
-            document.getElementById('video-preview-container').style.display = 'block';
-            document.getElementById('video-file-info').textContent = `📁 ${file.name} (${(file.size/1024/1024).toFixed(1)} MB)`;
-            document.getElementById('video-btn').disabled = false;
+def get_db():
+    return psycopg2.connect(
+        host=os.getenv('DB_HOST'), port=os.getenv('DB_PORT'),
+        user=os.getenv('DB_USER'), password=os.getenv('DB_PASSWORD'),
+        dbname=os.getenv('DB_NAME'), sslmode='require'
+    )
 
-            ['video-result', 'sightengine-video-card'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
-        }
+def dict_cursor(conn):
+    return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        function detectVideo() {
-            const fileInput = document.getElementById('video-input');
-            if (!fileInput.files[0]) { alert('Please select a video!'); return; }
+class User(UserMixin):
+    def __init__(self, id, username, email):
+        self.id = id
+        self.username = username
+        self.email = email
 
-            const btn = document.getElementById('video-btn');
-            btn.textContent = '⏳ Analyzing Video... (may take 30-60 sec)';
-            btn.disabled = true;
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+        user = cur.fetchone()
+        db.close()
+        if user:
+            return User(user['id'], user['username'], user['email'])
+    except:
+        pass
+    return None
 
-            ['video-result', 'sightengine-video-card'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-            const formData = new FormData();
-            formData.append('video', fileInput.files[0]);
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        try:
+            username = request.form['username']
+            email = request.form['email']
+            password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+            db = get_db()
+            cur = dict_cursor(db)
+            cur.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (username, email, password))
+            db.commit()
+            db.close()
+            return render_template('login.html', msg='Registration successful! Please login.')
+        except:
+            return render_template('register.html', msg='Username or email already exists!')
+    return render_template('register.html')
 
-            fetch('/detect-video', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                btn.textContent = '🔍 Analyze Video';
-                btn.disabled = false;
-                if (data.error) { alert(data.error); return; }
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        try:
+            email = request.form['email']
+            password = request.form['password']
+            db = get_db()
+            cur = dict_cursor(db)
+            cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user = cur.fetchone()
+            db.close()
+            if user and bcrypt.check_password_hash(user['password'], password):
+                login_user(User(user['id'], user['username'], user['email']))
+                return redirect('/detector')
+            return render_template('login.html', msg='Invalid credentials!')
+        except Exception as e:
+            return render_template('login.html', msg='Error: ' + str(e))
+    return render_template('login.html')
 
-                const resultDiv = document.getElementById('video-result');
-                resultDiv.style.display = 'block';
-                const isDeepfake = data.final_verdict.includes('DEEPFAKE');
-                resultDiv.className = 'result ' + (isDeepfake ? 'fake' : 'real');
-                document.getElementById('video-verdict-icon').textContent = isDeepfake ? '⚠️' : '✅';
-                document.getElementById('video-verdict').textContent = data.final_verdict;
-                document.getElementById('video-score').textContent = `Deepfake Score: ${data.overall_score}%`;
-                setTimeout(() => { document.getElementById('video-score-bar').style.width = data.overall_score + '%'; }, 100);
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
 
-                if (data.sightengine) {
-                    const se = data.sightengine;
-                    const avgEl = document.getElementById('video-avg-score');
-                    avgEl.textContent = se.avg_deepfake_score + '%';
-                    avgEl.className = 'value ' + (se.is_deepfake ? 'danger' : 'safe');
+@app.route('/detector')
+@login_required
+def detector():
+    return render_template('detector.html')
 
-                    const maxEl = document.getElementById('video-max-score');
-                    maxEl.textContent = se.max_deepfake_score + '%';
-                    maxEl.className = 'value ' + (se.max_deepfake_score > 70 ? 'danger' : se.max_deepfake_score > 40 ? 'warning' : 'safe');
+@app.route('/detect', methods=['POST'])
+@login_required
+def detect():
+    text = request.form.get('news_text', '')
+    url  = request.form.get('news_url', '')
+    if url:
+        try:
+            response = requests.get(url, timeout=10)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            text = ' '.join([p.get_text() for p in soup.find_all('p')])
+        except:
+            return jsonify({'error': 'Could not fetch content from URL!'})
+    if not text.strip():
+        return jsonify({'error': 'Please enter some text!'})
 
-                    document.getElementById('video-frames').textContent = se.frames_analyzed;
-                    const confEl = document.getElementById('video-confidence');
-                    confEl.textContent = se.confidence + '%';
-                    confEl.className = 'value';
+    english_text, detected_lang = translate_to_english(text)
+    groq_result = analyze_with_groq(english_text)
 
-                    document.getElementById('sightengine-video-card').style.display = 'block';
-                }
-            })
-            .catch(() => {
-                btn.textContent = '🔍 Analyze Video';
-                btn.disabled = false;
-                alert('Video analysis failed!');
-            });
-        }
+    if groq_result:
+        prediction = groq_result['verdict']
+        credibility_score = groq_result['credibility_score']
+        confidence = groq_result['confidence']
+        gemini_reason = groq_result['reason']
+        gemini_facts = groq_result['gemini_facts']
+        indian_facts_matched = check_indian_facts(english_text)
+    else:
+        prediction = model.predict([english_text])[0]
+        confidence = max(model.predict_proba([english_text])[0]) * 100
+        credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+        gemini_reason = ''
+        gemini_facts = []
+        indian_facts_matched = check_indian_facts(english_text)
+        facts_boost = get_credibility_boost(english_text)
+        if facts_boost >= 40:
+            credibility_score = min(100, 70 + (facts_boost - 40))
+            prediction = 'REAL'
+        elif facts_boost >= 20:
+            credibility_score = min(100, credibility_score + facts_boost)
+            if credibility_score >= 45:
+                prediction = 'REAL'
+        else:
+            credibility_score = min(100, credibility_score + facts_boost)
 
-        // Drag & Drop
-        ['image-upload-area', 'video-upload-area'].forEach(id => {
-            const area = document.getElementById(id);
-            area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('dragover'); });
-            area.addEventListener('dragleave', () => area.classList.remove('dragover'));
-            area.addEventListener('drop', (e) => {
-                e.preventDefault();
-                area.classList.remove('dragover');
-                const input = area.querySelector('input[type="file"]');
-                input.files = e.dataTransfer.files;
-                input.dispatchEvent(new Event('change'));
-            });
-        });
-    </script>
-</body>
-</html>
+    reputation = {}
+    if url:
+        reputation = check_source_reputation(url)
+        if reputation.get('tier') == 3:
+            credibility_score = max(0, credibility_score - 20)
+
+    fact_results = check_facts(english_text)
+    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
+
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute(
+            "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
+            (current_user.id, text[:500], prediction, credibility_score)
+        )
+        db.commit()
+        db.close()
+    except:
+        pass
+
+    return jsonify({
+        'verdict': prediction,
+        'credibility_score': credibility_score,
+        'confidence': round(confidence, 2),
+        'detected_lang': detected_lang,
+        'reputation': reputation,
+        'fact_results': fact_results,
+        'indian_facts': indian_facts_matched,
+        'gemini_reason': gemini_reason,
+        'gemini_facts': gemini_facts,
+        'cricket_scores': cricket_scores
+    })
+
+@app.route('/detect-image', methods=['POST'])
+@login_required
+def detect_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image uploaded!'})
+    image_file = request.files['image']
+    if image_file.filename == '':
+        return jsonify({'error': 'No image selected!'})
+    allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'}
+    ext = image_file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in allowed:
+        return jsonify({'error': 'Invalid image format!'})
+    image_file.seek(0)
+    sightengine_result = analyze_image_sightengine(image_file)
+    final_verdict = sightengine_result['verdict'] if sightengine_result else 'UNKNOWN'
+    overall_score = sightengine_result['ai_generated_score'] if sightengine_result else 50
+    return jsonify({
+        'type': 'image',
+        'sightengine': sightengine_result,
+        'deepface': None,
+        'final_verdict': final_verdict,
+        'overall_score': overall_score
+    })
+
+@app.route('/detect-video', methods=['POST'])
+@login_required
+def detect_video():
+    if 'video' not in request.files:
+        return jsonify({'error': 'No video uploaded!'})
+    video_file = request.files['video']
+    if video_file.filename == '':
+        return jsonify({'error': 'No video selected!'})
+    allowed = {'mp4', 'avi', 'mov', 'mkv', 'webm', 'flv'}
+    ext = video_file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in allowed:
+        return jsonify({'error': 'Invalid video format!'})
+    video_file.seek(0, 2)
+    size = video_file.tell()
+    video_file.seek(0)
+    if size > 50 * 1024 * 1024:
+        return jsonify({'error': 'Video too large! Max 50MB'})
+    sightengine_result = analyze_video_sightengine(video_file)
+    if not sightengine_result:
+        return jsonify({'error': 'Video analysis failed!'})
+    return jsonify({
+        'type': 'video',
+        'sightengine': sightengine_result,
+        'final_verdict': sightengine_result['verdict'],
+        'overall_score': sightengine_result['avg_deepfake_score']
+    })
+
+@app.route('/history')
+@login_required
+def history():
+    try:
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute(
+            "SELECT input_text, verdict, credibility_score, created_at FROM analysis_history WHERE user_id = %s ORDER BY created_at DESC",
+            (current_user.id,)
+        )
+        records = cur.fetchall()
+        db.close()
+    except:
+        records = []
+    return render_template('history.html', records=records)
+
+@app.route('/admin')
+@login_required
+def admin():
+    try:
+        db = get_db()
+        cur = db.cursor()
+        cur.execute("SELECT COUNT(*) FROM users")
+        total_users = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM analysis_history")
+        total_analyses = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM analysis_history WHERE verdict = 'FAKE'")
+        total_fake = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM analysis_history WHERE verdict = 'REAL'")
+        total_real = cur.fetchone()[0]
+        cur2 = dict_cursor(db)
+        cur2.execute("SELECT username, email, created_at FROM users ORDER BY created_at DESC")
+        all_users = cur2.fetchall()
+        cur2.execute("""SELECT u.username, a.input_text, a.verdict, a.credibility_score, a.created_at
+                        FROM analysis_history a JOIN users u ON a.user_id = u.id
+                        ORDER BY a.created_at DESC LIMIT 20""")
+        recent_analyses = cur2.fetchall()
+        db.close()
+    except Exception as e:
+        return str(e)
+    return render_template('admin.html',
+        total_users=total_users, total_analyses=total_analyses,
+        total_fake=total_fake, total_real=total_real,
+        all_users=all_users, recent_analyses=recent_analyses)
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=10000)
