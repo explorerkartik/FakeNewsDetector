@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
@@ -7,11 +7,11 @@ from langdetect import detect as detect_language
 from urllib.parse import urlparse
 from indian_facts import check_indian_facts, get_credibility_boost
 from groq import Groq
+from authlib.integrations.flask_client import OAuth
 import psycopg2
 import psycopg2.extras
 import pickle, os, requests, json
 from bs4 import BeautifulSoup
-import base64
 
 load_dotenv()
 
@@ -25,10 +25,25 @@ login_manager.login_view = 'login'
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
+# -- GROQ SETUP --
 groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+
+# -- RAPIDAPI SETUP --
 RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')
+
+# -- SIGHTENGINE SETUP --
 SIGHTENGINE_USER = os.getenv('SIGHTENGINE_USER')
 SIGHTENGINE_SECRET = os.getenv('SIGHTENGINE_SECRET')
+
+# -- GOOGLE OAUTH SETUP --
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.getenv('GOOGLE_CLIENT_ID'),
+    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
 
 def analyze_with_groq(text):
     try:
@@ -50,8 +65,9 @@ INDIAN KNOWLEDGE BASE:
 - Capitals: Ranchi=Jharkhand, Patna=Bihar, Lucknow=UP, Mumbai=Maharashtra, Delhi=India, Bhopal=MP, Jaipur=Rajasthan, Chennai=TN, Hyderabad=Telangana, Bengaluru=Karnataka
 - PM: Narendra Modi (BJP), President: Droupadi Murmu
 - States: India has 28 states and 8 UTs
-- IPL 2025 Winner: Royal Challengers Bengaluru (RCB)
 - Operation Sindoor: Indian military operation 2025
+- IPL 2025 Winner: Royal Challengers Bengaluru (RCB)
+- Government schemes: PM Kisan, Ayushman Bharat, Jan Dhan, etc.
 
 Respond ONLY in this exact JSON format (no markdown, no extra text):
 {{
@@ -68,15 +84,19 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
             max_tokens=500,
             temperature=0.1
         )
+
         response_text = response.choices[0].message.content.strip()
+
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0].strip()
         elif '```' in response_text:
             response_text = response_text.split('```')[1].split('```')[0].strip()
+
         start = response_text.find('{')
         end = response_text.rfind('}') + 1
         if start != -1 and end > start:
             response_text = response_text[start:end]
+
         result = json.loads(response_text)
         return {
             'verdict': result.get('verdict', 'REAL'),
@@ -89,9 +109,11 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
         print(f"Groq error: {e}")
         return None
 
+# -- CRICKET KEYWORDS --
 CRICKET_KEYWORDS = [
     'cricket', 'ipl', 'match', 'wicket', 'batting', 'bowling',
     'test match', 'odi', 't20', 'bcci', 'runs', 'over', 'innings',
+    'six', 'four', 'stumped', 'lbw', 'yorker', 'bouncer',
     'dc', 'mi', 'csk', 'rcb', 'kkr', 'srh', 'rr', 'pbks', 'lsg', 'gt',
     'delhi capitals', 'mumbai indians', 'chennai', 'bangalore',
     'kohli', 'rohit', 'dhoni', 'bumrah', 'pandya'
@@ -132,6 +154,7 @@ def get_cricket_scores():
     except:
         return []
 
+# -- IMAGE DETECTION --
 def analyze_image_sightengine(image_file):
     try:
         response = requests.post(
@@ -160,6 +183,7 @@ def analyze_image_sightengine(image_file):
         print(f"Sightengine image error: {e}")
         return None
 
+# -- VIDEO DETECTION --
 def analyze_video_sightengine(video_file):
     try:
         response = requests.post(
@@ -181,7 +205,6 @@ def analyze_video_sightengine(video_file):
                 max_score = max(deepfake_scores)
                 is_deepfake = avg_score > 0.5
                 return {
-                    'source': 'Sightengine',
                     'frames_analyzed': len(frames),
                     'avg_deepfake_score': round(avg_score * 100, 1),
                     'max_deepfake_score': round(max_score * 100, 1),
@@ -194,8 +217,9 @@ def analyze_video_sightengine(video_file):
         print(f"Sightengine video error: {e}")
         return None
 
+# -- LANGUAGE SETUP --
 LANGUAGE_DISPLAY_NAMES = {
-    'en': 'English', 'hi': 'Hindi / Haryanvi', 'ta': 'Tamil',
+    'en': 'English', 'hi': 'Hindi', 'ta': 'Tamil',
     'te': 'Telugu', 'mr': 'Marathi', 'gu': 'Gujarati',
     'pa': 'Punjabi', 'bn': 'Bengali', 'ml': 'Malayalam',
     'kn': 'Kannada', 'ur': 'Urdu', 'or': 'Odia',
@@ -212,6 +236,7 @@ def translate_to_english(text):
     except:
         return text, 'English'
 
+# -- FACT CHECK API --
 FACT_CHECK_API_KEY = os.getenv('FACT_CHECK_API_KEY')
 
 def check_facts(text):
@@ -234,6 +259,7 @@ def check_facts(text):
     except:
         return []
 
+# -- SOURCE REPUTATION --
 SOURCE_REPUTATION = {
     'thehindu.com':       {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
     'hindustantimes.com': {'tier': 1, 'label': 'Highly Credible', 'desc': 'Major Indian newspaper'},
@@ -256,6 +282,7 @@ def check_source_reputation(url):
     except:
         return {'found': False}
 
+# -- DATABASE --
 def get_db():
     return psycopg2.connect(
         host=os.getenv('DB_HOST'), port=os.getenv('DB_PORT'),
@@ -266,6 +293,7 @@ def get_db():
 def dict_cursor(conn):
     return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
+# -- USER MODEL --
 class User(UserMixin):
     def __init__(self, id, username, email):
         self.id = id
@@ -286,6 +314,7 @@ def load_user(user_id):
         pass
     return None
 
+# -- ROUTES --
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -326,6 +355,44 @@ def login():
             return render_template('login.html', msg='Error: ' + str(e))
     return render_template('login.html')
 
+# -- GOOGLE LOGIN --
+@app.route('/auth/google')
+def google_login():
+    redirect_uri = url_for('google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth/google/callback')
+def google_callback():
+    try:
+        token = google.authorize_access_token()
+        user_info = token.get('userinfo')
+        if not user_info:
+            user_info = google.userinfo()
+
+        email = user_info['email']
+        name = user_info.get('name', email.split('@')[0])
+
+        db = get_db()
+        cur = dict_cursor(db)
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cur.fetchone()
+
+        if not user:
+            cur.execute(
+                "INSERT INTO users (username, email, password) VALUES (%s, %s, %s) RETURNING *",
+                (name, email, bcrypt.generate_password_hash('google_oauth_user').decode('utf-8'))
+            )
+            db.commit()
+            cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user = cur.fetchone()
+
+        db.close()
+        login_user(User(user['id'], user['username'], user['email']))
+        return redirect('/detector')
+    except Exception as e:
+        print(f"Google OAuth error: {e}")
+        return redirect('/login')
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -337,11 +404,17 @@ def logout():
 def detector():
     return render_template('detector.html')
 
+# -- FREE ACCESS (no login required) --
+@app.route('/free')
+def free_detector():
+    return render_template('detector.html')
+
 @app.route('/detect', methods=['POST'])
-@login_required
 def detect():
+    # Allow both logged in and free users
     text = request.form.get('news_text', '')
     url  = request.form.get('news_url', '')
+
     if url:
         try:
             response = requests.get(url, timeout=10)
@@ -349,6 +422,7 @@ def detect():
             text = ' '.join([p.get_text() for p in soup.find_all('p')])
         except:
             return jsonify({'error': 'Could not fetch content from URL!'})
+
     if not text.strip():
         return jsonify({'error': 'Please enter some text!'})
 
@@ -389,17 +463,19 @@ def detect():
     fact_results = check_facts(english_text)
     cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
 
-    try:
-        db = get_db()
-        cur = dict_cursor(db)
-        cur.execute(
-            "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
-            (current_user.id, text[:500], prediction, credibility_score)
-        )
-        db.commit()
-        db.close()
-    except:
-        pass
+    # Save to DB only if logged in
+    if current_user.is_authenticated:
+        try:
+            db = get_db()
+            cur = dict_cursor(db)
+            cur.execute(
+                "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s, %s, %s, %s)",
+                (current_user.id, text[:500], prediction, credibility_score)
+            )
+            db.commit()
+            db.close()
+        except:
+            pass
 
     return jsonify({
         'verdict': prediction,
@@ -414,8 +490,8 @@ def detect():
         'cricket_scores': cricket_scores
     })
 
+# -- IMAGE DETECTION ROUTE --
 @app.route('/detect-image', methods=['POST'])
-@login_required
 def detect_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No image uploaded!'})
@@ -426,20 +502,21 @@ def detect_image():
     ext = image_file.filename.rsplit('.', 1)[-1].lower()
     if ext not in allowed:
         return jsonify({'error': 'Invalid image format!'})
-    image_file.seek(0)
     sightengine_result = analyze_image_sightengine(image_file)
-    final_verdict = sightengine_result['verdict'] if sightengine_result else 'UNKNOWN'
-    overall_score = sightengine_result['ai_generated_score'] if sightengine_result else 50
+    final_verdict = 'UNKNOWN'
+    overall_score = 50
+    if sightengine_result:
+        final_verdict = sightengine_result['verdict']
+        overall_score = sightengine_result['ai_generated_score']
     return jsonify({
         'type': 'image',
         'sightengine': sightengine_result,
-        'deepface': None,
         'final_verdict': final_verdict,
         'overall_score': overall_score
     })
 
+# -- VIDEO DETECTION ROUTE --
 @app.route('/detect-video', methods=['POST'])
-@login_required
 def detect_video():
     if 'video' not in request.files:
         return jsonify({'error': 'No video uploaded!'})
