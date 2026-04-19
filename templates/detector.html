@@ -24,224 +24,84 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
 
-        /* LEFT SIDEBAR */
         .sidebar {
-            width: 80px;
-            background: var(--sidebar);
+            width: 80px; background: var(--sidebar);
             border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 16px 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            z-index: 100;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 16px 0; position: fixed; top: 0; left: 0;
+            height: 100vh; z-index: 100;
         }
         .sidebar-logo {
-            width: 48px;
-            height: 48px;
+            width: 48px; height: 48px;
             background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4em;
-            margin-bottom: 24px;
+            border-radius: 14px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.4em; margin-bottom: 24px;
             box-shadow: 0 4px 15px rgba(124,58,237,0.4);
         }
         .sidebar-divider { width: 40px; height: 1px; background: var(--border); margin: 8px 0; }
         .sidebar-item {
-            width: 64px;
-            padding: 10px 6px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            margin-bottom: 4px;
-            text-decoration: none;
-            color: var(--text-muted);
+            width: 64px; padding: 10px 6px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s; text-align: center;
+            margin-bottom: 4px; text-decoration: none; color: var(--text-muted);
         }
         .sidebar-item:hover { background: var(--sidebar-hover); color: var(--text); }
         .sidebar-item.active { background: var(--sidebar-active); color: white; }
         .sidebar-item .s-icon { font-size: 1.4em; display: block; margin-bottom: 4px; }
         .sidebar-item .s-label { font-size: 0.62em; display: block; line-height: 1.2; font-weight: 600; }
         .sidebar-bottom { margin-top: auto; }
-        .sidebar-bottom .sidebar-item { color: var(--text-muted); }
 
-        /* TOP NAVBAR */
         .topbar {
-            position: fixed;
-            top: 0;
-            left: 80px;
-            right: 0;
-            height: 56px;
-            background: rgba(19,17,31,0.95);
-            backdrop-filter: blur(20px);
+            position: fixed; top: 0; left: 80px; right: 0; height: 56px;
+            background: rgba(19,17,31,0.95); backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            z-index: 99;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 99;
         }
-        .topbar-left { display: flex; align-items: center; gap: 16px; }
         .topbar-title { font-size: 1em; font-weight: 700; color: white; }
         .topbar-subtitle { font-size: 0.78em; color: var(--text-muted); }
         .topbar-right { display: flex; align-items: center; gap: 12px; }
-        .topbar-btn {
-            padding: 7px 16px;
-            border-radius: 20px;
-            font-size: 0.82em;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .btn-google {
-            background: white;
-            color: #333;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-google:hover { box-shadow: 0 4px 15px rgba(255,255,255,0.2); transform: translateY(-1px); }
+        .topbar-btn { padding: 7px 16px; border-radius: 20px; font-size: 0.82em; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
         .btn-history { background: var(--card); color: var(--text-muted); border: 1px solid var(--border); }
         .btn-history:hover { color: white; border-color: var(--primary-light); }
         .btn-logout { background: rgba(233,69,96,0.1); color: var(--accent); border: 1px solid rgba(233,69,96,0.2); }
         .btn-logout:hover { background: rgba(233,69,96,0.2); }
-        .user-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 5px 12px;
-            font-size: 0.82em;
-        }
-        .user-avatar {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75em;
-            font-weight: 700;
-        }
 
-        /* MAIN CONTENT */
-        .main {
-            margin-left: 80px;
-            margin-top: 56px;
-            flex: 1;
-            display: flex;
-            min-height: calc(100vh - 56px);
-        }
-
-        /* CENTER PANEL */
-        .center-panel {
-            flex: 1;
-            padding: 24px;
-            max-width: calc(100% - 320px);
-        }
-
-        /* PAGE HEADER */
+        .main { margin-left: 80px; margin-top: 56px; flex: 1; display: flex; min-height: calc(100vh - 56px); }
+        .center-panel { flex: 1; padding: 24px; max-width: calc(100% - 320px); }
         .page-header { margin-bottom: 20px; }
         .page-header h1 { font-size: 1.6em; font-weight: 800; color: white; }
         .page-header p { color: var(--text-muted); font-size: 0.88em; margin-top: 4px; }
 
-        /* MODE TABS */
         .mode-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 6px;
+            display: flex; gap: 8px; margin-bottom: 20px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 6px;
         }
         .mode-tab {
-            flex: 1;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 0.88em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            flex: 1; padding: 10px 12px; border-radius: 10px; border: none;
+            background: transparent; color: var(--text-muted);
+            font-size: 0.88em; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
         }
         .mode-tab.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124,58,237,0.4); }
         .mode-tab:hover:not(.active) { background: var(--sidebar-hover); color: white; }
+        .mode-tab.voice-tab.active { background: linear-gradient(90deg,#0f6e56,#1d9e75); box-shadow: 0 4px 12px rgba(20,184,166,0.4); }
 
-        /* INPUT CARD */
-        .input-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-        .input-card-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        .input-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
+        .input-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
         .input-card-header span { font-size: 0.85em; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        textarea.main-input {
-            width: 100%;
-            min-height: 180px;
-            padding: 18px;
-            background: transparent;
-            border: none;
-            color: var(--text);
-            font-size: 0.95em;
-            font-family: inherit;
-            resize: none;
-            outline: none;
-            line-height: 1.7;
-        }
+        textarea.main-input { width: 100%; min-height: 180px; padding: 18px; background: transparent; border: none; color: var(--text); font-size: 0.95em; font-family: inherit; resize: none; outline: none; line-height: 1.7; }
         textarea.main-input::placeholder { color: var(--text-muted); }
         .url-input-wrap { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
-        .url-input {
-            flex: 1;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 0.88em;
-            outline: none;
-        }
+        .url-input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.88em; outline: none; }
         .url-input:focus { border-color: var(--primary-light); }
         .url-input::placeholder { color: var(--text-muted); }
 
-        /* UPLOAD AREA */
-        .upload-area {
-            margin: 18px;
-            border: 2px dashed rgba(124,58,237,0.3);
-            border-radius: 14px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
+        .upload-area { margin: 18px; border: 2px dashed rgba(124,58,237,0.3); border-radius: 14px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
         .upload-area:hover { border-color: var(--primary); background: rgba(124,58,237,0.05); }
         .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
         .upload-icon { font-size: 2.5em; margin-bottom: 10px; }
@@ -251,82 +111,48 @@
         .preview-wrap img, .preview-wrap video { width: 100%; max-height: 220px; object-fit: contain; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); }
         .preview-name { font-size: 0.8em; color: var(--text-muted); margin-top: 6px; text-align: center; }
 
-        /* ACTION BAR */
-        .action-bar {
-            padding: 12px 18px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        .action-bar { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
         .action-bar-left { display: flex; gap: 8px; }
-        .action-chip {
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.78em;
-            color: var(--text-muted);
-        }
-        .analyze-btn {
-            padding: 11px 28px;
-            background: linear-gradient(90deg, var(--primary), #9333ea);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 0.95em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .action-chip { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 0.78em; color: var(--text-muted); }
+        .analyze-btn { padding: 11px 28px; background: linear-gradient(90deg, var(--primary), #9333ea); border: none; border-radius: 10px; color: white; font-size: 0.95em; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
         .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124,58,237,0.4); }
         .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        /* RESULTS */
-        .result-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 14px;
-            display: none;
-            animation: fadeIn 0.4s ease;
+        /* VOICE */
+        .voice-container { padding: 30px 18px; text-align: center; }
+        .voice-orb {
+            width: 140px; height: 140px; border-radius: 50%;
+            background: #1a1a2e; border: 3px solid #4444ff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 48px; cursor: pointer; transition: all 0.3s;
+            margin: 0 auto 20px;
         }
+        .voice-orb.listening { background: #0d0d4a; border-color: #00aaff; box-shadow: 0 0 40px #00aaff88; transform: scale(1.1); }
+        .voice-orb.speaking { background: #1a0d2e; border-color: #aa00ff; box-shadow: 0 0 40px #aa00ff88; }
+        .voice-status { font-size: 0.9em; color: var(--text-muted); margin-bottom: 8px; }
+        .voice-transcript { font-size: 0.82em; color: var(--text-muted); min-height: 20px; margin-bottom: 14px; }
+        .voice-response { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 16px; font-size: 0.9em; color: var(--text); line-height: 1.6; min-height: 60px; margin-bottom: 20px; text-align: left; }
+        .voice-hold-btn { padding: 13px 36px; background: rgba(20,184,166,0.15); border: 2px solid rgba(20,184,166,0.5); border-radius: 50px; color: #2dd4bf; font-size: 0.95em; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .voice-hold-btn:active { background: rgba(20,184,166,0.3); color: white; box-shadow: 0 0 20px rgba(20,184,166,0.4); }
+        .voice-tip { font-size: 0.72em; color: var(--text-muted); margin-top: 12px; }
+
+        /* RESULTS */
+        .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 14px; display: none; animation: fadeIn 0.4s ease; }
         .result-card.show { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .verdict-banner {
-            border-radius: 12px;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
+        .verdict-banner { border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
         .verdict-banner.real { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
         .verdict-banner.fake { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); }
         .verdict-emoji { font-size: 2.5em; }
         .verdict-text h2 { font-size: 1.4em; font-weight: 800; }
         .verdict-text p { color: var(--text-muted); font-size: 0.88em; margin-top: 2px; }
-
-        /* GAUGE */
         .gauge-wrap { text-align: center; margin: 16px 0; }
         .gauge-label { font-size: 0.78em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .gauge-bar-bg { background: rgba(255,255,255,0.08); border-radius: 10px; height: 10px; overflow: hidden; }
         .gauge-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
         .gauge-score { font-size: 2em; font-weight: 900; margin-top: 8px; }
-
-        /* INFO CARDS */
         .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .info-box {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-        }
+        .info-box { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
         .info-box h4 { font-size: 0.78em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .info-box p { font-size: 0.88em; color: var(--text); line-height: 1.5; }
         .fact-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85em; }
@@ -343,32 +169,16 @@
         .source-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
         .source-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
 
-        /* RIGHT PANEL */
-        .right-panel {
-            width: 300px;
-            min-width: 300px;
-            background: var(--card);
-            border-left: 1px solid var(--border);
-            padding: 20px 16px;
-            position: fixed;
-            right: 0;
-            top: 56px;
-            height: calc(100vh - 56px);
-            overflow-y: auto;
-        }
+        .right-panel { width: 300px; min-width: 300px; background: var(--card); border-left: 1px solid var(--border); padding: 20px 16px; position: fixed; right: 0; top: 56px; height: calc(100vh - 56px); overflow-y: auto; }
         .right-panel h3 { font-size: 0.82em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
-        .compare-card {
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
+        .compare-card { border-radius: 12px; padding: 14px; margin-bottom: 12px; }
         .compare-card.real-c { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
         .compare-card.fake-c { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
         .compare-title { font-size: 0.82em; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
         .compare-title.real-t { color: #34d399; }
         .compare-title.fake-t { color: #f87171; }
         .compare-item { font-size: 0.78em; color: rgba(255,255,255,0.65); padding: 4px 0; display: flex; gap: 6px; align-items: flex-start; line-height: 1.4; }
-        .compare-item .ci { flex-shrink: 0; font-size: 0.9em; }
+        .compare-item .ci { flex-shrink: 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
         .stat-box { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px 10px; text-align: center; }
         .stat-box .stat-n { font-size: 1.3em; font-weight: 800; background: linear-gradient(90deg, var(--primary-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -378,69 +188,55 @@
         .tip-card p { font-size: 0.75em; color: rgba(255,255,255,0.55); line-height: 1.5; }
         .right-divider { height: 1px; background: var(--border); margin: 14px 0; }
 
-        /* LOADING */
         .loading-wrap { text-align: center; padding: 30px; display: none; }
         .loading-wrap.show { display: block; }
         .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-wrap p { color: var(--text-muted); font-size: 0.88em; }
 
-        /* SCROLLBAR */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
 
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .right-panel { display: none; }
-            .center-panel { max-width: 100%; }
-        }
-        @media (max-width: 600px) {
-            .sidebar { width: 60px; }
-            .main { margin-left: 60px; }
-            .topbar { left: 60px; }
-        }
+        @media (max-width: 900px) { .right-panel { display: none; } .center-panel { max-width: 100%; } }
+        @media (max-width: 600px) { .sidebar { width: 60px; } .main { margin-left: 60px; } .topbar { left: 60px; } }
     </style>
 </head>
 <body>
 
-<!-- LEFT SIDEBAR -->
+<!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-logo">🛡️</div>
     <div class="sidebar-divider"></div>
     <a class="sidebar-item active" onclick="setMode('text')" href="#">
-        <span class="s-icon">📝</span>
-        <span class="s-label">Text<br>Check</span>
+        <span class="s-icon">📝</span><span class="s-label">Text<br>Check</span>
     </a>
     <a class="sidebar-item" onclick="setMode('image')" href="#">
-        <span class="s-icon">🖼️</span>
-        <span class="s-label">Image<br>Check</span>
+        <span class="s-icon">🖼️</span><span class="s-label">Image<br>Check</span>
     </a>
     <a class="sidebar-item" onclick="setMode('video')" href="#">
-        <span class="s-icon">🎥</span>
-        <span class="s-label">Video<br>Check</span>
+        <span class="s-icon">🎥</span><span class="s-label">Video<br>Check</span>
+    </a>
+    <a class="sidebar-item" onclick="setMode('voice')" href="#">
+        <span class="s-icon">🎙️</span><span class="s-label">Voice<br>Check</span>
     </a>
     <div class="sidebar-divider"></div>
     <a class="sidebar-item" href="/history">
-        <span class="s-icon">📋</span>
-        <span class="s-label">History</span>
+        <span class="s-icon">📋</span><span class="s-label">History</span>
     </a>
     <div class="sidebar-bottom">
         <div class="sidebar-divider"></div>
         <a class="sidebar-item" href="/logout">
-            <span class="s-icon">🚪</span>
-            <span class="s-label">Logout</span>
+            <span class="s-icon">🚪</span><span class="s-label">Logout</span>
         </a>
     </div>
 </div>
 
-<!-- TOP NAVBAR -->
+<!-- TOPBAR -->
 <div class="topbar">
-    <div class="topbar-left">
-        <div>
-            <div class="topbar-title">🛡️ FakeNews Detector</div>
-            <div class="topbar-subtitle">AI-Powered Fact Checker</div>
-        </div>
+    <div>
+        <div class="topbar-title">🛡️ FakeNews Detector</div>
+        <div class="topbar-subtitle">AI-Powered Fact Checker</div>
     </div>
     <div class="topbar-right">
         <a href="/history" class="topbar-btn btn-history">📋 History</a>
@@ -450,18 +246,17 @@
 
 <!-- MAIN -->
 <div class="main">
-    <!-- CENTER PANEL -->
     <div class="center-panel">
         <div class="page-header">
             <h1>AI Fact Checker</h1>
-            <p>Detect fake news in text, images, and videos — powered by Groq LLaMA AI</p>
+            <p>Detect fake news in text, images, videos, and voice — powered by Groq LLaMA AI</p>
         </div>
 
-        <!-- MODE TABS -->
         <div class="mode-tabs">
             <button class="mode-tab active" id="tab-text-btn" onclick="setMode('text')">📝 Text / URL</button>
             <button class="mode-tab" id="tab-image-btn" onclick="setMode('image')">🖼️ Image</button>
             <button class="mode-tab" id="tab-video-btn" onclick="setMode('video')">🎥 Video</button>
+            <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="setMode('voice')">🎙️ Voice</button>
         </div>
 
         <!-- TEXT TAB -->
@@ -485,17 +280,11 @@
                     <button class="analyze-btn" onclick="detectText()">🔍 Analyze Now</button>
                 </div>
             </div>
-            <div class="loading-wrap" id="text-loading">
-                <div class="spinner"></div>
-                <p>Analyzing with Groq AI...</p>
-            </div>
+            <div class="loading-wrap" id="text-loading"><div class="spinner"></div><p>Analyzing with Groq AI...</p></div>
             <div class="result-card" id="text-result">
                 <div class="verdict-banner" id="verdict-banner">
                     <div class="verdict-emoji" id="verdict-emoji"></div>
-                    <div class="verdict-text">
-                        <h2 id="verdict-text"></h2>
-                        <p id="verdict-sub"></p>
-                    </div>
+                    <div class="verdict-text"><h2 id="verdict-text"></h2><p id="verdict-sub"></p></div>
                 </div>
                 <div class="gauge-wrap">
                     <div class="gauge-label">Credibility Score</div>
@@ -503,34 +292,13 @@
                     <div class="gauge-score" id="gauge-score"></div>
                 </div>
                 <div class="info-row">
-                    <div class="info-box" id="ai-box" style="display:none;">
-                        <h4>🤖 AI Analysis</h4>
-                        <p id="ai-reason"></p>
-                        <div id="ai-facts" style="margin-top:8px;"></div>
-                    </div>
-                    <div class="info-box" id="lang-box" style="display:none;">
-                        <h4>🌐 Language</h4>
-                        <p>Detected: <span class="lang-badge" id="lang-name"></span></p>
-                        <p style="margin-top:6px; font-size:0.82em; color:var(--text-muted);">Auto-translated to English</p>
-                    </div>
-                    <div class="info-box" id="source-box" style="display:none;">
-                        <h4>🏛️ Source Reputation</h4>
-                        <span class="source-badge" id="source-label"></span>
-                        <p id="source-desc" style="margin-top:6px; font-size:0.82em;"></p>
-                    </div>
-                    <div class="info-box" id="india-box" style="display:none;">
-                        <h4>🇮🇳 Indian Facts</h4>
-                        <div id="india-facts"></div>
-                    </div>
+                    <div class="info-box" id="ai-box" style="display:none;"><h4>🤖 AI Analysis</h4><p id="ai-reason"></p><div id="ai-facts" style="margin-top:8px;"></div></div>
+                    <div class="info-box" id="lang-box" style="display:none;"><h4>🌐 Language</h4><p>Detected: <span class="lang-badge" id="lang-name"></span></p><p style="margin-top:6px; font-size:0.82em; color:var(--text-muted);">Auto-translated to English</p></div>
+                    <div class="info-box" id="source-box" style="display:none;"><h4>🏛️ Source Reputation</h4><span class="source-badge" id="source-label"></span><p id="source-desc" style="margin-top:6px; font-size:0.82em;"></p></div>
+                    <div class="info-box" id="india-box" style="display:none;"><h4>🇮🇳 Indian Facts</h4><div id="india-facts"></div></div>
                 </div>
-                <div class="info-box" id="factcheck-box" style="display:none; margin-top:12px;">
-                    <h4>✅ Google Fact Check</h4>
-                    <div id="factcheck-list"></div>
-                </div>
-                <div class="info-box" id="cricket-box" style="display:none; margin-top:12px;">
-                    <h4>🏏 Live Cricket Scores</h4>
-                    <div id="cricket-list"></div>
-                </div>
+                <div class="info-box" id="factcheck-box" style="display:none; margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
+                <div class="info-box" id="cricket-box" style="display:none; margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
             </div>
         </div>
 
@@ -548,45 +316,19 @@
                     <p>PNG, JPG, JPEG, WEBP • Max 10MB</p>
                     <p style="margin-top:6px; color:rgba(124,58,237,0.8); font-size:0.78em;">Detects: AI Generated • Deepfake Faces • Manipulated Images</p>
                 </div>
-                <div class="preview-wrap" id="img-preview-wrap">
-                    <img id="img-preview" src="" alt="Preview">
-                    <div class="preview-name" id="img-name"></div>
-                </div>
+                <div class="preview-wrap" id="img-preview-wrap"><img id="img-preview" src="" alt="Preview"><div class="preview-name" id="img-name"></div></div>
                 <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">🤖 Sightengine</span>
-                        <span class="action-chip">🧠 AI Detection</span>
-                    </div>
+                    <div class="action-bar-left"><span class="action-chip">🤖 Sightengine</span><span class="action-chip">🧠 AI Detection</span></div>
                     <button class="analyze-btn" onclick="detectImage()" id="img-btn" disabled>🔍 Analyze Image</button>
                 </div>
             </div>
-            <div class="loading-wrap" id="img-loading">
-                <div class="spinner"></div>
-                <p>Analyzing image with Sightengine AI...</p>
-            </div>
+            <div class="loading-wrap" id="img-loading"><div class="spinner"></div><p>Analyzing image with Sightengine AI...</p></div>
             <div class="result-card" id="img-result">
-                <div class="verdict-banner" id="img-verdict-banner">
-                    <div class="verdict-emoji" id="img-verdict-emoji"></div>
-                    <div class="verdict-text">
-                        <h2 id="img-verdict-text"></h2>
-                        <p id="img-verdict-sub"></p>
-                    </div>
-                </div>
-                <div class="gauge-wrap">
-                    <div class="gauge-label">AI Generated Score</div>
-                    <div class="gauge-bar-bg"><div class="gauge-bar" id="img-gauge" style="width:0%"></div></div>
-                    <div class="gauge-score" id="img-score"></div>
-                </div>
+                <div class="verdict-banner" id="img-verdict-banner"><div class="verdict-emoji" id="img-verdict-emoji"></div><div class="verdict-text"><h2 id="img-verdict-text"></h2><p id="img-verdict-sub"></p></div></div>
+                <div class="gauge-wrap"><div class="gauge-label">AI Generated Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="img-gauge" style="width:0%"></div></div><div class="gauge-score" id="img-score"></div></div>
                 <div class="info-row">
-                    <div class="info-box">
-                        <h4>🤖 Sightengine Result</h4>
-                        <p id="img-se-verdict" style="font-weight:700; font-size:1em;"></p>
-                        <p id="img-se-score" style="margin-top:4px; font-size:0.85em; color:var(--text-muted);"></p>
-                    </div>
-                    <div class="info-box">
-                        <h4>📊 Analysis Details</h4>
-                        <p style="font-size:0.82em; color:var(--text-muted); line-height:1.6;">Images are analyzed for AI generation patterns, GAN artifacts, and face manipulation signatures.</p>
-                    </div>
+                    <div class="info-box"><h4>🤖 Sightengine Result</h4><p id="img-se-verdict" style="font-weight:700; font-size:1em;"></p><p id="img-se-score" style="margin-top:4px; font-size:0.85em; color:var(--text-muted);"></p></div>
+                    <div class="info-box"><h4>📊 Analysis Details</h4><p style="font-size:0.82em; color:var(--text-muted); line-height:1.6;">Images are analyzed for AI generation patterns, GAN artifacts, and face manipulation signatures.</p></div>
                 </div>
             </div>
         </div>
@@ -605,44 +347,41 @@
                     <p>MP4, AVI, MOV, MKV, WEBM • Max 50MB</p>
                     <p style="margin-top:6px; color:rgba(233,69,96,0.8); font-size:0.78em;">Detects: Deepfake Faces • Face Swap • AI Generated Video</p>
                 </div>
-                <div class="preview-wrap" id="vid-preview-wrap">
-                    <video id="vid-preview" controls></video>
-                    <div class="preview-name" id="vid-name"></div>
-                </div>
+                <div class="preview-wrap" id="vid-preview-wrap"><video id="vid-preview" controls></video><div class="preview-name" id="vid-name"></div></div>
                 <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">🎭 Sightengine</span>
-                        <span class="action-chip">🔬 Frame Analysis</span>
-                    </div>
+                    <div class="action-bar-left"><span class="action-chip">🎭 Sightengine</span><span class="action-chip">🔬 Frame Analysis</span></div>
                     <button class="analyze-btn" onclick="detectVideo()" id="vid-btn" disabled>🔍 Analyze Video</button>
                 </div>
             </div>
-            <div class="loading-wrap" id="vid-loading">
-                <div class="spinner"></div>
-                <p>Analyzing video frame by frame... (30-60 sec)</p>
-            </div>
+            <div class="loading-wrap" id="vid-loading"><div class="spinner"></div><p>Analyzing video frame by frame... (30-60 sec)</p></div>
             <div class="result-card" id="vid-result">
-                <div class="verdict-banner" id="vid-verdict-banner">
-                    <div class="verdict-emoji" id="vid-verdict-emoji"></div>
-                    <div class="verdict-text">
-                        <h2 id="vid-verdict-text"></h2>
-                        <p id="vid-verdict-sub"></p>
-                    </div>
-                </div>
-                <div class="gauge-wrap">
-                    <div class="gauge-label">Deepfake Score</div>
-                    <div class="gauge-bar-bg"><div class="gauge-bar" id="vid-gauge" style="width:0%"></div></div>
-                    <div class="gauge-score" id="vid-score"></div>
-                </div>
+                <div class="verdict-banner" id="vid-verdict-banner"><div class="verdict-emoji" id="vid-verdict-emoji"></div><div class="verdict-text"><h2 id="vid-verdict-text"></h2><p id="vid-verdict-sub"></p></div></div>
+                <div class="gauge-wrap"><div class="gauge-label">Deepfake Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="vid-gauge" style="width:0%"></div></div><div class="gauge-score" id="vid-score"></div></div>
                 <div class="info-row">
-                    <div class="info-box">
-                        <h4>🎬 Frames Analyzed</h4>
-                        <p id="vid-frames" style="font-size:1.4em; font-weight:800;"></p>
-                    </div>
-                    <div class="info-box">
-                        <h4>📊 Max Deepfake Score</h4>
-                        <p id="vid-max" style="font-size:1.4em; font-weight:800;"></p>
-                    </div>
+                    <div class="info-box"><h4>🎬 Frames Analyzed</h4><p id="vid-frames" style="font-size:1.4em; font-weight:800;"></p></div>
+                    <div class="info-box"><h4>📊 Max Deepfake Score</h4><p id="vid-max" style="font-size:1.4em; font-weight:800;"></p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VOICE TAB -->
+        <div class="tab-content" id="tab-voice">
+            <div class="input-card">
+                <div class="input-card-header">
+                    <span>🎙️ Voice News Check</span>
+                    <span style="font-size:0.75em;">Hindi & English Supported</span>
+                </div>
+                <div class="voice-container">
+                    <div class="voice-orb" id="voice-orb" onclick="orbClick()">🎙️</div>
+                    <div class="voice-status" id="voice-status">Button dabao aur news bolo</div>
+                    <div class="voice-transcript" id="voice-transcript"></div>
+                    <div class="voice-response" id="voice-response">Result yahan aayega...</div>
+                    <button class="voice-hold-btn"
+                        ontouchstart="startListening()" ontouchend="stopListening()"
+                        onmousedown="startListening()" onmouseup="stopListening()">
+                        🎤 Hold karke bolo
+                    </button>
+                    <div class="voice-tip">Chrome browser mein best kaam karta hai • Mic permission allow karo</div>
                 </div>
             </div>
         </div>
@@ -650,18 +389,14 @@
 
     <!-- RIGHT PANEL -->
     <div class="right-panel">
-        <!-- STATS -->
         <h3>📊 Platform Stats</h3>
         <div class="stat-grid">
             <div class="stat-box"><div class="stat-n">44K+</div><div class="stat-l">Articles Trained</div></div>
             <div class="stat-box"><div class="stat-n">95%</div><div class="stat-l">Accuracy Rate</div></div>
             <div class="stat-box"><div class="stat-n">12+</div><div class="stat-l">Languages</div></div>
-            <div class="stat-box"><div class="stat-n">3-in-1</div><div class="stat-l">Detection Modes</div></div>
+            <div class="stat-box"><div class="stat-n">4-in-1</div><div class="stat-l">Detection Modes</div></div>
         </div>
-
         <div class="right-divider"></div>
-
-        <!-- REAL vs FAKE -->
         <h3>🔍 Real vs Fake Signals</h3>
         <div class="compare-card real-c">
             <div class="compare-title real-t">✅ Signs of REAL News</div>
@@ -679,258 +414,173 @@
             <div class="compare-item"><span class="ci">✗</span><span>Old images used out of context</span></div>
             <div class="compare-item"><span class="ci">✗</span><span>Credibility score 0-40</span></div>
         </div>
-
         <div class="right-divider"></div>
-
-        <!-- TIPS -->
         <h3>💡 Quick Tips</h3>
-        <div class="tip-card">
-            <h4>📝 For Text</h4>
-            <p>Paste full article or WhatsApp message. URL analysis extracts content automatically.</p>
-        </div>
-        <div class="tip-card">
-            <h4>🖼️ For Images</h4>
-            <p>Upload suspected AI-generated or deepfake images. Score above 50% = likely AI generated.</p>
-        </div>
-        <div class="tip-card">
-            <h4>🎥 For Videos</h4>
-            <p>Upload videos up to 50MB. Frame-by-frame deepfake detection takes 30-60 seconds.</p>
-        </div>
+        <div class="tip-card"><h4>📝 For Text</h4><p>Paste full article or WhatsApp message. URL analysis extracts content automatically.</p></div>
+        <div class="tip-card"><h4>🖼️ For Images</h4><p>Upload suspected AI-generated or deepfake images. Score above 50% = likely AI generated.</p></div>
+        <div class="tip-card"><h4>🎥 For Videos</h4><p>Upload videos up to 50MB. Frame-by-frame deepfake detection takes 30-60 seconds.</p></div>
+        <div class="tip-card"><h4>🎙️ For Voice</h4><p>Hold the button and speak the news. AI will analyze and speak the verdict back to you!</p></div>
     </div>
 </div>
 
 <script>
-    // MODE SWITCHING
     function setMode(mode) {
-        ['text','image','video'].forEach(m => {
+        ['text','image','video','voice'].forEach(m => {
             document.getElementById('tab-' + m).classList.remove('active');
             document.getElementById('tab-' + m + '-btn').classList.remove('active');
         });
         document.getElementById('tab-' + mode).classList.add('active');
         document.getElementById('tab-' + mode + '-btn').classList.add('active');
-
-        // Sidebar
-        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-        const sidebarItems = document.querySelectorAll('.sidebar-item');
-        if (mode === 'text') sidebarItems[0].classList.add('active');
-        else if (mode === 'image') sidebarItems[1].classList.add('active');
-        else if (mode === 'video') sidebarItems[2].classList.add('active');
+        const items = document.querySelectorAll('.sidebar-item');
+        items.forEach(el => el.classList.remove('active'));
+        if (mode === 'text') items[0].classList.add('active');
+        else if (mode === 'image') items[1].classList.add('active');
+        else if (mode === 'video') items[2].classList.add('active');
+        else if (mode === 'voice') items[3].classList.add('active');
     }
 
-    // TEXT DETECTION
+    // VOICE
+    let recognition, finalText = "";
+
+    function setupRecognition() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { document.getElementById('voice-status').textContent = "Chrome use karo!"; return null; }
+        const r = new SR();
+        r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
+        r.onstart = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Sun raha hoon..."; finalText = ""; };
+        r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
+        r.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Suna nahi — phir try karo"; };
+        r.onerror = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
+        return r;
+    }
+
+    function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
+    function stopListening() { if (recognition) recognition.stop(); }
+    function orbClick() { startListening(); setTimeout(() => stopListening(), 5000); }
+
+    async function sendVoiceToAI(text) {
+        document.getElementById('voice-status').textContent = "AI analyze kar raha hai...";
+        document.getElementById('voice-response').textContent = "...";
+        document.getElementById('voice-transcript').textContent = "Tumne kaha: " + text;
+        try {
+            const res = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) });
+            const data = await res.json();
+            document.getElementById('voice-response').textContent = data.reply;
+            speakReply(data.reply);
+        } catch { document.getElementById('voice-status').textContent = "Server se connect nahi hua"; }
+    }
+
+    function speakReply(text) {
+        document.getElementById('voice-orb').className = 'voice-orb speaking';
+        document.getElementById('voice-status').textContent = "Bol raha hoon...";
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'hi-IN'; u.rate = 1.0;
+        u.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; document.getElementById('voice-status').textContent = "Button dabao aur news bolo"; };
+        speechSynthesis.speak(u);
+    }
+
+    // TEXT
     function detectText() {
         const text = document.getElementById('news_text').value;
         const url = document.getElementById('news_url').value;
         if (!text.trim() && !url.trim()) { alert('Please enter text or URL!'); return; }
-
         const btn = document.querySelector('#tab-text .analyze-btn');
         btn.disabled = true; btn.textContent = '⏳ Analyzing...';
         document.getElementById('text-loading').classList.add('show');
         document.getElementById('text-result').classList.remove('show');
-
-        const fd = new FormData();
-        fd.append('news_text', text);
-        fd.append('news_url', url);
-
-        fetch('/detect', { method: 'POST', body: fd })
-        .then(r => r.json())
-        .then(data => {
+        const fd = new FormData(); fd.append('news_text', text); fd.append('news_url', url);
+        fetch('/detect', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
             btn.disabled = false; btn.textContent = '🔍 Analyze Now';
             document.getElementById('text-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
-
             const isReal = data.verdict === 'REAL';
             const banner = document.getElementById('verdict-banner');
             banner.className = 'verdict-banner ' + (isReal ? 'real' : 'fake');
             document.getElementById('verdict-emoji').textContent = isReal ? '✅' : '❌';
             document.getElementById('verdict-text').textContent = isReal ? 'REAL NEWS' : 'FAKE NEWS';
             document.getElementById('verdict-sub').textContent = 'Confidence: ' + data.confidence + '%';
-
             const score = data.credibility_score;
             const bar = document.getElementById('gauge-bar');
-            bar.style.background = isReal ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #ef4444, #f87171)';
+            bar.style.background = isReal ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#ef4444,#f87171)';
             setTimeout(() => { bar.style.width = score + '%'; }, 100);
             const scoreEl = document.getElementById('gauge-score');
-            scoreEl.textContent = score + '/100';
-            scoreEl.style.color = isReal ? '#34d399' : '#f87171';
-
-            // AI Analysis
-            if (data.grok_reason) {
-                document.getElementById('ai-reason').textContent = data.grok_reason;
-                const factsEl = document.getElementById('ai-facts');
-                factsEl.innerHTML = '';
-                (data.grok_facts || []).forEach(f => { factsEl.innerHTML += `<div class="fact-item">${f}</div>`; });
-                document.getElementById('ai-box').style.display = 'block';
-            }
-
-            // Language
-            if (data.detected_lang && data.detected_lang !== 'English') {
-                document.getElementById('lang-name').textContent = data.detected_lang;
-                document.getElementById('lang-box').style.display = 'block';
-            }
-
-            // Source
-            if (data.reputation && data.reputation.found) {
-                const rep = data.reputation;
-                const sl = document.getElementById('source-label');
-                sl.textContent = rep.label;
-                sl.className = 'source-badge ' + (rep.tier === 1 ? 'source-green' : rep.tier === 2 ? 'source-yellow' : 'source-red');
-                document.getElementById('source-desc').textContent = rep.desc;
-                document.getElementById('source-box').style.display = 'block';
-            }
-
-            // Indian Facts
-            if (data.indian_facts && data.indian_facts.length > 0) {
-                const el = document.getElementById('india-facts');
-                el.innerHTML = '';
-                data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; });
-                document.getElementById('india-box').style.display = 'block';
-            }
-
-            // Fact Check
-            if (data.fact_results && data.fact_results.length > 0) {
-                const el = document.getElementById('factcheck-list');
-                el.innerHTML = '';
-                data.fact_results.forEach(item => {
-                    el.innerHTML += `<div class="fact-item">${item.text} <strong>[${item.rating}]</strong></div>`;
-                });
-                document.getElementById('factcheck-box').style.display = 'block';
-            }
-
-            // Cricket
-            if (data.cricket_scores && data.cricket_scores.length > 0) {
-                const el = document.getElementById('cricket-list');
-                el.innerHTML = '';
-                data.cricket_scores.forEach(m => {
-                    el.innerHTML += `<div class="cricket-match">
-                        <h4>🏏 ${m.team1} vs ${m.team2}</h4>
-                        <div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div>
-                        <div class="cricket-status">${m.status} • ${m.seriesName}</div>
-                    </div>`;
-                });
-                document.getElementById('cricket-box').style.display = 'block';
-            }
-
+            scoreEl.textContent = score + '/100'; scoreEl.style.color = isReal ? '#34d399' : '#f87171';
+            if (data.grok_reason) { document.getElementById('ai-reason').textContent = data.grok_reason; const fe = document.getElementById('ai-facts'); fe.innerHTML = ''; (data.grok_facts||[]).forEach(f => { fe.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('ai-box').style.display = 'block'; }
+            if (data.detected_lang && data.detected_lang !== 'English') { document.getElementById('lang-name').textContent = data.detected_lang; document.getElementById('lang-box').style.display = 'block'; }
+            if (data.reputation && data.reputation.found) { const rep = data.reputation; const sl = document.getElementById('source-label'); sl.textContent = rep.label; sl.className = 'source-badge ' + (rep.tier===1?'source-green':rep.tier===2?'source-yellow':'source-red'); document.getElementById('source-desc').textContent = rep.desc; document.getElementById('source-box').style.display = 'block'; }
+            if (data.indian_facts && data.indian_facts.length > 0) { const el = document.getElementById('india-facts'); el.innerHTML = ''; data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('india-box').style.display = 'block'; }
+            if (data.fact_results && data.fact_results.length > 0) { const el = document.getElementById('factcheck-list'); el.innerHTML = ''; data.fact_results.forEach(i => { el.innerHTML += `<div class="fact-item">${i.text} <strong>[${i.rating}]</strong></div>`; }); document.getElementById('factcheck-box').style.display = 'block'; }
+            if (data.cricket_scores && data.cricket_scores.length > 0) { const el = document.getElementById('cricket-list'); el.innerHTML = ''; data.cricket_scores.forEach(m => { el.innerHTML += `<div class="cricket-match"><h4>🏏 ${m.team1} vs ${m.team2}</h4><div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div><div class="cricket-status">${m.status} • ${m.seriesName}</div></div>`; }); document.getElementById('cricket-box').style.display = 'block'; }
             document.getElementById('text-result').classList.add('show');
-        })
-        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Now'; document.getElementById('text-loading').classList.remove('show'); alert('Error!'); });
+        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Now'; document.getElementById('text-loading').classList.remove('show'); alert('Error!'); });
     }
 
     // IMAGE
     function handleImg(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]; if (!file) return;
         if (file.size > 10*1024*1024) { alert('Max 10MB!'); e.target.value=''; return; }
         const reader = new FileReader();
-        reader.onload = ev => {
-            document.getElementById('img-preview').src = ev.target.result;
-            document.getElementById('img-preview-wrap').style.display = 'block';
-            document.getElementById('img-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
-            document.getElementById('img-btn').disabled = false;
-        };
-        reader.readAsDataURL(file);
-        document.getElementById('img-result').classList.remove('show');
+        reader.onload = ev => { document.getElementById('img-preview').src = ev.target.result; document.getElementById('img-preview-wrap').style.display = 'block'; document.getElementById('img-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)'; document.getElementById('img-btn').disabled = false; };
+        reader.readAsDataURL(file); document.getElementById('img-result').classList.remove('show');
     }
 
     function detectImage() {
-        const fi = document.getElementById('img-input');
-        if (!fi.files[0]) { alert('Select an image!'); return; }
-        const btn = document.getElementById('img-btn');
-        btn.disabled = true; btn.textContent = '⏳ Analyzing...';
-        document.getElementById('img-loading').classList.add('show');
-        document.getElementById('img-result').classList.remove('show');
-        const fd = new FormData();
-        fd.append('image', fi.files[0]);
-        fetch('/detect-image', { method: 'POST', body: fd })
-        .then(r => r.json())
-        .then(data => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Image';
-            document.getElementById('img-loading').classList.remove('show');
+        const fi = document.getElementById('img-input'); if (!fi.files[0]) { alert('Select an image!'); return; }
+        const btn = document.getElementById('img-btn'); btn.disabled = true; btn.textContent = '⏳ Analyzing...';
+        document.getElementById('img-loading').classList.add('show'); document.getElementById('img-result').classList.remove('show');
+        const fd = new FormData(); fd.append('image', fi.files[0]);
+        fetch('/detect-image', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+            btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
             const isFake = data.final_verdict.includes('FAKE') || data.final_verdict.includes('AI');
-            const banner = document.getElementById('img-verdict-banner');
-            banner.className = 'verdict-banner ' + (isFake ? 'fake' : 'real');
+            document.getElementById('img-verdict-banner').className = 'verdict-banner ' + (isFake ? 'fake' : 'real');
             document.getElementById('img-verdict-emoji').textContent = isFake ? '⚠️' : '✅';
             document.getElementById('img-verdict-text').textContent = data.final_verdict;
             document.getElementById('img-verdict-sub').textContent = 'AI Score: ' + data.overall_score + '%';
-            const bar = document.getElementById('img-gauge');
-            bar.style.background = isFake ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
+            const bar = document.getElementById('img-gauge'); bar.style.background = isFake ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
             setTimeout(() => { bar.style.width = data.overall_score + '%'; }, 100);
-            const sc = document.getElementById('img-score');
-            sc.textContent = data.overall_score + '%';
-            sc.style.color = isFake ? '#f87171' : '#34d399';
-            if (data.sightengine) {
-                const se = data.sightengine;
-                document.getElementById('img-se-verdict').textContent = se.verdict;
-                document.getElementById('img-se-verdict').style.color = se.is_fake ? '#f87171' : '#34d399';
-                document.getElementById('img-se-score').textContent = 'AI Generated: ' + se.ai_generated_score + '% | Confidence: ' + se.confidence + '%';
-            }
+            const sc = document.getElementById('img-score'); sc.textContent = data.overall_score + '%'; sc.style.color = isFake ? '#f87171' : '#34d399';
+            if (data.sightengine) { document.getElementById('img-se-verdict').textContent = data.sightengine.verdict; document.getElementById('img-se-verdict').style.color = data.sightengine.is_fake ? '#f87171' : '#34d399'; document.getElementById('img-se-score').textContent = 'AI Generated: ' + data.sightengine.ai_generated_score + '% | Confidence: ' + data.sightengine.confidence + '%'; }
             document.getElementById('img-result').classList.add('show');
-        })
-        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show'); alert('Error!'); });
+        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show'); alert('Error!'); });
     }
 
     // VIDEO
     function handleVid(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]; if (!file) return;
         if (file.size > 50*1024*1024) { alert('Max 50MB!'); e.target.value=''; return; }
         document.getElementById('vid-preview').src = URL.createObjectURL(file);
         document.getElementById('vid-preview-wrap').style.display = 'block';
         document.getElementById('vid-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
-        document.getElementById('vid-btn').disabled = false;
-        document.getElementById('vid-result').classList.remove('show');
+        document.getElementById('vid-btn').disabled = false; document.getElementById('vid-result').classList.remove('show');
     }
 
     function detectVideo() {
-        const fi = document.getElementById('vid-input');
-        if (!fi.files[0]) { alert('Select a video!'); return; }
-        const btn = document.getElementById('vid-btn');
-        btn.disabled = true; btn.textContent = '⏳ Analyzing (30-60s)...';
-        document.getElementById('vid-loading').classList.add('show');
-        document.getElementById('vid-result').classList.remove('show');
-        const fd = new FormData();
-        fd.append('video', fi.files[0]);
-        fetch('/detect-video', { method: 'POST', body: fd })
-        .then(r => r.json())
-        .then(data => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Video';
-            document.getElementById('vid-loading').classList.remove('show');
+        const fi = document.getElementById('vid-input'); if (!fi.files[0]) { alert('Select a video!'); return; }
+        const btn = document.getElementById('vid-btn'); btn.disabled = true; btn.textContent = '⏳ Analyzing (30-60s)...';
+        document.getElementById('vid-loading').classList.add('show'); document.getElementById('vid-result').classList.remove('show');
+        const fd = new FormData(); fd.append('video', fi.files[0]);
+        fetch('/detect-video', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+            btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
             const isDF = data.final_verdict.includes('DEEPFAKE');
-            const banner = document.getElementById('vid-verdict-banner');
-            banner.className = 'verdict-banner ' + (isDF ? 'fake' : 'real');
+            document.getElementById('vid-verdict-banner').className = 'verdict-banner ' + (isDF ? 'fake' : 'real');
             document.getElementById('vid-verdict-emoji').textContent = isDF ? '⚠️' : '✅';
             document.getElementById('vid-verdict-text').textContent = data.final_verdict;
             document.getElementById('vid-verdict-sub').textContent = 'Deepfake Score: ' + data.overall_score + '%';
-            const bar = document.getElementById('vid-gauge');
-            bar.style.background = isDF ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
+            const bar = document.getElementById('vid-gauge'); bar.style.background = isDF ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
             setTimeout(() => { bar.style.width = data.overall_score + '%'; }, 100);
-            const sc = document.getElementById('vid-score');
-            sc.textContent = data.overall_score + '%';
-            sc.style.color = isDF ? '#f87171' : '#34d399';
-            if (data.sightengine) {
-                document.getElementById('vid-frames').textContent = data.sightengine.frames_analyzed + ' frames';
-                document.getElementById('vid-frames').style.color = '#a78bfa';
-                document.getElementById('vid-max').textContent = data.sightengine.max_deepfake_score + '%';
-                document.getElementById('vid-max').style.color = isDF ? '#f87171' : '#34d399';
-            }
+            const sc = document.getElementById('vid-score'); sc.textContent = data.overall_score + '%'; sc.style.color = isDF ? '#f87171' : '#34d399';
+            if (data.sightengine) { document.getElementById('vid-frames').textContent = data.sightengine.frames_analyzed + ' frames'; document.getElementById('vid-frames').style.color = '#a78bfa'; document.getElementById('vid-max').textContent = data.sightengine.max_deepfake_score + '%'; document.getElementById('vid-max').style.color = isDF ? '#f87171' : '#34d399'; }
             document.getElementById('vid-result').classList.add('show');
-        })
-        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show'); alert('Error!'); });
+        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show'); alert('Error!'); });
     }
 
-    // DRAG DROP
     ['img-upload','vid-upload'].forEach(id => {
         const area = document.getElementById(id);
         area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor='var(--primary)'; });
         area.addEventListener('dragleave', () => { area.style.borderColor=''; });
-        area.addEventListener('drop', e => {
-            e.preventDefault(); area.style.borderColor='';
-            const input = area.querySelector('input');
-            input.files = e.dataTransfer.files;
-            input.dispatchEvent(new Event('change'));
-        });
+        area.addEventListener('drop', e => { e.preventDefault(); area.style.borderColor=''; const input = area.querySelector('input'); input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); });
     });
 </script>
 </body>
