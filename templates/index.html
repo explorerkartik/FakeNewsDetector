@@ -150,6 +150,18 @@
             box-shadow: 0 8px 30px rgba(233,69,96,0.3);
         }
         .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(233,69,96,0.5); }
+        .btn-hero-teal {
+            padding: 16px 40px;
+            background: linear-gradient(90deg, var(--teal), var(--blue));
+            border-radius: 30px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(20,184,166,0.3);
+        }
+        .btn-hero-teal:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(20,184,166,0.5); }
         .btn-hero-outline {
             padding: 16px 40px;
             border: 2px solid var(--border);
@@ -162,6 +174,7 @@
         }
         .btn-hero-outline:hover { border-color: var(--purple); background: rgba(168,85,247,0.1); }
 
+<<<<<<< HEAD
         /* VOICE HERO BUTTON */
         .btn-hero-voice {
             padding: 16px 40px;
@@ -194,6 +207,16 @@
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(1.4); }
         }
+=======
+        /* No-login note */
+        .no-login-note {
+            margin-top: 14px;
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.35);
+            animation: fadeInUp 0.8s ease 0.8s both;
+        }
+        .no-login-note span { color: var(--teal); }
+>>>>>>> 388ad80eb9b71758a9ffeaf49ce48d1fc301aa95
 
         /* STATS */
         .stats {
@@ -318,6 +341,7 @@
         }
         .cta-section h2 { font-size: 2.5em; font-weight: 900; margin-bottom: 16px; }
         .cta-section p { color: rgba(255,255,255,0.6); font-size: 1.1em; margin-bottom: 40px; }
+        .cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
         /* FOOTER */
         footer {
@@ -370,13 +394,15 @@
         <h1>Stop <span class="gradient">Fake News</span><br>Before It Spreads</h1>
         <p>India's most advanced AI-powered fact checker. Detect fake news in text, images, and videos instantly — in 12+ Indian languages.</p>
         <div class="hero-btns">
-            <a href="/register" class="btn-hero-primary">🚀 Start Detecting Free</a>
+            <a href="/register" class="btn-hero-primary">🚀 Register Free</a>
+            <a href="/free" class="btn-hero-teal">⚡ Try Without Login</a>
             <a href="/login" class="btn-hero-outline">Login to Dashboard</a>
             <a href="/voice" class="btn-hero-voice">
                 <div class="mic-pulse"></div>
                 Voice Check
             </a>
         </div>
+        <div class="no-login-note">⚡ <span>Try Without Login</span> — no signup needed, start detecting instantly</div>
         <div class="stats">
             <div class="stat-item">
                 <div class="stat-num">44K+</div>
@@ -516,9 +542,15 @@
 <div class="cta-section">
     <h2>Ready to Fight <span style="background: linear-gradient(90deg, var(--primary), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Misinformation?</span></h2>
     <p>Join thousands of Indians who trust FakeNews Detector to verify news before sharing.</p>
+<<<<<<< HEAD
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
         <a href="/register" class="btn-hero-primary">🚀 Start Detecting — It's Free</a>
         <a href="/voice" class="btn-hero-voice">🎙️ Try Voice Check</a>
+=======
+    <div class="cta-btns">
+        <a href="/register" class="btn-hero-primary">🚀 Register — It's Free</a>
+        <a href="/free" class="btn-hero-teal">⚡ Try Without Login</a>
+>>>>>>> 388ad80eb9b71758a9ffeaf49ce48d1fc301aa95
     </div>
 </div>
 
