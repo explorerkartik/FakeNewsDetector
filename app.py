@@ -186,35 +186,71 @@ def analyze_image_sightengine(image_file):
 # -- VIDEO DETECTION --
 def analyze_video_sightengine(video_file):
     try:
-        response = requests.post(
-            'https://api.sightengine.com/1.0/video/check-sync.json',
-            files={'media': video_file},
-            data={
-                'models': 'deepfake',
-                'api_user': SIGHTENGINE_USER,
-                'api_secret': SIGHTENGINE_SECRET
-            },
-            timeout=120
-        )
-        data = response.json()
-        if data.get('status') == 'success':
-            frames = data.get('data', {}).get('frames', [])
-            if frames:
-                deepfake_scores = [f.get('deepfake', {}).get('score', 0) for f in frames]
-                avg_score = sum(deepfake_scores) / len(deepfake_scores)
-                max_score = max(deepfake_scores)
-                is_deepfake = avg_score > 0.5
-                return {
-                    'frames_analyzed': len(frames),
-                    'avg_deepfake_score': round(avg_score * 100, 1),
-                    'max_deepfake_score': round(max_score * 100, 1),
-                    'is_deepfake': is_deepfake,
-                    'verdict': 'DEEPFAKE DETECTED' if is_deepfake else 'LIKELY AUTHENTIC',
-                    'confidence': round(avg_score * 100 if is_deepfake else (1 - avg_score) * 100, 1)
-                }
-        return None
+        import cv2
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp:
+            video_file.save(tmp.name)
+            tmp_path = tmp.name
+
+        cap = cv2.VideoCapture(tmp_path)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        sample_positions = [
+            int(total_frames * 0.1), int(total_frames * 0.25),
+            int(total_frames * 0.5), int(total_frames * 0.75),
+            int(total_frames * 0.9),
+        ]
+
+        frame_scores = []
+
+        for pos in sample_positions:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, pos)
+            ret, frame = cap.read()
+            if not ret:
+                continue
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as img_tmp:
+                cv2.imwrite(img_tmp.name, frame)
+                img_path = img_tmp.name
+            with open(img_path, 'rb') as img_file:
+                response = requests.post(
+                    'https://api.sightengine.com/1.0/check.json',
+                    files={'media': img_file},
+                    data={
+                        'models': 'genai',
+                        'api_user': SIGHTENGINE_USER,
+                        'api_secret': SIGHTENGINE_SECRET
+                    },
+                    timeout=20
+                )
+            os.unlink(img_path)
+            data = response.json()
+            if data.get('status') == 'success':
+                score = data.get('type', {}).get('ai_generated', 0)
+                frame_scores.append(score)
+
+        cap.release()
+        os.unlink(tmp_path)
+
+        if not frame_scores:
+            return None
+
+        avg_score = sum(frame_scores) / len(frame_scores)
+        max_score = max(frame_scores)
+        is_deepfake = avg_score > 0.5
+
+        return {
+            'frames_analyzed': len(frame_scores),
+            'avg_deepfake_score': round(avg_score * 100, 1),
+            'max_deepfake_score': round(max_score * 100, 1),
+            'is_deepfake': is_deepfake,
+            'verdict': 'DEEPFAKE DETECTED' if is_deepfake else 'LIKELY AUTHENTIC',
+            'confidence': round(avg_score * 100 if is_deepfake else (1 - avg_score) * 100, 1)
+        }
+
     except Exception as e:
-        print(f"Sightengine video error: {e}")
+        print(f"Video analysis error: {e}")
         return None
 
 # -- LANGUAGE SETUP --
@@ -594,7 +630,7 @@ def voice_assistant():
     if not user_message:
         return jsonify({"reply": "Kuch suna nahi, dobara boliye"})
     
-    response = client.chat.completions.create(
+    response = groq_client.chat.completions.create(  # ✅ client → groq_client
         model="llama-3.3-70b-versatile",
         messages=[
             {

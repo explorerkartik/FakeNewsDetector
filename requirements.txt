@@ -11,4 +11,4 @@ scikit-learn
 groq
 gunicorn
 authlib
-
+opencv-python-headless
