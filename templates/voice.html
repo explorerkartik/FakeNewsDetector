@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jarvis - Fake News Detector</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 24px;
+  }
+  h1 { font-size: 20px; color: #aaa; letter-spacing: 2px; }
+  #orb {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: #1a1a2e;
+    border: 3px solid #4444ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  #orb.listening {
+    background: #0d0d4a;
+    border-color: #00aaff;
+    box-shadow: 0 0 40px #00aaff88;
+    transform: scale(1.1);
+  }
+  #orb.speaking {
+    background: #1a0d2e;
+    border-color: #aa00ff;
+    box-shadow: 0 0 40px #aa00ff88;
+  }
+  #status { font-size: 15px; color: #888; text-align: center; }
+  #transcript {
+    font-size: 13px;
+    color: #aaa;
+    text-align: center;
+    max-width: 300px;
+    min-height: 20px;
+  }
+  #response {
+    font-size: 15px;
+    color: #ddd;
+    text-align: center;
+    max-width: 320px;
+    min-height: 60px;
+    line-height: 1.6;
+    padding: 12px;
+    border: 1px solid #222;
+    border-radius: 12px;
+    background: #111;
+  }
+  #holdBtn {
+    background: #1a1a2e;
+    border: 2px solid #4444ff;
+    color: white;
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #holdBtn:active { background: #0d0d4a; }
+  a { color: #4444ff; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>FAKE NEWS DETECTOR</h1>
+<div id="orb">🎙️</div>
+<div id="status">Button dabao aur news bolo</div>
+<div id="transcript"></div>
+<div id="response">Result yahan aayega...</div>
+
+<button id="holdBtn"
+  ontouchstart="startListening()"
+  ontouchend="stopListening()"
+  onmousedown="startListening()"
+  onmouseup="stopListening()">
+  Hold karke bolo
+</button>
+
+<a href="/">Wapas jao</a>
+
+<script>
+let recognition;
+let finalText = "";
+
+function setupRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('status').textContent = "Chrome use karo!";
+    return null;
+  }
+  const r = new SR();
+  r.lang = 'hi-IN';
+  r.continuous = false;
+  r.interimResults = true;
+
+  r.onstart = () => {
+    document.getElementById('orb').className = 'listening';
+    document.getElementById('status').textContent = "Sun raha hoon...";
+    finalText = "";
+  };
+
+  r.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('transcript').textContent = finalText || interim;
+  };
+
+  r.onend = () => {
+    document.getElementById('orb').className = '';
+    if (finalText.trim()) sendToAI(finalText.trim());
+    else document.getElementById('status').textContent = "Suna nahi — phir try karo";
+  };
+
+  r.onerror = (e) => {
+    document.getElementById('status').textContent = "Error: " + e.error;
+    document.getElementById('orb').className = '';
+  };
+  return r;
+}
+
+function startListening() {
+  recognition = setupRecognition();
+  if (recognition) recognition.start();
+}
+
+function stopListening() {
+  if (recognition) recognition.stop();
+}
+
+async function sendToAI(text) {
+  document.getElementById('status').textContent = "Analyze ho raha hai...";
+  document.getElementById('response').textContent = "...";
+  document.getElementById('transcript').textContent = "Tumne kaha: " + text;
+
+  try {
+    const res = await fetch('/api/voice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await res.json();
+    const reply = data.reply;
+    document.getElementById('response').textContent = reply;
+    speak(reply);
+  } catch (err) {
+    document.getElementById('status').textContent = "Error — server se connect nahi hua";
+  }
+}
+
+function speak(text) {
+  document.getElementById('orb').className = 'speaking';
+  document.getElementById('status').textContent = "Bol raha hoon...";
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'hi-IN';
+  utter.rate = 1.0;
+  utter.onend = () => {
+    document.getElementById('orb').className = '';
+    document.getElementById('status').textContent = "Button dabao aur news bolo";
+  };
+  speechSynthesis.speak(utter);
+}
+</script>
+</body>
+</html>

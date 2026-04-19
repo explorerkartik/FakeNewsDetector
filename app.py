@@ -586,6 +586,30 @@ def admin():
         total_users=total_users, total_analyses=total_analyses,
         total_fake=total_fake, total_real=total_real,
         all_users=all_users, recent_analyses=recent_analyses)
-
+@app.route('/api/voice', methods=['POST'])
+def voice_assistant():
+    data = request.get_json()
+    user_message = data.get('message', '')
+    
+    if not user_message:
+        return jsonify({"reply": "Kuch suna nahi, dobara boliye"})
+    
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": "Tum ek Fake News Detector assistant ho. User jo bhi news bolega, tum analyze karke batao ki wo fake hai ya real. Chhota aur clear jawab do Hindi mein."
+            },
+            {"role": "user", "content": user_message}
+        ],
+        max_tokens=150
+    )
+    
+    reply = response.choices[0].message.content
+    return jsonify({"reply": reply})
+@app.route('/voice')
+def voice_page():
+    return render_template('voice.html')
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=10000)
