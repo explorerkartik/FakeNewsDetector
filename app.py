@@ -197,10 +197,13 @@ def analyze_video_sightengine(video_file):
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = cap.get(cv2.CAP_PROP_FPS)
 
+        # 5 → 10 frames sample karo
         sample_positions = [
-            int(total_frames * 0.1), int(total_frames * 0.25),
-            int(total_frames * 0.5), int(total_frames * 0.75),
-            int(total_frames * 0.9),
+            int(total_frames * 0.05), int(total_frames * 0.15),
+            int(total_frames * 0.25), int(total_frames * 0.35),
+            int(total_frames * 0.45), int(total_frames * 0.55),
+            int(total_frames * 0.65), int(total_frames * 0.75),
+            int(total_frames * 0.85), int(total_frames * 0.95),
         ]
 
         frame_scores = []
@@ -218,7 +221,7 @@ def analyze_video_sightengine(video_file):
                     'https://api.sightengine.com/1.0/check.json',
                     files={'media': img_file},
                     data={
-                        'models': 'genai',
+                        'models': 'deepfake',        # genai → deepfake
                         'api_user': SIGHTENGINE_USER,
                         'api_secret': SIGHTENGINE_SECRET
                     },
@@ -227,7 +230,7 @@ def analyze_video_sightengine(video_file):
             os.unlink(img_path)
             data = response.json()
             if data.get('status') == 'success':
-                score = data.get('type', {}).get('ai_generated', 0)
+                score = data.get('face', {}).get('deepfake', 0)  # key badli
                 frame_scores.append(score)
 
         cap.release()
