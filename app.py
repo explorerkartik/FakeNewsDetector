@@ -371,8 +371,12 @@ def register():
             db.commit()
             db.close()
             return render_template('login.html', msg='Registration successful! Please login.')
-        except:
-            return render_template('register.html', msg='Username or email already exists!')
+        except Exception as e:
+            print(f"Register error: {e}")
+            db_err = str(e)
+            if 'unique' in db_err.lower() or 'duplicate' in db_err.lower():
+                return render_template('register.html', msg='Username or email already exists!')
+            return render_template('register.html', msg=f'Registration failed: {db_err}')
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
