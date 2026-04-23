@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FakeBot – AI Chatbot | FakeNews Detector</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{%- raw -%}
+  :root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);}
+  *{margin:0;padding:0;box-sizing:border-box}
+  button,a{cursor:pointer;}
+  body{min-height:100vh;background:var(--bg);font-family:'Bricolage Grotesque',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
+
+  /* BG */
+  .bg-scene{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.25;}
+  .orb1{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-100px;right:-80px;}
+  .orb2{width:400px;height:400px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-100px;}
+  .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.025)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.025)1px,transparent 1px);background-size:60px 60px;}
+
+  .chat-container{position:relative;z-index:1;width:100%;max-width:700px;height:88vh;display:flex;flex-direction:column;background:rgba(6,3,15,0.7);backdrop-filter:blur(28px);border-radius:28px;border:1px solid var(--glass-border);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.5);}
+
+  /* HEADER */
+  .chat-header{padding:16px 22px;background:rgba(124,58,237,0.15);border-bottom:1px solid var(--glass-border);display:flex;align-items:center;gap:12px;}
+  .bot-avatar{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--p1),var(--p2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 4px 16px rgba(124,58,237,0.4);flex-shrink:0;}
+  .chat-title{font-size:1rem;font-weight:800;color:#fff;}
+  .chat-subtitle{font-size:0.72rem;color:var(--p3);font-family:'DM Mono',monospace;margin-top:2px;display:flex;align-items:center;gap:6px;}
+  .online-dot{width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;animation:blink 2s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  .back-btn{margin-left:auto;padding:7px 16px;background:rgba(255,255,255,0.07);border-radius:100px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.78rem;border:1px solid var(--glass-border);transition:all 0.2s;flex-shrink:0;}
+  .back-btn:hover{color:#fff;border-color:var(--p3);}
+
+  /* MESSAGES */
+  .messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;}
+  .msg{max-width:80%;padding:12px 16px;border-radius:18px;font-size:0.9rem;line-height:1.6;word-wrap:break-word;}
+  .msg-bot{background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.2);color:var(--text);border-bottom-left-radius:4px;align-self:flex-start;}
+  .msg-user{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-bottom-right-radius:4px;align-self:flex-end;box-shadow:0 4px 16px rgba(124,58,237,0.3);}
+  .msg-time{font-size:0.65rem;opacity:0.5;margin-top:5px;font-family:'DM Mono',monospace;}
+
+  /* TYPING */
+  .typing-indicator{display:flex;gap:5px;padding:12px 16px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.15);border-radius:18px;border-bottom-left-radius:4px;align-self:flex-start;width:fit-content;}
+  .typing-indicator span{width:8px;height:8px;background:var(--p3);border-radius:50%;animation:bounce 1.2s infinite;}
+  .typing-indicator span:nth-child(2){animation-delay:0.2s}
+  .typing-indicator span:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+
+  /* SUGGESTIONS */
+  .suggestions{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px;}
+  .suggestion-chip{padding:6px 14px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);border-radius:100px;color:var(--p3);font-size:0.76rem;cursor:pointer;transition:all 0.25s;font-family:inherit;}
+  .suggestion-chip:hover{background:rgba(124,58,237,0.22);color:#fff;border-color:var(--p3);}
+
+  /* INPUT */
+  .input-area{padding:14px 18px;background:rgba(255,255,255,0.02);border-top:1px solid var(--glass-border);display:flex;gap:10px;align-items:center;}
+  .chat-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);border-radius:100px;padding:12px 20px;color:#fff;font-size:0.9rem;outline:none;font-family:inherit;transition:all 0.2s;}
+  .chat-input::placeholder{color:var(--text-dim);}
+  .chat-input:focus{border-color:var(--p3);background:rgba(124,58,237,0.08);}
+  .send-btn{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;cursor:pointer;font-size:1.1rem;color:#fff;transition:all 0.25s;flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.35);}
+  .send-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(124,58,237,0.5);}
+  .send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+  /* SCROLLBAR */
+  .messages::-webkit-scrollbar{width:4px;}
+  .messages::-webkit-scrollbar-track{background:transparent;}
+  .messages::-webkit-scrollbar-thumb{background:rgba(167,139,250,0.25);border-radius:2px;}
+{%- endraw -%}
+</style>
+</head>
+<body>
+<div class="bg-scene">
+  <div class="orb orb1"></div><div class="orb orb2"></div>
+  <div class="grid-bg"></div>
+</div>
+
+<div class="chat-container">
+  <div class="chat-header">
+    <div class="bot-avatar">🤖</div>
+    <div>
+      <div class="chat-title">FakeBot</div>
+      <div class="chat-subtitle"><span class="online-dot"></span> AI Fact-Check Assistant · Online</div>
+    </div>
+    <a href="/detector" class="back-btn">← Back to Detector</a>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="msg msg-bot">
+      👋 Namaste! Main <b>FakeBot</b> hoon — FakeNews Detector ka AI assistant.<br><br>
+      Mujhse poochh sakte ho:<br>
+      • Koi bhi news fake hai ya real? 🔍<br>
+      • Media literacy tips 📚<br>
+      • Website features ke baare mein ℹ️<br>
+      • Deepfake kya hota hai? 🎭<br><br>
+      <i>Hindi ya English — dono chalega! 😊</i>
+      <div class="msg-time">Just now</div>
+    </div>
+  </div>
+
+  <div class="suggestions" id="suggestions">
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">Deepfake kya hai?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">Fake news kaise pahchane?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">Website features batao</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">Operation Sindoor real hai?</span>
+  </div>
+
+  <div class="input-area">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Koi bhi news ya sawaal likhein…" autocomplete="off">
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+  /* ===== ORIGINAL CHATBOT JS — FULLY PRESERVED ===== */
+  let history = [];
+
+  function getTime() {
+    return new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  }
+
+  function appendMsg(role, text) {
+    const msgs = document.getElementById('messages');
+    const div  = document.createElement('div');
+    div.className = `msg msg-${role}`;
+    div.innerHTML = text.replace(/\n/g,'<br>') + `<div class="msg-time">${getTime()}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('messages');
+    const div  = document.createElement('div');
+    div.className = 'typing-indicator';
+    div.id = 'typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function hideTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const btn   = document.getElementById('sendBtn');
+    const msg   = input.value.trim();
+    if (!msg) return;
+
+    document.getElementById('suggestions').style.display = 'none';
+    input.value = '';
+    btn.disabled = true;
+    appendMsg('user', msg);
+    history.push({role:'user', content:msg});
+    showTyping();
+
+    try {
+      const res = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({message: msg, history: history})
+      });
+      const data = await res.json();
+      hideTyping();
+      appendMsg('bot', data.reply || 'Koi error aa gaya, dobara try karein.');
+      history.push({role:'assistant', content: data.reply});
+      if (history.length > 20) history = history.slice(-20);
+    } catch(e) {
+      hideTyping();
+      appendMsg('bot', '❌ Server se connect nahi ho pa raha. Please reload karein.');
+    }
+    btn.disabled = false;
+    input.focus();
+  }
+
+  function sendSuggestion(el) {
+    document.getElementById('chatInput').value = el.textContent;
+    sendMessage();
+  }
+
+  document.getElementById('chatInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
+</body>
+</html>
