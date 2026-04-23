@@ -16,15 +16,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 # ── PDF ──────────────────────────────────────────────────────────────────────
-<<<<<<< HEAD
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
-from reportlab.lib.units import inch
-=======
 from fpdf import FPDF
->>>>>>> d1568a7ec50deda0816ffb726c05319624b30b48
 import io
 
 load_dotenv()
