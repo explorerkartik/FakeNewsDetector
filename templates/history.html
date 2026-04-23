@@ -1,227 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>History - Fake News Detector</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .bg-circles {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .bg-circles span {
-            position: absolute;
-            display: block;
-            border-radius: 50%;
-            animation: animate 20s linear infinite;
-            bottom: -150px;
-        }
-
-        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
-        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
-        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
-
-        @keyframes animate {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
-        }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .nav-logo {
-            color: white;
-            font-size: 1.2em;
-            font-weight: 700;
-        }
-
-        .nav-logo span { color: #e94560; }
-
-        .nav-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .nav-links a {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.85em;
-            padding: 7px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
-        }
-
-        .nav-links a:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        h1 {
-            font-size: 1.8em;
-            font-weight: 800;
-            background: linear-gradient(90deg, #e94560, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 500px;
-        }
-
-        th {
-            padding: 12px 15px;
-            text-align: left;
-            color: rgba(255,255,255,0.5);
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.8);
-            font-size: 0.85em;
-        }
-
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.03); }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .badge-real {
-            background: rgba(16,185,129,0.15);
-            border: 1px solid rgba(16,185,129,0.3);
-            color: #10b981;
-        }
-
-        .badge-fake {
-            background: rgba(233,69,96,0.15);
-            border: 1px solid rgba(233,69,96,0.3);
-            color: #e94560;
-        }
-
-        .score-pill {
-            background: rgba(168,85,247,0.15);
-            border: 1px solid rgba(168,85,247,0.3);
-            color: #a855f7;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 50px 20px;
-            color: rgba(255,255,255,0.3);
-        }
-
-        .empty .icon { font-size: 3.5em; margin-bottom: 15px; }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 1.4em; }
-            .nav-logo { font-size: 1em; }
-            .card { padding: 15px; }
-        }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History - FakeNews Detector</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{%- raw -%}
+:root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}button,a{cursor:pointer;}
+body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px;}
+.bg-scene{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.2;}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-100px;right:-80px;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-100px;}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.025)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.025)1px,transparent 1px);background-size:60px 60px;}
+.container{position:relative;z-index:1;max-width:1000px;margin:0 auto;}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:10px;}
+.nav-logo{color:white;font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-logo .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;}
+.nav-logo span{color:var(--p3);}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap;}
+.nav-links a{color:var(--text-muted);text-decoration:none;font-size:0.78rem;padding:7px 16px;border-radius:100px;border:1px solid var(--glass-border);transition:all 0.2s;background:var(--glass);}
+.nav-links a:hover{color:white;border-color:var(--p3);}
+.page-title{font-size:1.7rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:20px;text-align:center;}
+.page-title span{background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.card{background:rgba(6,3,15,0.7);backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.4);}
+table{width:100%;border-collapse:collapse;min-width:500px;}
+.card-scroll{overflow-x:auto;}
+th{padding:14px 18px;text-align:left;color:var(--text-muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--glass-border);font-family:'DM Mono',monospace;}
+td{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.78);font-size:0.85rem;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.badge{padding:4px 12px;border-radius:100px;font-size:0.72rem;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;}
+.badge-real{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;}
+.badge-fake{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;}
+.score-pill{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);color:var(--p3);padding:4px 12px;border-radius:100px;font-size:0.72rem;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;}
+.empty{text-align:center;padding:60px 20px;color:var(--text-muted);}
+.empty .icon{font-size:3rem;margin-bottom:14px;opacity:0.4;}
+.empty p{font-size:0.88rem;}
+{%- endraw -%}
+</style>
 </head>
 <body>
-    <div class="bg-circles">
-        <span></span><span></span><span></span>
+<div class="bg-scene"><div class="orb orb1"></div><div class="orb orb2"></div><div class="grid-bg"></div></div>
+<div class="container">
+  <div class="nav">
+    <a href="/" class="nav-logo"><div class="logo-icon">🔍</div>FakeNews<span>Detector</span></a>
+    <div class="nav-links">
+      <a href="/detector">🔍 Detector</a>
+      <a href="/chatbot">🤖 FakeBot</a>
+      <a href="/logout">🚪 Logout</a>
     </div>
-
-    <div class="container">
-        <div class="nav">
-            <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
-            <div class="nav-links">
-                <a href="/detector">🔍 Detector</a>
-                <a href="/logout">🚪 Logout</a>
-            </div>
-        </div>
-
-        <h1>📋 Analysis History</h1>
-
-        <div class="card">
-            {% if records %}
-            <table>
-                <tr>
-                    <th>News Text</th>
-                    <th>Verdict</th>
-                    <th>Score</th>
-                    <th>Date</th>
-                </tr>
-                {% for record in records %}
-                <tr>
-                    <td>{{ record['input_text'][:80] }}...</td>
-                    <td>
-                        <span class="badge badge-{{ record['verdict'].lower() }}">
-                            {{ '✅' if record['verdict'] == 'REAL' else '❌' }} {{ record['verdict'] }}
-                        </span>
-                    </td>
-                    <td><span class="score-pill">{{ record['credibility_score'] }}/100</span></td>
-                    <td>{{ record['created_at'] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-            {% else %}
-            <div class="empty">
-                <div class="icon">📭</div>
-                <p>No analysis history yet!</p>
-                <p>Go detect some news!</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+  </div>
+  <h1 class="page-title">📋 Analysis <span>History</span></h1>
+  <div class="card"><div class="card-scroll">
+    {% if records %}
+    <table>
+      <tr><th>News Text</th><th>Verdict</th><th>Score</th><th>Date</th></tr>
+      {% for record in records %}
+      <tr>
+        <td>{{ record['input_text'][:80] }}...</td>
+        <td><span class="badge badge-{{ record['verdict'].lower() }}">{{ '✅' if record['verdict'] == 'REAL' else '❌' }} {{ record['verdict'] }}</span></td>
+        <td><span class="score-pill">{{ record['credibility_score'] }}/100</span></td>
+        <td style="color:var(--text-muted);font-family:'DM Mono',monospace;font-size:0.78rem;">{{ record['created_at'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div class="empty"><div class="icon">📭</div><p>No analysis history yet!</p><p style="margin-top:6px;font-size:0.8rem;opacity:0.6;">Go detect some news!</p></div>
+    {% endif %}
+  </div></div>
+</div>
 </body>
 </html>
