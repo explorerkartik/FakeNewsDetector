@@ -1,38 +1,55 @@
+<!-- ============================================================
+     PASTE THIS CONTENT INTO RESPECTIVE FILES
+     Each page is clearly marked with FILE: filename.html
+============================================================ -->
+
+<!-- ==================== FILE: login.html ==================== -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register - FakeNews Detector</title>
+<title>Login - FakeNews Detector</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 {%- raw -%}
 :root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}button,a{cursor:pointer;}
-body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+button,a{cursor:pointer;}
+body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
 .bg-scene{position:fixed;inset:0;z-index:0;pointer-events:none;}
 .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.28;}
 .orb1{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-100px;right:-80px;}
 .orb2{width:400px;height:400px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-100px;}
 .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.025)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.025)1px,transparent 1px);background-size:60px 60px;}
-.card{position:relative;z-index:1;background:rgba(6,3,15,0.75);backdrop-filter:blur(28px);border:1px solid var(--glass-border);border-radius:28px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.5);}
-.logo{text-align:center;margin-bottom:24px;}
-.logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 12px;box-shadow:0 6px 24px rgba(124,58,237,0.4);}
-.logo h2{font-size:1.5rem;font-weight:800;color:white;letter-spacing:-0.5px;}
-.logo p{color:var(--text-muted);font-size:0.82rem;margin-top:4px;}
-.msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#f87171;padding:11px 14px;border-radius:12px;text-align:center;margin-bottom:16px;font-size:0.85rem;}
-.input-group{position:relative;margin-bottom:14px;}
-.input-group span{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:0.9rem;opacity:0.4;}
-input[type=text],input[type=email],input[type=password]{width:100%;padding:13px 14px 13px 40px;border:1px solid var(--glass-border);border-radius:12px;background:rgba(255,255,255,0.05);color:white;font-size:0.9rem;transition:all 0.2s;outline:none;font-family:inherit;}
+.card{position:relative;z-index:1;background:rgba(6,3,15,0.75);backdrop-filter:blur(28px);border:1px solid var(--glass-border);border-radius:28px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.5);}
+.logo{text-align:center;margin-bottom:28px;}
+.logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 14px;box-shadow:0 6px 24px rgba(124,58,237,0.4);}
+.logo h1{font-size:1.6rem;font-weight:800;color:white;letter-spacing:-0.5px;}
+.logo h1 span{color:var(--p3);}
+.logo p{color:var(--text-muted);font-size:0.82rem;margin-top:5px;}
+.msg{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,247,0.25);color:#c084fc;padding:11px 14px;border-radius:12px;font-size:0.85rem;margin-bottom:18px;text-align:center;}
+.msg.error{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171;}
+.google-btn{width:100%;padding:13px;background:white;color:#333;border:none;border-radius:12px;font-size:0.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;transition:all 0.25s;margin-bottom:18px;font-family:inherit;}
+.google-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,0.15);}
+.google-icon{width:18px;height:18px;}
+.divider{text-align:center;color:var(--text-dim);margin:18px 0;font-size:0.78rem;position:relative;font-family:'DM Mono',monospace;}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:var(--glass-border);}
+.divider::before{left:0;}.divider::after{right:0;}
+.form-group{margin-bottom:15px;}
+label{display:block;color:var(--text-muted);font-size:0.7rem;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace;}
+.input-wrap{position:relative;}
+.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:0.9rem;opacity:0.4;}
+input[type=email],input[type=password],input[type=text]{width:100%;padding:13px 14px 13px 40px;border:1px solid var(--glass-border);border-radius:12px;background:rgba(255,255,255,0.05);color:white;font-size:0.9rem;transition:all 0.2s;outline:none;font-family:inherit;}
 input:focus{border-color:var(--p3);background:rgba(167,139,250,0.06);box-shadow:0 0 0 3px rgba(167,139,250,0.1);}
 input::placeholder{color:var(--text-dim);}
-.pass-strength{height:3px;border-radius:2px;background:var(--glass-border);margin-top:6px;overflow:hidden;}
-.pass-fill{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;width:0;}
 .btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--p1),var(--p2));color:white;border:none;border-radius:100px;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.25s;margin-top:6px;font-family:inherit;box-shadow:0 6px 24px rgba(124,58,237,0.35);}
 .btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(124,58,237,0.55);}
-.perks{display:flex;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
-.perk{font-size:0.7rem;color:var(--text-dim);display:flex;align-items:center;gap:4px;}
-.link{text-align:center;margin-top:16px;color:var(--text-muted);font-size:0.82rem;}
-.link a{color:var(--p3);text-decoration:none;font-weight:600;}
+.footer-links{text-align:center;margin-top:20px;color:var(--text-muted);font-size:0.82rem;}
+.footer-links a{color:var(--p3);text-decoration:none;font-weight:600;}
+.footer-links a:hover{color:var(--p4);}
+.back-link{text-align:center;margin-top:12px;}
+.back-link a{color:var(--text-dim);font-size:0.8rem;text-decoration:none;}
+.back-link a:hover{color:var(--text);}
 {%- endraw -%}
 </style>
 </head>
@@ -40,30 +57,23 @@ input::placeholder{color:var(--text-dim);}
 <div class="bg-scene"><div class="orb orb1"></div><div class="orb orb2"></div><div class="grid-bg"></div></div>
 <div class="card">
   <div class="logo">
-    <div class="logo-icon">🚀</div>
-    <h2>Create Account</h2>
-    <p>Join to start detecting fake news — it's free</p>
+    <div class="logo-icon">🔍</div>
+    <h1>FakeNews<span>Detector</span></h1>
+    <p>AI-Powered Fact Checker</p>
   </div>
-  {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
-  <form method="POST" action="/register">
-    <div class="input-group"><span>👤</span><input type="text" name="username" placeholder="Username" required></div>
-    <div class="input-group"><span>📧</span><input type="email" name="email" placeholder="Email Address" required></div>
-    <div class="input-group">
-      <span>🔒</span><input type="password" name="password" id="passInput" placeholder="Password (min 8 chars)" required>
-      <div class="pass-strength"><div class="pass-fill" id="passFill"></div></div>
-    </div>
-    <button type="submit" class="btn">🚀 Create Account →</button>
+  {% if msg %}<div class="msg {% if 'Invalid' in msg or 'Error' in msg %}error{% endif %}">{{ msg }}</div>{% endif %}
+  <a href="/auth/google" class="google-btn">
+    <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Continue with Google
+  </a>
+  <div class="divider">OR</div>
+  <form method="POST">
+    <div class="form-group"><label>Email</label><div class="input-wrap"><span class="input-icon">📧</span><input type="email" name="email" placeholder="Enter your email" required></div></div>
+    <div class="form-group"><label>Password</label><div class="input-wrap"><span class="input-icon">🔒</span><input type="password" name="password" placeholder="Enter your password" required></div></div>
+    <button type="submit" class="btn">🔍 Login</button>
   </form>
-  <div class="perks"><span class="perk">✅ Free forever</span><span class="perk">✅ No credit card</span><span class="perk">✅ Instant access</span></div>
-  <div class="link">Already have an account? <a href="/login">Login here</a></div>
+  <div class="footer-links"><p>Don't have an account? <a href="/register">Register here</a></p></div>
+  <div class="back-link"><a href="/">← Back to Home</a></div>
 </div>
-<script>
-document.getElementById('passInput').addEventListener('input',function(){
-  const v=this.value,f=document.getElementById('passFill');
-  let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
-  const c=['#ef4444','#f59e0b','#10b981','#a78bfa'],w=['25%','50%','75%','100%'];
-  f.style.width=v.length?(w[s-1]||'15%'):'0';f.style.background=v.length?(c[s-1]||'#ef4444'):'';
-});
-</script>
 </body>
 </html>
