@@ -1,190 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Fake News Detector</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .bg-circles {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .bg-circles span {
-            position: absolute;
-            display: block;
-            border-radius: 50%;
-            animation: animate 20s linear infinite;
-            bottom: -150px;
-        }
-
-        .bg-circles span:nth-child(1) { width: 80px; height: 80px; left: 25%; background: rgba(233,69,96,0.15); animation-delay: 0s; }
-        .bg-circles span:nth-child(2) { width: 20px; height: 20px; left: 10%; background: rgba(100,100,255,0.15); animation-delay: 2s; animation-duration: 12s; }
-        .bg-circles span:nth-child(3) { width: 20px; height: 20px; left: 70%; background: rgba(233,69,96,0.15); animation-delay: 4s; }
-
-        @keyframes animate {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
-        }
-
-        .card {
-            position: relative;
-            z-index: 1;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 50px 40px;
-            border-radius: 25px;
-            width: 420px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-        }
-
-        .logo {
-            text-align: center;
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            color: white;
-            text-align: center;
-            font-size: 1.8em;
-            margin-bottom: 5px;
-        }
-
-        .sub {
-            color: rgba(255,255,255,0.5);
-            text-align: center;
-            font-size: 0.9em;
-            margin-bottom: 30px;
-        }
-
-        .msg {
-            background: rgba(233,69,96,0.15);
-            border: 1px solid rgba(233,69,96,0.3);
-            color: #ff6b6b;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .input-group span {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.1em;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            background: rgba(255,255,255,0.07);
-            color: white;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #e94560;
-            background: rgba(255,255,255,0.1);
-        }
-
-        input::placeholder { color: rgba(255,255,255,0.3); }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(90deg, #e94560, #a855f7);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            margin-top: 5px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(233,69,96,0.4);
-        }
-
-        .link {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.5);
-            font-size: 0.9em;
-        }
-
-        .link a {
-            color: #e94560;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .link a:hover { text-decoration: underline; }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - FakeNews Detector</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{%- raw -%}
+:root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}button,a{cursor:pointer;}
+body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;}
+.bg-scene{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.28;}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-100px;right:-80px;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-100px;}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.025)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.025)1px,transparent 1px);background-size:60px 60px;}
+.card{position:relative;z-index:1;background:rgba(6,3,15,0.75);backdrop-filter:blur(28px);border:1px solid var(--glass-border);border-radius:28px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.5);}
+.logo{text-align:center;margin-bottom:24px;}
+.logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 12px;box-shadow:0 6px 24px rgba(124,58,237,0.4);}
+.logo h2{font-size:1.5rem;font-weight:800;color:white;letter-spacing:-0.5px;}
+.logo p{color:var(--text-muted);font-size:0.82rem;margin-top:4px;}
+.msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#f87171;padding:11px 14px;border-radius:12px;text-align:center;margin-bottom:16px;font-size:0.85rem;}
+.input-group{position:relative;margin-bottom:14px;}
+.input-group span{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:0.9rem;opacity:0.4;}
+input[type=text],input[type=email],input[type=password]{width:100%;padding:13px 14px 13px 40px;border:1px solid var(--glass-border);border-radius:12px;background:rgba(255,255,255,0.05);color:white;font-size:0.9rem;transition:all 0.2s;outline:none;font-family:inherit;}
+input:focus{border-color:var(--p3);background:rgba(167,139,250,0.06);box-shadow:0 0 0 3px rgba(167,139,250,0.1);}
+input::placeholder{color:var(--text-dim);}
+.pass-strength{height:3px;border-radius:2px;background:var(--glass-border);margin-top:6px;overflow:hidden;}
+.pass-fill{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;width:0;}
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--p1),var(--p2));color:white;border:none;border-radius:100px;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.25s;margin-top:6px;font-family:inherit;box-shadow:0 6px 24px rgba(124,58,237,0.35);}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(124,58,237,0.55);}
+.perks{display:flex;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
+.perk{font-size:0.7rem;color:var(--text-dim);display:flex;align-items:center;gap:4px;}
+.link{text-align:center;margin-top:16px;color:var(--text-muted);font-size:0.82rem;}
+.link a{color:var(--p3);text-decoration:none;font-weight:600;}
+{%- endraw -%}
+</style>
 </head>
 <body>
-    <div class="bg-circles">
-        <span></span><span></span><span></span>
+<div class="bg-scene"><div class="orb orb1"></div><div class="orb orb2"></div><div class="grid-bg"></div></div>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🚀</div>
+    <h2>Create Account</h2>
+    <p>Join to start detecting fake news — it's free</p>
+  </div>
+  {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+  <form method="POST" action="/register">
+    <div class="input-group"><span>👤</span><input type="text" name="username" placeholder="Username" required></div>
+    <div class="input-group"><span>📧</span><input type="email" name="email" placeholder="Email Address" required></div>
+    <div class="input-group">
+      <span>🔒</span><input type="password" name="password" id="passInput" placeholder="Password (min 8 chars)" required>
+      <div class="pass-strength"><div class="pass-fill" id="passFill"></div></div>
     </div>
-
-    <div class="card">
-        <div class="logo">🚀</div>
-        <h2>Create Account</h2>
-        <p class="sub">Join to start detecting fake news</p>
-
-        {% if msg %}
-        <div class="msg">{{ msg }}</div>
-        {% endif %}
-
-        <form method="POST" action="/register">
-            <div class="input-group">
-                <span>👤</span>
-                <input type="text" name="username" placeholder="Username" required>
-            </div>
-            <div class="input-group">
-                <span>📧</span>
-                <input type="email" name="email" placeholder="Email Address" required>
-            </div>
-            <div class="input-group">
-                <span>🔒</span>
-                <input type="password" name="password" placeholder="Password" required>
-            </div>
-            <button type="submit" class="btn">Create Account →</button>
-        </form>
-
-        <div class="link">
-            Already have an account? <a href="/login">Login here</a>
-        </div>
-    </div>
+    <button type="submit" class="btn">🚀 Create Account →</button>
+  </form>
+  <div class="perks"><span class="perk">✅ Free forever</span><span class="perk">✅ No credit card</span><span class="perk">✅ Instant access</span></div>
+  <div class="link">Already have an account? <a href="/login">Login here</a></div>
+</div>
+<script>
+document.getElementById('passInput').addEventListener('input',function(){
+  const v=this.value,f=document.getElementById('passFill');
+  let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const c=['#ef4444','#f59e0b','#10b981','#a78bfa'],w=['25%','50%','75%','100%'];
+  f.style.width=v.length?(w[s-1]||'15%'):'0';f.style.background=v.length?(c[s-1]||'#ef4444'):'';
+});
+</script>
 </body>
 </html>
