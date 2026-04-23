@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FakeNews Result – {{ result.verdict }}</title>
+<meta property="og:title" content="FakeNews Detector Result: {{ result.verdict }}">
+<meta property="og:description" content="Credibility Score: {{ result.credibility_score }}/100 — {{ result.reason }}">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+{%- raw -%}
+:root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}button,a{cursor:pointer;}
+body{min-height:100vh;background:var(--bg);font-family:'Bricolage Grotesque',sans-serif;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;}
+.bg-scene{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.25;}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-100px;right:-80px;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-100px;}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.025)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.025)1px,transparent 1px);background-size:60px 60px;}
+.card{position:relative;z-index:1;background:rgba(6,3,15,0.78);backdrop-filter:blur(28px);border-radius:28px;border:1px solid var(--glass-border);padding:40px;max-width:640px;width:100%;color:#fff;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.5);}
+.logo{font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--p3);margin-bottom:20px;letter-spacing:1px;}
+.verdict-badge{display:inline-block;padding:12px 32px;border-radius:100px;font-size:1.3rem;font-weight:800;margin-bottom:16px;letter-spacing:0.5px;}
+.real{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 6px 24px rgba(16,185,129,0.35);}
+.fake{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;box-shadow:0 6px 24px rgba(239,68,68,0.35);}
+.score-wrap{position:relative;width:110px;height:110px;margin:16px auto;}
+.score-wrap svg{transform:rotate(-90deg);}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-size:1.8rem;font-weight:800;}
+.score-txt{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--text-muted);}
+.score-label{color:var(--p3);margin-bottom:12px;font-size:0.78rem;font-family:'DM Mono',monospace;}
+.input-preview{background:rgba(255,255,255,0.04);border-radius:12px;padding:14px 16px;font-size:0.82rem;color:var(--text-muted);max-height:90px;overflow:hidden;text-align:left;margin-bottom:16px;border-left:3px solid var(--p1);}
+.reason{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.18);border-radius:14px;padding:16px;font-size:0.88rem;color:var(--text-muted);line-height:1.7;margin:14px 0;text-align:left;}
+.reason strong{color:var(--p3);}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.btn{padding:11px 22px;border-radius:100px;font-weight:700;cursor:pointer;text-decoration:none;font-size:0.82rem;transition:all 0.25s;border:none;font-family:inherit;}
+.btn-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;box-shadow:0 4px 18px rgba(124,58,237,0.35);}
+.btn-primary:hover{box-shadow:0 8px 28px rgba(124,58,237,0.55);transform:translateY(-1px);}
+.btn-share{background:rgba(255,255,255,0.07);color:#fff;border:1px solid var(--glass-border);}
+.btn-share:hover{background:rgba(255,255,255,0.12);}
+.btn-wa{background:#25D366;color:#fff;}
+.btn-tw{background:#1DA1F2;color:#fff;}
+.meta{font-size:0.68rem;color:rgba(255,255,255,0.3);margin-top:20px;font-family:'DM Mono',monospace;}
+{%- endraw -%}
+</style>
+</head>
+<body>
+<div class="bg-scene"><div class="orb orb1"></div><div class="orb orb2"></div><div class="grid-bg"></div></div>
+<div class="card">
+  <div class="logo">🔍 FakeNews Detector — Shared Result</div>
+  <div class="verdict-badge {{ 'real' if result.verdict == 'REAL' else 'fake' }}">
+    {{ '✅ REAL NEWS' if result.verdict == 'REAL' else '❌ FAKE NEWS' }}
+  </div>
+  <div class="score-wrap">
+    <svg width="110" height="110" viewBox="0 0 110 110">
+      <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+      <circle cx="55" cy="55" r="46" fill="none"
+        stroke="{{ '#10b981' if result.verdict == 'REAL' else '#ef4444' }}"
+        stroke-width="8" stroke-linecap="round"
+        stroke-dasharray="{{ 2 * 3.14159 * 46 }}"
+        stroke-dashoffset="{{ 2 * 3.14159 * 46 * (1 - result.credibility_score / 100) }}"/>
+    </svg>
+    <div class="score-center">
+      <div class="score-num" style="color:{{ '#10b981' if result.verdict == 'REAL' else '#ef4444' }}">{{ result.credibility_score }}</div>
+      <div class="score-txt">/100</div>
+    </div>
+  </div>
+  <div class="score-label">Credibility Score</div>
+  {% if result.input_text %}<div class="input-preview">📰 {{ result.input_text[:200] }}{% if result.input_text|length > 200 %}…{% endif %}</div>{% endif %}
+  {% if result.reason %}<div class="reason">💡 <strong>AI Analysis:</strong><br>{{ result.reason }}</div>{% endif %}
+  <div class="actions">
+    <a href="/" class="btn btn-primary">🔍 Check Your Own News</a>
+    <button class="btn btn-share" onclick="copyLink()">🔗 Copy Link</button>
+    <a href="https://wa.me/?text=Check%20this%20FakeNews%20result%3A%20{{ request.url | urlencode }}" target="_blank" class="btn btn-wa">WhatsApp</a>
+    <a href="https://twitter.com/intent/tweet?text=Fact-checked%3A%20{{ result.verdict }}%20%7C%20Score%3A%20{{ result.credibility_score }}%2F100&url={{ request.url | urlencode }}" target="_blank" class="btn btn-tw">Twitter</a>
+  </div>
+  <div class="meta">Analyzed {{ result.created_at.strftime('%d %b %Y, %I:%M %p') if result.created_at else '' }} · Built by Kartik Kumar Tiwari · MCA Final Year · Doranda College, Ranchi</div>
+</div>
+<script>
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => { alert('Link copied! Share karo 🚀'); });
+}
+</script>
+</body>
+</html>
