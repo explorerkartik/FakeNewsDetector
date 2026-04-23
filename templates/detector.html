@@ -4,223 +4,260 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FakeNews Detector - AI Powered Fact Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+{%- raw -%}
         :root {
-            --sidebar: #1e1b4b;
-            --sidebar-hover: #2d2a6e;
-            --sidebar-active: #4c1d95;
-            --bg: #13111f;
-            --card: #1e1b4b;
-            --card2: #252250;
-            --border: rgba(255,255,255,0.08);
-            --primary: #7c3aed;
-            --primary-light: #a78bfa;
-            --accent: #e94560;
-            --text: #e2e8f0;
-            --text-muted: rgba(255,255,255,0.45);
-            --green: #10b981;
-            --red: #ef4444;
+            --p1: #7c3aed; --p2: #2563eb; --p3: #a78bfa; --p4: #60a5fa;
+            --bg: #06030f; --bg2: #0d0620;
+            --sidebar-w: 72px;
+            --topbar-h: 60px;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.09);
+            --glass-hover: rgba(255,255,255,0.07);
+            --text: #f1f5f9;
+            --text-muted: rgba(241,245,249,0.45);
+            --text-dim: rgba(241,245,249,0.22);
+            --green: #10b981; --red: #ef4444;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        button, a { cursor: pointer; }
 
+        body {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            background: var(--bg); color: var(--text);
+            display: flex; min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* BG SCENE */
+        .bg-scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; }
+        .orb1 { width: 600px; height: 600px; background: radial-gradient(circle,#7c3aed,transparent 70%); top: -150px; right: -100px; }
+        .orb2 { width: 500px; height: 500px; background: radial-gradient(circle,#2563eb,transparent 70%); bottom: 0; left: -120px; }
+        .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(167,139,250,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.025) 1px, transparent 1px); background-size: 60px 60px; }
+
+        /* SIDEBAR */
         .sidebar {
-            width: 80px; background: var(--sidebar);
-            border-right: 1px solid var(--border);
+            width: var(--sidebar-w); background: rgba(6,3,15,0.9);
+            border-right: 1px solid var(--glass-border);
             display: flex; flex-direction: column; align-items: center;
-            padding: 16px 0; position: fixed; top: 0; left: 0;
-            height: 100vh; z-index: 100;
+            padding: 14px 0; position: fixed; top: 0; left: 0;
+            height: 100vh; z-index: 200; backdrop-filter: blur(24px);
         }
         .sidebar-logo {
-            width: 48px; height: 48px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 14px; display: flex; align-items: center;
-            justify-content: center; font-size: 1.4em; margin-bottom: 24px;
-            box-shadow: 0 4px 15px rgba(124,58,237,0.4);
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--p1), var(--p2));
+            border-radius: 12px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.2rem; margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.4);
         }
-        .sidebar-divider { width: 40px; height: 1px; background: var(--border); margin: 8px 0; }
+        .sidebar-divider { width: 36px; height: 1px; background: var(--glass-border); margin: 6px 0; }
         .sidebar-item {
-            width: 64px; padding: 10px 6px; border-radius: 12px;
+            width: 56px; padding: 9px 6px; border-radius: 12px;
             cursor: pointer; transition: all 0.2s; text-align: center;
-            margin-bottom: 4px; text-decoration: none; color: var(--text-muted);
+            margin-bottom: 3px; text-decoration: none; color: var(--text-muted);
+            border: 1px solid transparent;
         }
-        .sidebar-item:hover { background: var(--sidebar-hover); color: var(--text); }
-        .sidebar-item.active { background: var(--sidebar-active); color: white; }
-        .sidebar-item .s-icon { font-size: 1.4em; display: block; margin-bottom: 4px; }
-        .sidebar-item .s-label { font-size: 0.62em; display: block; line-height: 1.2; font-weight: 600; }
+        .sidebar-item:hover { background: var(--glass-hover); color: var(--text); border-color: var(--glass-border); }
+        .sidebar-item.active { background: rgba(124,58,237,0.2); color: white; border-color: rgba(124,58,237,0.3); }
+        .sidebar-item .s-icon { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+        .sidebar-item .s-label { font-size: 0.58rem; display: block; line-height: 1.2; font-weight: 600; font-family: 'DM Mono', monospace; }
         .sidebar-bottom { margin-top: auto; }
 
+        /* TOPBAR */
         .topbar {
-            position: fixed; top: 0; left: 80px; right: 0; height: 56px;
-            background: rgba(19,17,31,0.95); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            position: fixed; top: 0; left: var(--sidebar-w); right: 0;
+            height: var(--topbar-h);
+            background: rgba(6,3,15,0.88); backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; z-index: 99;
+            padding: 0 28px; z-index: 150;
         }
-        .topbar-title { font-size: 1em; font-weight: 700; color: white; }
-        .topbar-subtitle { font-size: 0.78em; color: var(--text-muted); }
-        .topbar-right { display: flex; align-items: center; gap: 12px; }
-        .topbar-btn { padding: 7px 16px; border-radius: 20px; font-size: 0.82em; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
-        .btn-history { background: var(--card); color: var(--text-muted); border: 1px solid var(--border); }
-        .btn-history:hover { color: white; border-color: var(--primary-light); }
-        .btn-logout { background: rgba(233,69,96,0.1); color: var(--accent); border: 1px solid rgba(233,69,96,0.2); }
-        .btn-logout:hover { background: rgba(233,69,96,0.2); }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-title { font-size: 0.95rem; font-weight: 800; color: white; }
+        .topbar-title span { color: var(--p3); }
+        .topbar-subtitle { font-size: 0.72rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        .topbar-btn { padding: 7px 16px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; font-family: inherit; }
+        .btn-history { background: var(--glass); color: var(--text-muted); border: 1px solid var(--glass-border); }
+        .btn-history:hover { color: white; border-color: var(--p3); }
+        .btn-chatbot { background: rgba(124,58,237,0.15); color: var(--p3); border: 1px solid rgba(124,58,237,0.25); }
+        .btn-chatbot:hover { background: rgba(124,58,237,0.25); }
+        .btn-voice-top { background: rgba(20,184,166,0.12); color: #2dd4bf; border: 1px solid rgba(20,184,166,0.25); }
+        .btn-voice-top:hover { background: rgba(20,184,166,0.22); }
+        .btn-logout { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); }
 
-        .main { margin-left: 80px; margin-top: 56px; flex: 1; display: flex; min-height: calc(100vh - 56px); }
-        .center-panel { flex: 1; padding: 24px; max-width: calc(100% - 320px); }
+        /* MAIN */
+        .main { margin-left: var(--sidebar-w); margin-top: var(--topbar-h); flex: 1; display: flex; min-height: calc(100vh - var(--topbar-h)); position: relative; z-index: 1; }
+        .center-panel { flex: 1; padding: 24px; max-width: calc(100% - 300px); }
         .page-header { margin-bottom: 20px; }
-        .page-header h1 { font-size: 1.6em; font-weight: 800; color: white; }
-        .page-header p { color: var(--text-muted); font-size: 0.88em; margin-top: 4px; }
+        .page-header h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
+        .page-header h1 span { background: linear-gradient(135deg,var(--p3),var(--p4)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .page-header p { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
 
+        /* MODE TABS */
         .mode-tabs {
-            display: flex; gap: 8px; margin-bottom: 20px;
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; padding: 6px;
+            display: flex; gap: 6px; margin-bottom: 18px;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 5px; backdrop-filter: blur(20px);
         }
         .mode-tab {
-            flex: 1; padding: 10px 12px; border-radius: 10px; border: none;
+            flex: 1; padding: 10px 10px; border-radius: 10px; border: none;
             background: transparent; color: var(--text-muted);
-            font-size: 0.88em; font-weight: 600; cursor: pointer;
+            font-size: 0.82rem; font-weight: 600; cursor: pointer;
             transition: all 0.2s; display: flex; align-items: center;
-            justify-content: center; gap: 6px;
+            justify-content: center; gap: 6px; font-family: inherit;
         }
-        .mode-tab.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124,58,237,0.4); }
-        .mode-tab:hover:not(.active) { background: var(--sidebar-hover); color: white; }
-        .mode-tab.voice-tab.active { background: linear-gradient(90deg,#0f6e56,#1d9e75); box-shadow: 0 4px 12px rgba(20,184,166,0.4); }
+        .mode-tab.active { background: linear-gradient(135deg,var(--p1),var(--p2)); color: white; box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
+        .mode-tab:hover:not(.active) { background: var(--glass-hover); color: white; }
+        .mode-tab.voice-tab.active { background: linear-gradient(135deg,#0f6e56,#1d9e75); box-shadow: 0 4px 16px rgba(20,184,166,0.4); }
 
-        .input-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
-        .input-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .input-card-header span { font-size: 0.85em; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        /* INPUT CARD */
+        .input-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; overflow: hidden; margin-bottom: 16px; backdrop-filter: blur(24px); }
+        .input-card-header { padding: 14px 18px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
+        .input-card-header span { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-family: 'DM Mono', monospace; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        textarea.main-input { width: 100%; min-height: 180px; padding: 18px; background: transparent; border: none; color: var(--text); font-size: 0.95em; font-family: inherit; resize: none; outline: none; line-height: 1.7; }
-        textarea.main-input::placeholder { color: var(--text-muted); }
-        .url-input-wrap { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
-        .url-input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.88em; outline: none; }
-        .url-input:focus { border-color: var(--primary-light); }
-        .url-input::placeholder { color: var(--text-muted); }
+        textarea.main-input { width: 100%; min-height: 160px; padding: 18px; background: transparent; border: none; color: var(--text); font-size: 0.92rem; font-family: inherit; resize: none; outline: none; line-height: 1.7; }
+        textarea.main-input::placeholder { color: var(--text-dim); }
+        .url-input-wrap { padding: 12px 18px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; align-items: center; }
+        .url-input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text); font-size: 0.85rem; outline: none; font-family: inherit; transition: border-color 0.2s; }
+        .url-input:focus { border-color: var(--p3); background: rgba(167,139,250,0.06); }
+        .url-input::placeholder { color: var(--text-dim); }
 
-        .upload-area { margin: 18px; border: 2px dashed rgba(124,58,237,0.3); border-radius: 14px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
-        .upload-area:hover { border-color: var(--primary); background: rgba(124,58,237,0.05); }
+        /* UPLOAD AREA */
+        .upload-area { margin: 18px; border: 2px dashed rgba(124,58,237,0.25); border-radius: 14px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.25s; position: relative; }
+        .upload-area:hover { border-color: var(--p3); background: rgba(124,58,237,0.05); }
         .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-icon { font-size: 2.5em; margin-bottom: 10px; }
-        .upload-area h3 { color: white; font-size: 1em; margin-bottom: 6px; }
-        .upload-area p { color: var(--text-muted); font-size: 0.82em; }
+        .upload-icon { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.6; }
+        .upload-area h3 { color: white; font-size: 0.95rem; margin-bottom: 6px; }
+        .upload-area p { color: var(--text-muted); font-size: 0.78rem; }
         .preview-wrap { margin: 0 18px 18px; display: none; }
-        .preview-wrap img, .preview-wrap video { width: 100%; max-height: 220px; object-fit: contain; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); }
-        .preview-name { font-size: 0.8em; color: var(--text-muted); margin-top: 6px; text-align: center; }
+        .preview-wrap img, .preview-wrap video { width: 100%; max-height: 200px; object-fit: contain; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); }
+        .preview-name { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; text-align: center; font-family: 'DM Mono', monospace; }
 
-        .action-bar { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .action-bar-left { display: flex; gap: 8px; }
-        .action-chip { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 0.78em; color: var(--text-muted); }
-        .analyze-btn { padding: 11px 28px; background: linear-gradient(90deg, var(--primary), #9333ea); border: none; border-radius: 10px; color: white; font-size: 0.95em; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-        .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124,58,237,0.4); }
-        .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        /* ACTION BAR */
+        .action-bar { padding: 12px 18px; border-top: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
+        .action-bar-left { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-chip { padding: 5px 12px; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.15); border-radius: 100px; font-size: 0.72rem; color: var(--p3); font-family: 'DM Mono', monospace; }
+        .analyze-btn { padding: 11px 26px; background: linear-gradient(135deg,var(--p1),var(--p2)); border: none; border-radius: 100px; color: white; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-family: inherit; box-shadow: 0 4px 20px rgba(124,58,237,0.35); }
+        .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.5); }
+        .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
         /* VOICE */
-        .voice-container { padding: 30px 18px; text-align: center; }
-        .voice-orb {
-            width: 140px; height: 140px; border-radius: 50%;
-            background: #1a1a2e; border: 3px solid #4444ff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 48px; cursor: pointer; transition: all 0.3s;
-            margin: 0 auto 20px;
-        }
-        .voice-orb.listening { background: #0d0d4a; border-color: #00aaff; box-shadow: 0 0 40px #00aaff88; transform: scale(1.1); }
-        .voice-orb.speaking { background: #1a0d2e; border-color: #aa00ff; box-shadow: 0 0 40px #aa00ff88; }
-        .voice-status { font-size: 0.9em; color: var(--text-muted); margin-bottom: 8px; }
-        .voice-transcript { font-size: 0.82em; color: var(--text-muted); min-height: 20px; margin-bottom: 14px; }
-        .voice-response { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 16px; font-size: 0.9em; color: var(--text); line-height: 1.6; min-height: 60px; margin-bottom: 20px; text-align: left; }
-        .voice-hold-btn { padding: 13px 36px; background: rgba(20,184,166,0.15); border: 2px solid rgba(20,184,166,0.5); border-radius: 50px; color: #2dd4bf; font-size: 0.95em; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .voice-hold-btn:active { background: rgba(20,184,166,0.3); color: white; box-shadow: 0 0 20px rgba(20,184,166,0.4); }
-        .voice-tip { font-size: 0.72em; color: var(--text-muted); margin-top: 12px; }
+        .voice-container { padding: 36px 24px; text-align: center; }
+        .voice-orb { width: 130px; height: 130px; border-radius: 50%; background: rgba(13,13,74,0.6); border: 3px solid rgba(124,58,237,0.5); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; cursor: pointer; transition: all 0.3s; margin: 0 auto 20px; box-shadow: 0 0 30px rgba(124,58,237,0.2); position: relative; }
+        .voice-orb::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px dashed rgba(167,139,250,0.2); animation: rotateSlow 20s linear infinite; }
+        @keyframes rotateSlow { to { transform: rotate(360deg); } }
+        .voice-orb.listening { background: rgba(13,13,74,0.8); border-color: #00aaff; box-shadow: 0 0 50px #00aaff60; transform: scale(1.08); }
+        .voice-orb.speaking { background: rgba(26,13,46,0.8); border-color: var(--p1); box-shadow: 0 0 50px rgba(124,58,237,0.5); }
+        .voice-status { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 6px; }
+        .voice-transcript { font-size: 0.78rem; color: var(--text-muted); min-height: 20px; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
+        .voice-response { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; font-size: 0.88rem; color: var(--text); line-height: 1.7; min-height: 60px; margin-bottom: 20px; text-align: left; }
+        .voice-hold-btn { padding: 13px 36px; background: rgba(20,184,166,0.12); border: 2px solid rgba(20,184,166,0.4); border-radius: 100px; color: #2dd4bf; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.3s; font-family: inherit; }
+        .voice-hold-btn:active { background: rgba(20,184,166,0.25); color: white; box-shadow: 0 0 24px rgba(20,184,166,0.4); }
+        .voice-tip { font-size: 0.7rem; color: var(--text-dim); margin-top: 12px; font-family: 'DM Mono', monospace; }
 
         /* RESULTS */
-        .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 14px; display: none; animation: fadeIn 0.4s ease; }
+        .result-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; padding: 20px; margin-bottom: 14px; display: none; animation: fadeIn 0.4s ease; backdrop-filter: blur(20px); }
         .result-card.show { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .verdict-banner { border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-        .verdict-banner.real { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
-        .verdict-banner.fake { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); }
-        .verdict-emoji { font-size: 2.5em; }
-        .verdict-text h2 { font-size: 1.4em; font-weight: 800; }
-        .verdict-text p { color: var(--text-muted); font-size: 0.88em; margin-top: 2px; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+        .verdict-banner { border-radius: 14px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .verdict-banner.real { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); }
+        .verdict-banner.fake { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); }
+        .verdict-emoji { font-size: 2.4rem; }
+        .verdict-text h2 { font-size: 1.4rem; font-weight: 800; }
+        .verdict-text p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
         .gauge-wrap { text-align: center; margin: 16px 0; }
-        .gauge-label { font-size: 0.78em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .gauge-bar-bg { background: rgba(255,255,255,0.08); border-radius: 10px; height: 10px; overflow: hidden; }
-        .gauge-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
-        .gauge-score { font-size: 2em; font-weight: 900; margin-top: 8px; }
+        .gauge-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+        .gauge-bar-bg { background: rgba(255,255,255,0.06); border-radius: 10px; height: 10px; overflow: hidden; }
+        .gauge-bar { height: 100%; border-radius: 10px; transition: width 1s ease; width: 0%; }
+        .gauge-score { font-size: 2rem; font-weight: 900; margin-top: 8px; }
         .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .info-box { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
-        .info-box h4 { font-size: 0.78em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .info-box p { font-size: 0.88em; color: var(--text); line-height: 1.5; }
-        .fact-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85em; }
+        .info-box { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px; }
+        .info-box h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+        .info-box p { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
+        .fact-item { padding: 7px 0; border-bottom: 1px solid var(--glass-border); font-size: 0.82rem; color: var(--text-muted); }
         .fact-item:last-child { border-bottom: none; }
-        .fact-item::before { content: '✦ '; color: var(--primary-light); }
-        .cricket-match { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
-        .cricket-match h4 { font-size: 0.88em; font-weight: 700; margin-bottom: 6px; }
-        .cricket-score { display: flex; gap: 10px; flex-wrap: wrap; }
-        .cricket-score span { background: rgba(16,185,129,0.15); color: #34d399; padding: 2px 10px; border-radius: 6px; font-size: 0.8em; }
-        .cricket-status { font-size: 0.75em; color: var(--text-muted); margin-top: 4px; }
-        .lang-badge { display: inline-block; background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3); color: var(--primary-light); padding: 3px 10px; border-radius: 8px; font-size: 0.82em; }
-        .source-badge { padding: 4px 12px; border-radius: 8px; font-size: 0.8em; font-weight: 600; display: inline-block; }
-        .source-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
-        .source-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
-        .source-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+        .fact-item::before { content: '✦ '; color: var(--p3); }
+        .cricket-match { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.15); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+        .cricket-match h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+        .cricket-score { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cricket-score span { background: rgba(16,185,129,0.12); color: #34d399; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-family: 'DM Mono', monospace; }
+        .cricket-status { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+        .lang-badge { display: inline-block; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.25); color: var(--p3); padding: 3px 10px; border-radius: 8px; font-size: 0.78rem; }
+        .source-badge { padding: 4px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; display: inline-block; }
+        .source-green { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+        .source-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+        .source-red { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
 
-        .right-panel { width: 300px; min-width: 300px; background: var(--card); border-left: 1px solid var(--border); padding: 20px 16px; position: fixed; right: 0; top: 56px; height: calc(100vh - 56px); overflow-y: auto; }
-        .right-panel h3 { font-size: 0.82em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
-        .compare-card { border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-        .compare-card.real-c { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
-        .compare-card.fake-c { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
-        .compare-title { font-size: 0.82em; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        /* RIGHT PANEL */
+        .right-panel { width: 290px; min-width: 290px; background: rgba(6,3,15,0.7); border-left: 1px solid var(--glass-border); padding: 18px 14px; position: fixed; right: 0; top: var(--topbar-h); height: calc(100vh - var(--topbar-h)); overflow-y: auto; backdrop-filter: blur(20px); }
+        .right-panel h3 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
+        .compare-card { border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+        .compare-card.real-c { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); }
+        .compare-card.fake-c { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); }
+        .compare-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .compare-title.real-t { color: #34d399; }
         .compare-title.fake-t { color: #f87171; }
-        .compare-item { font-size: 0.78em; color: rgba(255,255,255,0.65); padding: 4px 0; display: flex; gap: 6px; align-items: flex-start; line-height: 1.4; }
+        .compare-item { font-size: 0.74rem; color: rgba(255,255,255,0.55); padding: 3px 0; display: flex; gap: 6px; align-items: flex-start; line-height: 1.4; }
         .compare-item .ci { flex-shrink: 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-        .stat-box { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px 10px; text-align: center; }
-        .stat-box .stat-n { font-size: 1.3em; font-weight: 800; background: linear-gradient(90deg, var(--primary-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .stat-box .stat-l { font-size: 0.68em; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
-        .tip-card { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .tip-card h4 { font-size: 0.78em; color: var(--primary-light); font-weight: 700; margin-bottom: 6px; }
-        .tip-card p { font-size: 0.75em; color: rgba(255,255,255,0.55); line-height: 1.5; }
-        .right-divider { height: 1px; background: var(--border); margin: 14px 0; }
+        .stat-box { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+        .stat-box .stat-n { font-size: 1.25rem; font-weight: 800; background: linear-gradient(135deg,var(--p3),var(--p4)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-box .stat-l { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; line-height: 1.3; font-family: 'DM Mono', monospace; }
+        .tip-card { background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.18); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .tip-card h4 { font-size: 0.72rem; color: var(--p3); font-weight: 700; margin-bottom: 5px; }
+        .tip-card p { font-size: 0.72rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
+        .right-divider { height: 1px; background: var(--glass-border); margin: 12px 0; }
 
+        /* LOADING */
         .loading-wrap { text-align: center; padding: 30px; display: none; }
         .loading-wrap.show { display: block; }
-        .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--glass-border); border-top-color: var(--p3); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-wrap p { color: var(--text-muted); font-size: 0.88em; }
+        .loading-wrap p { color: var(--text-muted); font-size: 0.85rem; font-family: 'DM Mono', monospace; }
 
-        ::-webkit-scrollbar { width: 6px; }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 3px; }
 
         @media (max-width: 900px) { .right-panel { display: none; } .center-panel { max-width: 100%; } }
-        @media (max-width: 600px) { .sidebar { width: 60px; } .main { margin-left: 60px; } .topbar { left: 60px; } }
-    </style>
+        @media (max-width: 600px) { .sidebar { width: 56px; } --sidebar-w: 56px; .main { margin-left: 56px; } .topbar { left: 56px; } .topbar-subtitle { display: none; } }
+    {%- endraw -%}
+</style>
 </head>
 <body>
+
+<div class="bg-scene">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="grid-bg"></div>
+</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-logo">🛡️</div>
     <div class="sidebar-divider"></div>
     <a class="sidebar-item active" onclick="setMode('text')" href="#">
-        <span class="s-icon">📝</span><span class="s-label">Text<br>Check</span>
+        <span class="s-icon">📝</span><span class="s-label">Text</span>
     </a>
     <a class="sidebar-item" onclick="setMode('image')" href="#">
-        <span class="s-icon">🖼️</span><span class="s-label">Image<br>Check</span>
+        <span class="s-icon">🖼️</span><span class="s-label">Image</span>
     </a>
     <a class="sidebar-item" onclick="setMode('video')" href="#">
-        <span class="s-icon">🎥</span><span class="s-label">Video<br>Check</span>
+        <span class="s-icon">🎥</span><span class="s-label">Video</span>
     </a>
     <a class="sidebar-item" onclick="setMode('voice')" href="#">
-        <span class="s-icon">🎙️</span><span class="s-label">Voice<br>Check</span>
+        <span class="s-icon">🎙️</span><span class="s-label">Voice</span>
     </a>
     <div class="sidebar-divider"></div>
+    <a class="sidebar-item" href="/chatbot">
+        <span class="s-icon">🤖</span><span class="s-label">FakeBot</span>
+    </a>
     <a class="sidebar-item" href="/history">
         <span class="s-icon">📋</span><span class="s-label">History</span>
     </a>
@@ -234,11 +271,15 @@
 
 <!-- TOPBAR -->
 <div class="topbar">
-    <div>
-        <div class="topbar-title">🛡️ FakeNews Detector</div>
-        <div class="topbar-subtitle">AI-Powered Fact Checker</div>
+    <div class="topbar-left">
+        <div>
+            <div class="topbar-title">🛡️ FakeNews<span>Detector</span></div>
+            <div class="topbar-subtitle">AI-Powered Fact Checker · Groq LLaMA 3.3</div>
+        </div>
     </div>
     <div class="topbar-right">
+        <a href="/chatbot" class="topbar-btn btn-chatbot">🤖 FakeBot</a>
+        <a href="#" class="topbar-btn btn-voice-top" onclick="setMode('voice'); return false;">🎙️ Voice</a>
         <a href="/history" class="topbar-btn btn-history">📋 History</a>
         <a href="/logout" class="topbar-btn btn-logout">Logout</a>
     </div>
@@ -248,7 +289,7 @@
 <div class="main">
     <div class="center-panel">
         <div class="page-header">
-            <h1>AI Fact Checker</h1>
+            <h1>AI <span>Fact Checker</span></h1>
             <p>Detect fake news in text, images, videos, and voice — powered by Groq LLaMA AI</p>
         </div>
 
@@ -264,11 +305,11 @@
             <div class="input-card">
                 <div class="input-card-header">
                     <span>📝 Enter News Text</span>
-                    <span style="font-size:0.75em;">Supports 12+ Indian Languages</span>
+                    <span>Supports 12+ Indian Languages</span>
                 </div>
                 <textarea class="main-input" id="news_text" placeholder="Paste news article, WhatsApp forward, or any claim here...&#10;&#10;Example: 'RCB won IPL 2025' or any political/sports/science news"></textarea>
                 <div class="url-input-wrap">
-                    <span style="font-size:0.85em; color:var(--text-muted); white-space:nowrap;">🔗 Or URL:</span>
+                    <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">🔗 Or URL:</span>
                     <input class="url-input" type="text" id="news_url" placeholder="https://example.com/news-article">
                 </div>
                 <div class="action-bar">
@@ -293,12 +334,12 @@
                 </div>
                 <div class="info-row">
                     <div class="info-box" id="ai-box" style="display:none;"><h4>🤖 AI Analysis</h4><p id="ai-reason"></p><div id="ai-facts" style="margin-top:8px;"></div></div>
-                    <div class="info-box" id="lang-box" style="display:none;"><h4>🌐 Language</h4><p>Detected: <span class="lang-badge" id="lang-name"></span></p><p style="margin-top:6px; font-size:0.82em; color:var(--text-muted);">Auto-translated to English</p></div>
-                    <div class="info-box" id="source-box" style="display:none;"><h4>🏛️ Source Reputation</h4><span class="source-badge" id="source-label"></span><p id="source-desc" style="margin-top:6px; font-size:0.82em;"></p></div>
+                    <div class="info-box" id="lang-box" style="display:none;"><h4>🌐 Language</h4><p>Detected: <span class="lang-badge" id="lang-name"></span></p><p style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);">Auto-translated to English</p></div>
+                    <div class="info-box" id="source-box" style="display:none;"><h4>🏛️ Source Reputation</h4><span class="source-badge" id="source-label"></span><p id="source-desc" style="margin-top:6px;font-size:0.78rem;"></p></div>
                     <div class="info-box" id="india-box" style="display:none;"><h4>🇮🇳 Indian Facts</h4><div id="india-facts"></div></div>
                 </div>
-                <div class="info-box" id="factcheck-box" style="display:none; margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
-                <div class="info-box" id="cricket-box" style="display:none; margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
+                <div class="info-box" id="factcheck-box" style="display:none;margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
+                <div class="info-box" id="cricket-box" style="display:none;margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
             </div>
         </div>
 
@@ -307,28 +348,41 @@
             <div class="input-card">
                 <div class="input-card-header">
                     <span>🖼️ Upload Image</span>
-                    <span style="font-size:0.75em;">AI Generated & Deepfake Detection</span>
+                    <span>Max 10MB · JPG/PNG/WEBP</span>
                 </div>
-                <div class="upload-area" id="img-upload">
+                <label class="upload-area" id="img-upload">
                     <input type="file" id="img-input" accept="image/*" onchange="handleImg(event)">
                     <div class="upload-icon">🖼️</div>
-                    <h3>Drop image here or click to upload</h3>
-                    <p>PNG, JPG, JPEG, WEBP • Max 10MB</p>
-                    <p style="margin-top:6px; color:rgba(124,58,237,0.8); font-size:0.78em;">Detects: AI Generated • Deepfake Faces • Manipulated Images</p>
+                    <h3>Drop image here or click to browse</h3>
+                    <p>Deepfake & AI-generated image detection via Sightengine</p>
+                </label>
+                <div class="preview-wrap" id="img-preview-wrap">
+                    <img id="img-preview" src="" alt="Preview">
+                    <div class="preview-name" id="img-name"></div>
                 </div>
-                <div class="preview-wrap" id="img-preview-wrap"><img id="img-preview" src="" alt="Preview"><div class="preview-name" id="img-name"></div></div>
                 <div class="action-bar">
-                    <div class="action-bar-left"><span class="action-chip">🤖 Sightengine</span><span class="action-chip">🧠 AI Detection</span></div>
-                    <button class="analyze-btn" onclick="detectImage()" id="img-btn" disabled>🔍 Analyze Image</button>
+                    <div class="action-bar-left">
+                        <span class="action-chip">🤖 Sightengine</span>
+                        <span class="action-chip">👤 Face Analysis</span>
+                        <span class="action-chip">🎭 Deepfake</span>
+                    </div>
+                    <button class="analyze-btn" id="img-btn" onclick="detectImage()" disabled>🔍 Analyze Image</button>
                 </div>
             </div>
-            <div class="loading-wrap" id="img-loading"><div class="spinner"></div><p>Analyzing image with Sightengine AI...</p></div>
+            <div class="loading-wrap" id="img-loading"><div class="spinner"></div><p>Scanning image for deepfakes...</p></div>
             <div class="result-card" id="img-result">
-                <div class="verdict-banner" id="img-verdict-banner"><div class="verdict-emoji" id="img-verdict-emoji"></div><div class="verdict-text"><h2 id="img-verdict-text"></h2><p id="img-verdict-sub"></p></div></div>
-                <div class="gauge-wrap"><div class="gauge-label">AI Generated Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="img-gauge" style="width:0%"></div></div><div class="gauge-score" id="img-score"></div></div>
+                <div class="verdict-banner" id="img-verdict-banner">
+                    <div class="verdict-emoji" id="img-verdict-emoji"></div>
+                    <div class="verdict-text"><h2 id="img-verdict-text"></h2><p id="img-verdict-sub"></p></div>
+                </div>
+                <div class="gauge-wrap">
+                    <div class="gauge-label">AI Score</div>
+                    <div class="gauge-bar-bg"><div class="gauge-bar" id="img-gauge" style="width:0%"></div></div>
+                    <div class="gauge-score" id="img-score"></div>
+                </div>
                 <div class="info-row">
-                    <div class="info-box"><h4>🤖 Sightengine Result</h4><p id="img-se-verdict" style="font-weight:700; font-size:1em;"></p><p id="img-se-score" style="margin-top:4px; font-size:0.85em; color:var(--text-muted);"></p></div>
-                    <div class="info-box"><h4>📊 Analysis Details</h4><p style="font-size:0.82em; color:var(--text-muted); line-height:1.6;">Images are analyzed for AI generation patterns, GAN artifacts, and face manipulation signatures.</p></div>
+                    <div class="info-box"><h4>🔍 Sightengine Verdict</h4><p id="img-se-verdict"></p><p id="img-se-score" style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);font-family:'DM Mono',monospace;"></p></div>
+                    <div class="info-box"><h4>ℹ️ About Deepfake Detection</h4><p style="font-size:0.82rem;color:var(--text-muted);">Frame-by-frame analysis using AI to detect manipulated faces and AI-generated content.</p></div>
                 </div>
             </div>
         </div>
@@ -338,28 +392,41 @@
             <div class="input-card">
                 <div class="input-card-header">
                     <span>🎥 Upload Video</span>
-                    <span style="font-size:0.75em;">Deepfake & Face Swap Detection</span>
+                    <span>Max 50MB · MP4/MOV/AVI</span>
                 </div>
-                <div class="upload-area" id="vid-upload">
+                <label class="upload-area" id="vid-upload">
                     <input type="file" id="vid-input" accept="video/*" onchange="handleVid(event)">
                     <div class="upload-icon">🎥</div>
-                    <h3>Drop video here or click to upload</h3>
-                    <p>MP4, AVI, MOV, MKV, WEBM • Max 50MB</p>
-                    <p style="margin-top:6px; color:rgba(233,69,96,0.8); font-size:0.78em;">Detects: Deepfake Faces • Face Swap • AI Generated Video</p>
+                    <h3>Drop video here or click to browse</h3>
+                    <p>Frame-by-frame deepfake & face-swap detection</p>
+                </label>
+                <div class="preview-wrap" id="vid-preview-wrap">
+                    <video id="vid-preview" controls></video>
+                    <div class="preview-name" id="vid-name"></div>
                 </div>
-                <div class="preview-wrap" id="vid-preview-wrap"><video id="vid-preview" controls></video><div class="preview-name" id="vid-name"></div></div>
                 <div class="action-bar">
-                    <div class="action-bar-left"><span class="action-chip">🎭 Sightengine</span><span class="action-chip">🔬 Frame Analysis</span></div>
-                    <button class="analyze-btn" onclick="detectVideo()" id="vid-btn" disabled>🔍 Analyze Video</button>
+                    <div class="action-bar-left">
+                        <span class="action-chip">🎞️ Frame Analysis</span>
+                        <span class="action-chip">🎭 Face-Swap</span>
+                        <span class="action-chip">📁 50MB Max</span>
+                    </div>
+                    <button class="analyze-btn" id="vid-btn" onclick="detectVideo()" disabled>🔍 Analyze Video</button>
                 </div>
             </div>
-            <div class="loading-wrap" id="vid-loading"><div class="spinner"></div><p>Analyzing video frame by frame... (30-60 sec)</p></div>
+            <div class="loading-wrap" id="vid-loading"><div class="spinner"></div><p>Processing video frames (30-60s)...</p></div>
             <div class="result-card" id="vid-result">
-                <div class="verdict-banner" id="vid-verdict-banner"><div class="verdict-emoji" id="vid-verdict-emoji"></div><div class="verdict-text"><h2 id="vid-verdict-text"></h2><p id="vid-verdict-sub"></p></div></div>
-                <div class="gauge-wrap"><div class="gauge-label">Deepfake Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="vid-gauge" style="width:0%"></div></div><div class="gauge-score" id="vid-score"></div></div>
+                <div class="verdict-banner" id="vid-verdict-banner">
+                    <div class="verdict-emoji" id="vid-verdict-emoji"></div>
+                    <div class="verdict-text"><h2 id="vid-verdict-text"></h2><p id="vid-verdict-sub"></p></div>
+                </div>
+                <div class="gauge-wrap">
+                    <div class="gauge-label">Deepfake Score</div>
+                    <div class="gauge-bar-bg"><div class="gauge-bar" id="vid-gauge" style="width:0%"></div></div>
+                    <div class="gauge-score" id="vid-score"></div>
+                </div>
                 <div class="info-row">
-                    <div class="info-box"><h4>🎬 Frames Analyzed</h4><p id="vid-frames" style="font-size:1.4em; font-weight:800;"></p></div>
-                    <div class="info-box"><h4>📊 Max Deepfake Score</h4><p id="vid-max" style="font-size:1.4em; font-weight:800;"></p></div>
+                    <div class="info-box"><h4>🎞️ Frames Analyzed</h4><p><span id="vid-frames" style="font-size:1.3rem;font-weight:800;"></span></p></div>
+                    <div class="info-box"><h4>⚠️ Max Deepfake Score</h4><p><span id="vid-max" style="font-size:1.3rem;font-weight:800;"></span></p></div>
                 </div>
             </div>
         </div>
@@ -369,19 +436,19 @@
             <div class="input-card">
                 <div class="input-card-header">
                     <span>🎙️ Voice News Check</span>
-                    <span style="font-size:0.75em;">Hindi & English Supported</span>
+                    <span>Hindi + English + 10 more</span>
                 </div>
                 <div class="voice-container">
-                    <div class="voice-orb" id="voice-orb" onclick="orbClick()">🎙️</div>
-                    <div class="voice-status" id="voice-status">Button dabao aur news bolo</div>
+                    <div class="voice-orb" id="voice-orb">🎙️</div>
+                    <div class="voice-status" id="voice-status">Hold button aur news bolo</div>
                     <div class="voice-transcript" id="voice-transcript"></div>
                     <div class="voice-response" id="voice-response">Result yahan aayega...</div>
-                    <button class="voice-hold-btn"
+                    <button class="voice-hold-btn" id="voice-hold-btn"
                         ontouchstart="startListening()" ontouchend="stopListening()"
                         onmousedown="startListening()" onmouseup="stopListening()">
-                        🎤 Hold karke bolo
+                        🎙️ Hold karke bolo
                     </button>
-                    <div class="voice-tip">Chrome browser mein best kaam karta hai • Mic permission allow karo</div>
+                    <div class="voice-tip">Chrome browser mein best kaam karta hai · Hindi / English dono chalega</div>
                 </div>
             </div>
         </div>
@@ -389,101 +456,74 @@
 
     <!-- RIGHT PANEL -->
     <div class="right-panel">
-        <h3>📊 Platform Stats</h3>
+        <h3>📊 Quick Stats</h3>
         <div class="stat-grid">
             <div class="stat-box"><div class="stat-n">44K+</div><div class="stat-l">Articles Trained</div></div>
-            <div class="stat-box"><div class="stat-n">95%</div><div class="stat-l">Accuracy Rate</div></div>
+            <div class="stat-box"><div class="stat-n">95%</div><div class="stat-l">Accuracy</div></div>
             <div class="stat-box"><div class="stat-n">12+</div><div class="stat-l">Languages</div></div>
-            <div class="stat-box"><div class="stat-n">4-in-1</div><div class="stat-l">Detection Modes</div></div>
+            <div class="stat-box"><div class="stat-n">3-in-1</div><div class="stat-l">Detection Modes</div></div>
         </div>
+
         <div class="right-divider"></div>
-        <h3>🔍 Real vs Fake Signals</h3>
+        <h3>🔍 Real vs Fake</h3>
         <div class="compare-card real-c">
-            <div class="compare-title real-t">✅ Signs of REAL News</div>
-            <div class="compare-item"><span class="ci">✓</span><span>Verified sources: NDTV, BBC, Reuters</span></div>
-            <div class="compare-item"><span class="ci">✓</span><span>Facts consistent across outlets</span></div>
-            <div class="compare-item"><span class="ci">✓</span><span>Author & date clearly mentioned</span></div>
-            <div class="compare-item"><span class="ci">✓</span><span>Neutral, factual language</span></div>
-            <div class="compare-item"><span class="ci">✓</span><span>Credibility score 75-100</span></div>
+            <div class="compare-title real-t">✅ Real News Signs</div>
+            <div class="compare-item"><span class="ci">✓</span> Verified sources (NDTV, BBC)</div>
+            <div class="compare-item"><span class="ci">✓</span> Consistent across outlets</div>
+            <div class="compare-item"><span class="ci">✓</span> Natural, calm language</div>
+            <div class="compare-item"><span class="ci">✓</span> Author & date mentioned</div>
         </div>
         <div class="compare-card fake-c">
-            <div class="compare-title fake-t">❌ Signs of FAKE News</div>
-            <div class="compare-item"><span class="ci">✗</span><span>Unknown or blacklisted sources</span></div>
-            <div class="compare-item"><span class="ci">✗</span><span>Sensational/emotional headlines</span></div>
-            <div class="compare-item"><span class="ci">✗</span><span>No author or publish date</span></div>
-            <div class="compare-item"><span class="ci">✗</span><span>Old images used out of context</span></div>
-            <div class="compare-item"><span class="ci">✗</span><span>Credibility score 0-40</span></div>
+            <div class="compare-title fake-t">❌ Fake News Signs</div>
+            <div class="compare-item"><span class="ci">✗</span> Unknown/sketchy sources</div>
+            <div class="compare-item"><span class="ci">✗</span> Sensational, clickbait tone</div>
+            <div class="compare-item"><span class="ci">✗</span> No author or date</div>
+            <div class="compare-item"><span class="ci">✗</span> Old images out of context</div>
         </div>
+
         <div class="right-divider"></div>
-        <h3>💡 Quick Tips</h3>
-        <div class="tip-card"><h4>📝 For Text</h4><p>Paste full article or WhatsApp message. URL analysis extracts content automatically.</p></div>
-        <div class="tip-card"><h4>🖼️ For Images</h4><p>Upload suspected AI-generated or deepfake images. Score above 50% = likely AI generated.</p></div>
-        <div class="tip-card"><h4>🎥 For Videos</h4><p>Upload videos up to 50MB. Frame-by-frame deepfake detection takes 30-60 seconds.</p></div>
-        <div class="tip-card"><h4>🎙️ For Voice</h4><p>Hold the button and speak the news. AI will analyze and speak the verdict back to you!</p></div>
+        <h3>💡 Tips</h3>
+        <div class="tip-card">
+            <h4>🔗 URL Check</h4>
+            <p>Paste a news URL to auto-extract and analyze the article content.</p>
+        </div>
+        <div class="tip-card">
+            <h4>🌐 Multi-language</h4>
+            <p>Hindi, Bengali, Tamil, Telugu — type in any Indian language, AI auto-detects.</p>
+        </div>
+        <div class="tip-card">
+            <h4>🤖 FakeBot</h4>
+            <p>Chat with FakeBot for media literacy tips and fact-check help.</p>
+        </div>
+
+        <div class="right-divider"></div>
+        <a href="/chatbot" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:var(--p3);border-radius:12px;padding:12px;text-decoration:none;font-size:0.82rem;font-weight:700;transition:all 0.2s;margin-bottom:8px;">🤖 Open FakeBot Chat</a>
+        <a href="/voice" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);color:#2dd4bf;border-radius:12px;padding:12px;text-decoration:none;font-size:0.82rem;font-weight:700;transition:all 0.2s;">🎙️ Voice Mode (Full Page)</a>
     </div>
 </div>
 
 <script>
+    // ===== MODE SWITCHING =====
     function setMode(mode) {
         ['text','image','video','voice'].forEach(m => {
-            document.getElementById('tab-' + m).classList.remove('active');
-            document.getElementById('tab-' + m + '-btn').classList.remove('active');
+            document.getElementById('tab-'+m).classList.remove('active');
+            const btn = document.getElementById('tab-'+m+'-btn');
+            if(btn) btn.classList.remove('active');
+            const si = document.querySelector(`.sidebar-item[onclick*="'${m}'"]`);
+            if(si) si.classList.remove('active');
         });
-        document.getElementById('tab-' + mode).classList.add('active');
-        document.getElementById('tab-' + mode + '-btn').classList.add('active');
-        const items = document.querySelectorAll('.sidebar-item');
-        items.forEach(el => el.classList.remove('active'));
-        if (mode === 'text') items[0].classList.add('active');
-        else if (mode === 'image') items[1].classList.add('active');
-        else if (mode === 'video') items[2].classList.add('active');
-        else if (mode === 'voice') items[3].classList.add('active');
+        document.getElementById('tab-'+mode).classList.add('active');
+        const btn = document.getElementById('tab-'+mode+'-btn');
+        if(btn) btn.classList.add('active');
+        const si = document.querySelector(`.sidebar-item[onclick*="'${mode}'"]`);
+        if(si) si.classList.add('active');
     }
 
-    // VOICE
-    let recognition, finalText = "";
-
-    function setupRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) { document.getElementById('voice-status').textContent = "Chrome use karo!"; return null; }
-        const r = new SR();
-        r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-        r.onstart = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Sun raha hoon..."; finalText = ""; };
-        r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
-        r.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Suna nahi — phir try karo"; };
-        r.onerror = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
-        return r;
-    }
-
-    function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
-    function stopListening() { if (recognition) recognition.stop(); }
-    function orbClick() { startListening(); setTimeout(() => stopListening(), 5000); }
-
-    async function sendVoiceToAI(text) {
-        document.getElementById('voice-status').textContent = "AI analyze kar raha hai...";
-        document.getElementById('voice-response').textContent = "...";
-        document.getElementById('voice-transcript').textContent = "Tumne kaha: " + text;
-        try {
-            const res = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) });
-            const data = await res.json();
-            document.getElementById('voice-response').textContent = data.reply;
-            speakReply(data.reply);
-        } catch { document.getElementById('voice-status').textContent = "Server se connect nahi hua"; }
-    }
-
-    function speakReply(text) {
-        document.getElementById('voice-orb').className = 'voice-orb speaking';
-        document.getElementById('voice-status').textContent = "Bol raha hoon...";
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'hi-IN'; u.rate = 1.0;
-        u.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; document.getElementById('voice-status').textContent = "Button dabao aur news bolo"; };
-        speechSynthesis.speak(u);
-    }
-
-    // TEXT
+    // ===== TEXT DETECTION (original logic preserved) =====
     function detectText() {
-        const text = document.getElementById('news_text').value;
-        const url = document.getElementById('news_url').value;
-        if (!text.trim() && !url.trim()) { alert('Please enter text or URL!'); return; }
+        const text = document.getElementById('news_text').value.trim();
+        const url  = document.getElementById('news_url').value.trim();
+        if (!text && !url) { alert('Please enter news text or URL!'); return; }
         const btn = document.querySelector('#tab-text .analyze-btn');
         btn.disabled = true; btn.textContent = '⏳ Analyzing...';
         document.getElementById('text-loading').classList.add('show');
@@ -515,7 +555,7 @@
         }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Now'; document.getElementById('text-loading').classList.remove('show'); alert('Error!'); });
     }
 
-    // IMAGE
+    // ===== IMAGE DETECTION (original logic preserved) =====
     function handleImg(e) {
         const file = e.target.files[0]; if (!file) return;
         if (file.size > 10*1024*1024) { alert('Max 10MB!'); e.target.value=''; return; }
@@ -523,7 +563,6 @@
         reader.onload = ev => { document.getElementById('img-preview').src = ev.target.result; document.getElementById('img-preview-wrap').style.display = 'block'; document.getElementById('img-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)'; document.getElementById('img-btn').disabled = false; };
         reader.readAsDataURL(file); document.getElementById('img-result').classList.remove('show');
     }
-
     function detectImage() {
         const fi = document.getElementById('img-input'); if (!fi.files[0]) { alert('Select an image!'); return; }
         const btn = document.getElementById('img-btn'); btn.disabled = true; btn.textContent = '⏳ Analyzing...';
@@ -545,7 +584,7 @@
         }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show'); alert('Error!'); });
     }
 
-    // VIDEO
+    // ===== VIDEO DETECTION (original logic preserved) =====
     function handleVid(e) {
         const file = e.target.files[0]; if (!file) return;
         if (file.size > 50*1024*1024) { alert('Max 50MB!'); e.target.value=''; return; }
@@ -554,7 +593,6 @@
         document.getElementById('vid-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
         document.getElementById('vid-btn').disabled = false; document.getElementById('vid-result').classList.remove('show');
     }
-
     function detectVideo() {
         const fi = document.getElementById('vid-input'); if (!fi.files[0]) { alert('Select a video!'); return; }
         const btn = document.getElementById('vid-btn'); btn.disabled = true; btn.textContent = '⏳ Analyzing (30-60s)...';
@@ -576,9 +614,46 @@
         }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show'); alert('Error!'); });
     }
 
+    // ===== VOICE (original logic preserved) =====
+    let recognition; let finalText = "";
+    function setupRecognition() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { document.getElementById('voice-status').textContent = "Chrome use karo!"; return null; }
+        const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
+        r.onstart = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Sun raha hoon..."; finalText = ""; };
+        r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
+        r.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Suna nahi — phir try karo"; };
+        r.onerror = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
+        return r;
+    }
+    function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
+    function stopListening() { if (recognition) recognition.stop(); }
+    async function sendVoiceToAI(text) {
+        document.getElementById('voice-status').textContent = "Analyze ho raha hai...";
+        document.getElementById('voice-response').textContent = "...";
+        document.getElementById('voice-transcript').textContent = "Tumne kaha: " + text;
+        try {
+            const res = await fetch('/api/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }) });
+            const data = await res.json();
+            const reply = data.reply;
+            document.getElementById('voice-response').textContent = reply;
+            document.getElementById('voice-status').textContent = "Analysis complete!";
+            speak(reply);
+        } catch (err) { document.getElementById('voice-status').textContent = "Error — server se connect nahi hua"; }
+    }
+    function speak(text) {
+        document.getElementById('voice-orb').className = 'voice-orb speaking';
+        document.getElementById('voice-status').textContent = "Bol raha hoon...";
+        const utter = new SpeechSynthesisUtterance(text); utter.lang = 'hi-IN'; utter.rate = 1.0;
+        utter.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; document.getElementById('voice-status').textContent = "Hold karke dobara bolo"; };
+        speechSynthesis.speak(utter);
+    }
+
+    // Drag-drop for upload areas
     ['img-upload','vid-upload'].forEach(id => {
         const area = document.getElementById(id);
-        area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor='var(--primary)'; });
+        if(!area) return;
+        area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor='var(--p3)'; });
         area.addEventListener('dragleave', () => { area.style.borderColor=''; });
         area.addEventListener('drop', e => { e.preventDefault(); area.style.borderColor=''; const input = area.querySelector('input'); input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); });
     });
