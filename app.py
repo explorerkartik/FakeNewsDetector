@@ -837,7 +837,6 @@ def history():
 #  ⑤ ADMIN DASHBOARD (with analytics API)
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/admin')
-@login_required
 def admin():
     try:
         db  = get_db()
