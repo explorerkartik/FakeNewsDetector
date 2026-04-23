@@ -394,88 +394,6 @@ def load_user(user_id):
 #  ① PDF REPORT GENERATOR
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_pdf_report(data: dict) -> bytes:
-<<<<<<< HEAD
-    """Returns PDF bytes for a detection result."""
-    buffer = io.BytesIO()
-    doc    = SimpleDocTemplate(buffer, pagesize=A4,
-                               rightMargin=0.75*inch, leftMargin=0.75*inch,
-                               topMargin=0.75*inch, bottomMargin=0.75*inch)
-    styles  = getSampleStyleSheet()
-    story   = []
-
-    # Header
-    header_style = ParagraphStyle('header', fontSize=20, textColor=colors.HexColor('#6c63ff'),
-                                  spaceAfter=4, fontName='Helvetica-Bold', alignment=1)
-    sub_style    = ParagraphStyle('sub',    fontSize=10, textColor=colors.grey,
-                                  spaceAfter=12, alignment=1)
-    story.append(Paragraph("🔍 FakeNews Detector – Analysis Report", header_style))
-    story.append(Paragraph(f"Generated on {datetime.now().strftime('%d %B %Y, %I:%M %p')} | Powered by Groq AI + LLaMA 3.3", sub_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#6c63ff')))
-    story.append(Spacer(1, 12))
-
-    # Verdict banner
-    verdict = data.get('verdict', 'UNKNOWN')
-    score   = data.get('credibility_score', 0)
-    v_color = colors.HexColor('#28a745') if verdict == 'REAL' else colors.HexColor('#dc3545')
-    v_style = ParagraphStyle('verdict', fontSize=16, textColor=v_color,
-                              fontName='Helvetica-Bold', spaceAfter=6)
-    story.append(Paragraph(f"Verdict: {'✅ REAL NEWS' if verdict == 'REAL' else '❌ FAKE NEWS'}", v_style))
-    story.append(Paragraph(f"Credibility Score: <b>{score}/100</b>", styles['Normal']))
-    story.append(Spacer(1, 10))
-
-    # Input text
-    story.append(Paragraph("<b>Analyzed Content:</b>", styles['Normal']))
-    story.append(Spacer(1, 4))
-    content_style = ParagraphStyle('content', fontSize=9, backColor=colors.HexColor('#f8f9fa'),
-                                   borderPadding=8, leading=14, spaceAfter=10)
-    story.append(Paragraph(data.get('input_text', '')[:800], content_style))
-
-    # Reason
-    if data.get('reason'):
-        story.append(Paragraph("<b>AI Reasoning:</b>", styles['Normal']))
-        story.append(Paragraph(data['reason'], styles['Normal']))
-        story.append(Spacer(1, 10))
-
-    # Key facts
-    if data.get('facts'):
-        story.append(Paragraph("<b>Key Facts Identified:</b>", styles['Normal']))
-        for f in data['facts'][:5]:
-            story.append(Paragraph(f"• {f}", styles['Normal']))
-        story.append(Spacer(1, 10))
-
-    # Summary table
-    table_data = [
-        ['Field', 'Value'],
-        ['Detected Language', data.get('detected_lang', 'English')],
-        ['Confidence', f"{data.get('confidence', 0):.1f}%"],
-        ['Source Reputation', data.get('source_label', 'N/A')],
-        ['Fact-Check Results', str(len(data.get('fact_results', []))) + ' found'],
-    ]
-    t = Table(table_data, colWidths=[2.5*inch, 4*inch])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#6c63ff')),
-        ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
-        ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
-        ('FONTSIZE',   (0,0), (-1,-1), 9),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f0eeff')]),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
-        ('PADDING', (0,0), (-1,-1), 6),
-    ]))
-    story.append(t)
-    story.append(Spacer(1, 16))
-
-    # Footer
-    footer_style = ParagraphStyle('footer', fontSize=8, textColor=colors.grey, alignment=1)
-    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.grey))
-    story.append(Paragraph(
-        "FakeNews Detector • Built by Kartik Kumar Tiwari • MCA Final Year Project • Doranda College, Ranchi",
-        footer_style
-    ))
-
-    doc.build(story)
-    buffer.seek(0)
-    return buffer.read()
-=======
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -491,7 +409,6 @@ def generate_pdf_report(data: dict) -> bytes:
     pdf.cell(0, 6, f"Generated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}  |  Powered by Groq AI + LLaMA 3.3", align='C', new_x="LMARGIN", new_y="NEXT")
     pdf.ln(8)
 
-    # Verdict
     verdict = data.get('verdict', 'UNKNOWN')
     score   = data.get('credibility_score', 0)
     is_real = verdict == 'REAL'
@@ -505,19 +422,16 @@ def generate_pdf_report(data: dict) -> bytes:
     pdf.cell(0, 12, f'Verdict: {label}', align='C', fill=True, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
 
-    # Score
     pdf.set_text_color(50, 50, 50)
     pdf.set_font('Helvetica', 'B', 12)
     pdf.cell(0, 8, f'Credibility Score: {score}/100', new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
 
-    # Divider
     pdf.set_draw_color(108, 99, 255)
     pdf.set_line_width(0.5)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(5)
 
-    # Analyzed Content
     pdf.set_text_color(50, 50, 50)
     pdf.set_font('Helvetica', 'B', 11)
     pdf.cell(0, 7, 'Analyzed Content:', new_x="LMARGIN", new_y="NEXT")
@@ -528,7 +442,6 @@ def generate_pdf_report(data: dict) -> bytes:
     pdf.multi_cell(0, 6, input_text, fill=True)
     pdf.ln(4)
 
-    # AI Reasoning
     reason = data.get('reason', '')
     if reason:
         pdf.set_font('Helvetica', 'B', 11)
@@ -539,7 +452,6 @@ def generate_pdf_report(data: dict) -> bytes:
         pdf.multi_cell(0, 6, reason)
         pdf.ln(4)
 
-    # Key Facts
     facts = data.get('facts', [])
     if facts:
         pdf.set_font('Helvetica', 'B', 11)
@@ -551,7 +463,6 @@ def generate_pdf_report(data: dict) -> bytes:
             pdf.cell(0, 6, f'  - {f}', new_x="LMARGIN", new_y="NEXT")
         pdf.ln(4)
 
-    # Summary Table
     pdf.set_font('Helvetica', 'B', 11)
     pdf.set_text_color(50, 50, 50)
     pdf.cell(0, 7, 'Summary:', new_x="LMARGIN", new_y="NEXT")
@@ -574,7 +485,6 @@ def generate_pdf_report(data: dict) -> bytes:
         pdf.cell(120, 7, str(v), border=1, fill=True, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(8)
 
-    # Footer
     pdf.set_draw_color(200, 200, 200)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(3)
@@ -586,8 +496,6 @@ def generate_pdf_report(data: dict) -> bytes:
     buf.write(pdf.output())
     buf.seek(0)
     return buf.read()
->>>>>>> d1568a7ec50deda0816ffb726c05319624b30b48
-
 # ─────────────────────────────────────────────────────────────────────────────
 #  ② EMAIL VERIFICATION HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
