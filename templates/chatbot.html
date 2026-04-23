@@ -79,7 +79,7 @@
       <div class="chat-title">FakeBot</div>
       <div class="chat-subtitle"><span class="online-dot"></span> AI Fact-Check Assistant · Online</div>
     </div>
-    <a href="/detector" class="back-btn">← Back to Detector</a>
+    <a href="{{ '/detector' if current_user.is_authenticated else '/free' }}" class="back-btn">← Back</a>
   </div>
 
   <div class="messages" id="messages">
