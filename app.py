@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
-from indian_facts import check_indian_facts, get_credibility_boost
+from indian_facts import check_indian_facts, get_credibility_boost, fetch_and_store_current_affairs
 from groq import Groq
 from authlib.integrations.flask_client import OAuth
 import psycopg2
@@ -31,8 +31,8 @@ login_manager.login_view = 'login'
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')       # your Gmail
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_APP_PASSWORD')   # Gmail App Password
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_APP_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 mail = Mail(app)
 
@@ -48,9 +48,9 @@ SIGHTENGINE_USER   = os.getenv('SIGHTENGINE_USER')
 SIGHTENGINE_SECRET = os.getenv('SIGHTENGINE_SECRET')
 
 # ── WHATSAPP (Meta Cloud API – FREE) ─────────────────────────────────────────
-WHATSAPP_TOKEN   = os.getenv('WHATSAPP_TOKEN')      # Meta App access token
-WHATSAPP_VERIFY  = os.getenv('WHATSAPP_VERIFY_TOKEN', 'fakenews_verify_123')
-WHATSAPP_PHONE_ID = os.getenv('WHATSAPP_PHONE_ID')  # Meta phone-number-id
+WHATSAPP_TOKEN    = os.getenv('WHATSAPP_TOKEN')
+WHATSAPP_VERIFY   = os.getenv('WHATSAPP_VERIFY_TOKEN', 'fakenews_verify_123')
+WHATSAPP_PHONE_ID = os.getenv('WHATSAPP_PHONE_ID')
 
 # ── GOOGLE OAUTH ──────────────────────────────────────────────────────────────
 oauth = OAuth(app)
@@ -115,7 +115,7 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
             response_text = response_text[start:end]
         result = json.loads(response_text)
         return {
-            'verdict':          result.get('verdict', 'REAL'),
+            'verdict':           result.get('verdict', 'REAL'),
             'credibility_score': int(result.get('credibility_score', 70)),
             'confidence':        float(result.get('confidence', 70)),
             'reason':            result.get('reason', ''),
@@ -330,9 +330,9 @@ def get_db():
 def dict_cursor(conn):
     return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-# ── DB INIT – run once to add new columns / tables ───────────────────────────
+# ── DB INIT ───────────────────────────────────────────────────────────────────
 def init_db_extras():
-    """Add new columns & tables needed by the new features (safe to re-run)."""
+    """Add new columns & tables (safe to re-run)."""
     try:
         db  = get_db()
         cur = db.cursor()
@@ -359,6 +359,31 @@ def init_db_extras():
                 role       VARCHAR(10),
                 content    TEXT,
                 created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        # ── NEW: user feedback table ──────────────────────────────────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS detection_feedback (
+                id                SERIAL PRIMARY KEY,
+                user_id           INT REFERENCES users(id) ON DELETE SET NULL,
+                share_id          UUID,
+                feedback          VARCHAR(15) NOT NULL,
+                verdict           VARCHAR(10),
+                credibility_score INT,
+                input_text        TEXT,
+                created_at        TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        # ── NEW: dynamic current affairs table ───────────────────────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS dynamic_facts (
+                id         SERIAL PRIMARY KEY,
+                keyword    TEXT UNIQUE NOT NULL,
+                fact       TEXT NOT NULL,
+                source     VARCHAR(50) DEFAULT 'auto',
+                active     BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
             )
         """)
         db.commit()
@@ -391,14 +416,13 @@ def load_user(user_id):
     return None
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ① PDF REPORT GENERATOR
+#  PDF REPORT GENERATOR
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_pdf_report(data: dict) -> bytes:
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Header
     pdf.set_fill_color(108, 99, 255)
     pdf.rect(0, 0, 210, 28, 'F')
     pdf.set_font('Helvetica', 'B', 18)
@@ -496,8 +520,9 @@ def generate_pdf_report(data: dict) -> bytes:
     buf.write(pdf.output())
     buf.seek(0)
     return buf.read()
+
 # ─────────────────────────────────────────────────────────────────────────────
-#  ② EMAIL VERIFICATION HELPERS
+#  EMAIL VERIFICATION HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 def send_verification_email(email, token):
     verify_url = url_for('verify_email', token=token, _external=True)
@@ -534,7 +559,7 @@ def send_verification_email(email, token):
 def index():
     return render_template('index.html')
 
-# ── REGISTER (with email verification) ───────────────────────────────────────
+# ── REGISTER ──────────────────────────────────────────────────────────────────
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -647,7 +672,7 @@ def free_detector():
     return render_template('detector.html')
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  MAIN DETECT (also saves share_id for shareable links)
+#  MAIN DETECT
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -700,21 +725,18 @@ def detect():
         if reputation.get('tier') == 3:
             credibility_score = max(0, credibility_score - 20)
 
-    fact_results  = check_facts(english_text)
+    fact_results   = check_facts(english_text)
     cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
 
-    # ③ Save to DB + generate share_id
     share_id = None
     try:
         db  = get_db()
         cur = dict_cursor(db)
-        # Save to analysis_history (logged-in only)
         if current_user.is_authenticated:
             cur.execute(
                 "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s,%s,%s,%s)",
                 (current_user.id, text[:500], prediction, credibility_score)
             )
-        # Save shareable result
         cur.execute(
             """INSERT INTO shared_results (input_text, verdict, credibility_score, reason)
                VALUES (%s,%s,%s,%s) RETURNING share_id""",
@@ -727,7 +749,7 @@ def detect():
         pass
 
     return jsonify({
-        'verdict':          prediction,
+        'verdict':           prediction,
         'credibility_score': credibility_score,
         'confidence':        round(confidence, 2),
         'detected_lang':     detected_lang,
@@ -737,13 +759,13 @@ def detect():
         'gemini_reason':     gemini_reason,
         'gemini_facts':      gemini_facts,
         'cricket_scores':    cricket_scores,
-        'share_id':          share_id,                        # ④ shareable link
+        'share_id':          share_id,
         'share_url':         f"/result/{share_id}" if share_id else None,
         'input_text':        text[:300]
     })
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ③ SHAREABLE RESULT PAGE
+#  SHAREABLE RESULT PAGE
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/result/<share_id>')
 def shared_result(share_id):
@@ -760,7 +782,39 @@ def shared_result(share_id):
         return "Error loading result", 500
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ④ PDF DOWNLOAD ROUTE
+#  ★ NEW: USER FEEDBACK (Thumbs Up / Down)
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/feedback', methods=['POST'])
+def submit_feedback():
+    """Save user feedback on detection result."""
+    data     = request.get_json()
+    feedback = data.get('feedback')        # 'helpful' or 'not_helpful'
+    share_id = data.get('share_id')
+    verdict  = data.get('verdict')
+    score    = data.get('credibility_score')
+    text     = data.get('input_text', '')[:300]
+
+    if feedback not in ('helpful', 'not_helpful'):
+        return jsonify({'error': 'Invalid feedback type'}), 400
+
+    try:
+        db      = get_db()
+        cur     = dict_cursor(db)
+        user_id = current_user.id if current_user.is_authenticated else None
+        cur.execute(
+            """INSERT INTO detection_feedback
+               (user_id, share_id, feedback, verdict, credibility_score, input_text)
+               VALUES (%s, %s, %s, %s, %s, %s)""",
+            (user_id, share_id, feedback, verdict, score, text)
+        )
+        db.commit()
+        db.close()
+        return jsonify({'status': 'ok', 'message': 'Thank you for your feedback!'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  PDF DOWNLOAD ROUTE
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/download-pdf', methods=['POST'])
 def download_pdf():
@@ -772,7 +826,7 @@ def download_pdf():
     return response
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  IMAGE / VIDEO DETECTION ROUTES (unchanged)
+#  IMAGE / VIDEO DETECTION ROUTES
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/detect-image', methods=['POST'])
 def detect_image():
@@ -834,7 +888,7 @@ def history():
     return render_template('history.html', records=records)
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ⑤ ADMIN DASHBOARD (with analytics API)
+#  ADMIN DASHBOARD
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/admin')
 def admin():
@@ -845,6 +899,20 @@ def admin():
         cur.execute("SELECT COUNT(*) FROM analysis_history"); total_analyses = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM analysis_history WHERE verdict='FAKE'"); total_fake = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM analysis_history WHERE verdict='REAL'"); total_real = cur.fetchone()[0]
+
+        # Feedback counts
+        cur.execute("SELECT COUNT(*) FROM detection_feedback WHERE feedback='helpful'")
+        total_helpful = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM detection_feedback WHERE feedback='not_helpful'")
+        total_not_helpful = cur.fetchone()[0]
+
+        # Dynamic facts count
+        try:
+            cur.execute("SELECT COUNT(*) FROM dynamic_facts WHERE active=TRUE")
+            total_dynamic_facts = cur.fetchone()[0]
+        except:
+            total_dynamic_facts = 0
+
         cur2 = dict_cursor(db)
         cur2.execute("SELECT username, email, created_at FROM users ORDER BY created_at DESC")
         all_users = cur2.fetchall()
@@ -854,24 +922,34 @@ def admin():
             ORDER BY a.created_at DESC LIMIT 20
         """)
         recent_analyses = cur2.fetchall()
+
+        # Recent dynamic facts
+        try:
+            cur2.execute("SELECT keyword, fact, source, updated_at FROM dynamic_facts ORDER BY updated_at DESC LIMIT 10")
+            recent_facts = cur2.fetchall()
+        except:
+            recent_facts = []
+
         db.close()
     except Exception as e:
         return str(e)
+
     return render_template('admin.html',
         total_users=total_users, total_analyses=total_analyses,
         total_fake=total_fake, total_real=total_real,
-        all_users=all_users, recent_analyses=recent_analyses)
+        total_helpful=total_helpful, total_not_helpful=total_not_helpful,
+        total_dynamic_facts=total_dynamic_facts,
+        all_users=all_users, recent_analyses=recent_analyses,
+        recent_facts=recent_facts)
 
-# ── Admin Analytics API (for Chart.js charts in admin.html) ──────────────────
+# ── Admin Analytics API ───────────────────────────────────────────────────────
 @app.route('/admin/analytics')
 @login_required
 def admin_analytics():
-    """Returns JSON data for Chart.js graphs on admin dashboard."""
     try:
         db  = get_db()
         cur = dict_cursor(db)
 
-        # 1. Daily analyses last 7 days
         cur.execute("""
             SELECT DATE(created_at) as day, COUNT(*) as count
             FROM analysis_history
@@ -880,14 +958,12 @@ def admin_analytics():
         """)
         daily = cur.fetchall()
 
-        # 2. Fake vs Real ratio
         cur.execute("""
             SELECT verdict, COUNT(*) as count
             FROM analysis_history GROUP BY verdict
         """)
         ratio = cur.fetchall()
 
-        # 3. User registrations last 7 days
         cur.execute("""
             SELECT DATE(created_at) as day, COUNT(*) as count
             FROM users
@@ -896,7 +972,6 @@ def admin_analytics():
         """)
         signups = cur.fetchall()
 
-        # 4. Average credibility score per day
         cur.execute("""
             SELECT DATE(created_at) as day, ROUND(AVG(credibility_score),1) as avg_score
             FROM analysis_history
@@ -905,18 +980,61 @@ def admin_analytics():
         """)
         avg_scores = cur.fetchall()
 
+        # ★ NEW: Feedback stats
+        try:
+            cur.execute("""
+                SELECT feedback, COUNT(*) as count
+                FROM detection_feedback GROUP BY feedback
+            """)
+            feedback_stats = cur.fetchall()
+        except:
+            feedback_stats = []
+
+        # ★ NEW: Dynamic facts count
+        try:
+            cur.execute("SELECT COUNT(*) as count FROM dynamic_facts WHERE active = TRUE")
+            facts_row   = cur.fetchone()
+            facts_count = facts_row['count'] if facts_row else 0
+        except:
+            facts_count = 0
+
         db.close()
         return jsonify({
             'daily':      [{'day': str(r['day']), 'count': r['count']} for r in daily],
             'ratio':      [{'verdict': r['verdict'], 'count': r['count']} for r in ratio],
             'signups':    [{'day': str(r['day']), 'count': r['count']} for r in signups],
             'avg_scores': [{'day': str(r['day']), 'avg_score': float(r['avg_score'])} for r in avg_scores],
+            'feedback':   [{'type': r['feedback'], 'count': r['count']} for r in feedback_stats],
+            'facts_count': facts_count,
         })
     except Exception as e:
         return jsonify({'error': str(e)})
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ⑥ AI CHATBOT  (Groq-powered, maintains session history)
+#  ★ NEW: ADMIN — UPDATE CURRENT AFFAIRS
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/admin/update-facts', methods=['POST'])
+def admin_update_facts():
+    """
+    Admin button: scrape PIB + Wikipedia, process with Groq,
+    store in dynamic_facts table.
+    """
+    try:
+        db = get_db()
+        added, error = fetch_and_store_current_affairs(groq_client, db)
+        db.close()
+        if error:
+            return jsonify({'status': 'error', 'message': error})
+        return jsonify({
+            'status':  'ok',
+            'added':   added,
+            'message': f'✅ {added} current affairs updated successfully!'
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  AI CHATBOT
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/chatbot')
 def chatbot_page():
@@ -926,7 +1044,7 @@ def chatbot_page():
 def chatbot_api():
     data    = request.get_json()
     message = data.get('message', '').strip()
-    history = data.get('history', [])   # [{role, content}, …] from frontend
+    history = data.get('history', [])
 
     if not message:
         return jsonify({'reply': 'Kuch toh likhiye! 😊'})
@@ -946,7 +1064,6 @@ Rules:
 - Do NOT make up URLs or statistics"""
 
     messages = [{"role": "system", "content": system_prompt}]
-    # Add last 10 turns of history
     for turn in history[-10:]:
         messages.append({"role": turn['role'], "content": turn['content']})
     messages.append({"role": "user", "content": message})
@@ -963,7 +1080,6 @@ Rules:
         reply = "Sorry, abhi server busy hai. Thodi der baad try karein. 🙏"
         print(f"Chatbot error: {e}")
 
-    # Optionally save to DB if user is logged in
     if current_user.is_authenticated:
         try:
             db  = get_db()
@@ -980,11 +1096,10 @@ Rules:
     return jsonify({'reply': reply})
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ⑦ WHATSAPP BOT  (Meta Cloud API – free tier)
+#  WHATSAPP BOT
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/webhook/whatsapp', methods=['GET'])
 def whatsapp_verify():
-    """Meta webhook verification handshake."""
     mode      = request.args.get('hub.mode')
     token     = request.args.get('hub.verify_token')
     challenge = request.args.get('hub.challenge')
@@ -994,17 +1109,15 @@ def whatsapp_verify():
 
 @app.route('/webhook/whatsapp', methods=['POST'])
 def whatsapp_webhook():
-    """Receive WhatsApp messages and reply with fake-news verdict."""
     data = request.get_json(silent=True)
     try:
         entry   = data['entry'][0]
         changes = entry['changes'][0]
         value   = changes['value']
         msg     = value['messages'][0]
-        from_   = msg['from']          # sender's WhatsApp number
-        body    = msg['text']['body']  # message text
+        from_   = msg['from']
+        body    = msg['text']['body']
 
-        # Analyze with Groq
         english_text, _ = translate_to_english(body)
         result = analyze_with_groq(english_text)
 
@@ -1023,19 +1136,10 @@ def whatsapp_webhook():
         else:
             reply_text = "❓ Analysis failed. Please try again or visit our website."
 
-        # Send reply via WhatsApp Cloud API
         requests.post(
             f"https://graph.facebook.com/v18.0/{WHATSAPP_PHONE_ID}/messages",
-            headers={
-                "Authorization": f"Bearer {WHATSAPP_TOKEN}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "messaging_product": "whatsapp",
-                "to": from_,
-                "type": "text",
-                "text": {"body": reply_text}
-            },
+            headers={"Authorization": f"Bearer {WHATSAPP_TOKEN}", "Content-Type": "application/json"},
+            json={"messaging_product": "whatsapp", "to": from_, "type": "text", "text": {"body": reply_text}},
             timeout=10
         )
     except Exception as e:
@@ -1044,7 +1148,7 @@ def whatsapp_webhook():
     return jsonify({'status': 'ok'})
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  VOICE (unchanged)
+#  VOICE
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/api/voice', methods=['POST'])
 def voice_assistant():
@@ -1068,18 +1172,16 @@ def voice_page():
     return render_template('voice.html')
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  ⑧ HINDI UI – language preference API
+#  HINDI UI – language preference API
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/set-language', methods=['POST'])
 def set_language():
-    """Stores UI language preference in session."""
     lang = request.get_json().get('lang', 'en')
     session['ui_lang'] = lang
     return jsonify({'status': 'ok', 'lang': lang})
 
 @app.route('/get-translations')
 def get_translations():
-    """Returns UI string translations for the requested language."""
     lang = request.args.get('lang', session.get('ui_lang', 'en'))
     translations = {
         'en': {
@@ -1114,7 +1216,7 @@ def get_translations():
     return jsonify(translations.get(lang, translations['en']))
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  BROWSER EXTENSION – manifest & background (served as static JSON)
+#  BROWSER EXTENSION
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/extension/manifest.json')
 def extension_manifest():
@@ -1139,5 +1241,5 @@ def extension_manifest():
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     with app.app_context():
-        init_db_extras()          # safe migration: adds new cols/tables
+        init_db_extras()
     app.run(host="0.0.0.0", port=10000)
