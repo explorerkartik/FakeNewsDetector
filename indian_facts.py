@@ -1,6 +1,14 @@
 # ── INDIAN FACTS DATABASE (Updated 2026) ─────────────────
+# Features:
+#   1. Expanded INDIAN_FACTS dict
+#   2. DYNAMIC_FACTS — loaded from DB at runtime (current affairs)
+#   3. PIB + Wikipedia scraper for auto-update
+#   4. Admin trigger: /admin/update-facts
+
+import re
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 INDIAN_FACTS = {
 
@@ -185,6 +193,30 @@ INDIAN_FACTS = {
     "national flower": "Lotus is the National Flower of India.",
     "national fruit": "Mango is the National Fruit of India.",
 
+    # ── CAPITALS OF STATES ──
+    "capital of rajasthan": "Jaipur is the capital of Rajasthan.",
+    "capital of maharashtra": "Mumbai is the capital of Maharashtra.",
+    "capital of uttar pradesh": "Lucknow is the capital of Uttar Pradesh.",
+    "capital of bihar": "Patna is the capital of Bihar.",
+    "capital of jharkhand": "Ranchi is the capital of Jharkhand.",
+    "capital of west bengal": "Kolkata is the capital of West Bengal.",
+    "capital of gujarat": "Gandhinagar is the capital of Gujarat.",
+    "capital of karnataka": "Bengaluru is the capital of Karnataka.",
+    "capital of tamil nadu": "Chennai is the capital of Tamil Nadu.",
+    "capital of kerala": "Thiruvananthapuram is the capital of Kerala.",
+    "capital of andhra pradesh": "Amaravati is the capital of Andhra Pradesh.",
+    "capital of telangana": "Hyderabad is the capital of Telangana.",
+    "capital of odisha": "Bhubaneswar is the capital of Odisha.",
+    "capital of assam": "Dispur is the capital of Assam.",
+    "capital of punjab": "Chandigarh is the capital of Punjab.",
+    "capital of haryana": "Chandigarh is the capital of Haryana.",
+    "capital of himachal pradesh": "Shimla is the capital of Himachal Pradesh.",
+    "capital of uttarakhand": "Dehradun is the capital (interim) of Uttarakhand.",
+    "capital of chhattisgarh": "Raipur is the capital of Chhattisgarh.",
+    "capital of madhya pradesh": "Bhopal is the capital of Madhya Pradesh.",
+    "capital of delhi": "New Delhi is the capital of India and Delhi NCT.",
+    "capital of goa": "Panaji is the capital of Goa.",
+
     # ── RECENT EVENTS 2024-2026 ──
     "lok sabha election 2024": "In 2024 Lok Sabha elections, BJP won 240 seats, NDA won 293 seats. Modi became PM for 3rd term.",
     "election 2024": "2024 General Elections: NDA won majority. Modi became PM for third consecutive term.",
@@ -197,6 +229,10 @@ INDIAN_FACTS = {
     "operation sindoor": "Operation Sindoor was launched by India in May 2025 against terrorist camps in Pakistan and PoK.",
     "caa": "CAA (Citizenship Amendment Act) was passed in 2019 and implemented in 2024.",
     "one nation one election": "One Nation One Election proposes simultaneous elections for Lok Sabha and State Assemblies.",
+    "india pakistan war 2025": "After Operation Sindoor in May 2025, India conducted precision strikes on terrorist infrastructure in Pakistan and PoK.",
+    "viksit bharat": "Viksit Bharat 2047 is PM Modi's vision to make India a developed nation by 2047.",
+    "make in india": "Make in India is a government initiative launched in 2014 to boost domestic manufacturing.",
+    "upi one world": "UPI One World was launched for international visitors to use UPI without Indian bank accounts.",
 
     # ── SPORTS ──
     "t20 world cup 2024": "India won T20 World Cup 2024, defeating South Africa in final in Barbados on 29 June 2024.",
@@ -209,6 +245,7 @@ INDIAN_FACTS = {
     "dhoni": "MS Dhoni is former Indian cricket captain, known as Captain Cool.",
     "neeraj chopra": "Neeraj Chopra won Gold at Tokyo 2020 Olympics and Silver at Paris 2024 Olympics in javelin.",
     "paris olympics 2024": "India won 6 medals at Paris Olympics 2024: 1 Silver (Neeraj Chopra) and 5 Bronze.",
+    "pv sindhu": "PV Sindhu is Indian badminton player, won Silver at Rio 2016 and Bronze at Tokyo 2020 Olympics.",
 
     # ── TECHNOLOGY & SPACE ──
     "isro missions": "ISRO's missions include Chandrayaan-3 (2023), Aditya-L1 (2023), Gaganyaan (upcoming).",
@@ -216,10 +253,13 @@ INDIAN_FACTS = {
     "gaganyaan": "Gaganyaan is India's first crewed space mission planned by ISRO.",
     "digital india": "Digital India is a government initiative to transform India into a digitally empowered society.",
     "upi payments": "UPI processed over 15 billion transactions per month in 2024.",
+    "5g india": "India launched 5G services in October 2022 by PM Modi. Currently available in 500+ cities.",
+    "ai india": "India launched National AI Mission (NAIM) with Rs 10,372 crore budget in 2024.",
 
     # ── AWARDS ──
     "bharat ratna 2024": "Bharat Ratna 2024: LK Advani, Karpoori Thakur, PV Narasimha Rao, MS Swaminathan, Chaudhary Charan Singh.",
     "bharat ratna": "Bharat Ratna is India's highest civilian award.",
+    "padma awards 2025": "Padma Awards 2025 were announced on Republic Day 2025 by the Government of India.",
 
     # ── LAWS ──
     "bns": "BNS (Bharatiya Nyaya Sanhita) replaced IPC from 1 July 2024.",
@@ -228,39 +268,37 @@ INDIAN_FACTS = {
     "nrc": "NRC stands for National Register of Citizens.",
     "crpc": "CrPC was replaced by Bharatiya Nagarik Suraksha Sanhita (BNSS) from July 2024.",
 
-    # ── STATE CAPITALS ──
-    "capital of jharkhand": "Ranchi is the capital of Jharkhand.",
-    "capital of bihar": "Patna is the capital of Bihar.",
-    "capital of up": "Lucknow is the capital of Uttar Pradesh.",
-    "capital of maharashtra": "Mumbai is the capital of Maharashtra.",
-    "capital of rajasthan": "Jaipur is the capital of Rajasthan.",
-    "capital of mp": "Bhopal is the capital of Madhya Pradesh.",
-    "capital of gujarat": "Gandhinagar is the capital of Gujarat.",
-    "capital of karnataka": "Bengaluru (Bangalore) is the capital of Karnataka.",
-    "capital of tamil nadu": "Chennai is the capital of Tamil Nadu.",
-    "capital of telangana": "Hyderabad is the capital of Telangana.",
-    "capital of andhra pradesh": "Amaravati is the capital of Andhra Pradesh.",
-    "capital of kerala": "Thiruvananthapuram is the capital of Kerala.",
-    "capital of west bengal": "Kolkata is the capital of West Bengal.",
-    "capital of punjab": "Chandigarh is the capital of Punjab.",
-    "capital of haryana": "Chandigarh is the capital of Haryana.",
-    "capital of odisha": "Bhubaneswar is the capital of Odisha.",
-    "capital of assam": "Dispur is the capital of Assam.",
-    "capital of himachal pradesh": "Shimla is the capital of Himachal Pradesh.",
-    "capital of uttarakhand": "Dehradun is the capital of Uttarakhand.",
-    "capital of chhattisgarh": "Raipur is the capital of Chhattisgarh.",
-    "capital of goa": "Panaji is the capital of Goa.",
+    # ── ECONOMY ──
+    "india economy": "India is the 5th largest economy in the world with GDP of approximately $3.9 trillion (2024).",
+    "sensex": "Sensex is India's premier stock market index on BSE (Bombay Stock Exchange).",
+    "nifty": "Nifty 50 is the benchmark index of NSE (National Stock Exchange) of India.",
+    "inflation india": "India's retail inflation (CPI) target is 4% with ±2% band, set by RBI.",
+    "repo rate": "RBI's repo rate as of 2025 is 6.25% after cuts to support economic growth.",
 
     # ── GOVERNMENT SCHEMES ──
-    "pm kisan": "PM Kisan Samman Nidhi gives Rs 6000/year to farmers in 3 installments.",
-    "ayushman bharat": "Ayushman Bharat provides Rs 5 lakh health cover per family per year.",
-    "jan dhan": "PM Jan Dhan Yojana provides zero-balance bank accounts to all Indians.",
-    "ujjwala yojana": "PM Ujjwala Yojana provides free LPG connections to BPL households.",
-    "pm awas yojana": "PM Awas Yojana aims to provide affordable housing to all by 2024.",
-    "swachh bharat": "Swachh Bharat Abhiyan was launched on 2 October 2014 by PM Modi for sanitation.",
+    "pm kisan": "PM Kisan Samman Nidhi provides Rs 6,000/year to farmers directly in 3 installments.",
+    "ayushman bharat": "Ayushman Bharat provides health cover of Rs 5 lakh per family per year to poor families.",
+    "jan dhan": "PM Jan Dhan Yojana is a financial inclusion scheme. Over 50 crore accounts opened.",
+    "ujjwala yojana": "PM Ujjwala Yojana provides free LPG connections to BPL families.",
+    "swachh bharat": "Swachh Bharat Mission was launched on 2 October 2014 to achieve open defecation free India.",
+    "smart cities": "Smart Cities Mission aims to develop 100 smart cities across India.",
+    "atal pension yojana": "Atal Pension Yojana provides pension of Rs 1,000-5,000/month to unorganized sector workers.",
+    "mudra yojana": "PM Mudra Yojana provides loans up to Rs 10 lakh to small businesses.",
     "startup india": "Startup India was launched on 16 January 2016 to promote entrepreneurship.",
-    "make in india": "Make in India was launched on 25 September 2014 to boost manufacturing.",
-    "atmanirbhar bharat": "Atmanirbhar Bharat (Self-Reliant India) was announced in 2020 during COVID-19.",
+    "skill india": "Skill India Mission was launched in 2015 to train 40 crore people by 2022.",
+
+    # ── DEFENCE ──
+    "indian army": "Indian Army is the world's second largest army by active personnel.",
+    "rafale": "India has 36 Rafale fighter jets from France in Indian Air Force.",
+    "ins vikrant": "INS Vikrant is India's first indigenously built aircraft carrier, commissioned in 2022.",
+    "agni missile": "Agni-V is India's intercontinental ballistic missile with range over 5,000 km.",
+    "brahmos": "BrahMos is a supersonic cruise missile jointly developed by India and Russia.",
+
+    # ── EDUCATION ──
+    "iit": "India has 23 IITs (Indian Institutes of Technology) as of 2024.",
+    "iim": "India has 20 IIMs (Indian Institutes of Management) as of 2024.",
+    "nep 2020": "National Education Policy 2020 was approved by Cabinet, replacing 34-year-old policy.",
+    "ugc": "UGC (University Grants Commission) regulates higher education in India.",
 }
 
 # ── HIGH CONFIDENCE KEYWORDS ─────────────────────────────
@@ -277,216 +315,221 @@ HIGH_CONFIDENCE_KEYS = [
     "amit shah", "rajnath singh", "nirmala sitharaman",
     "yogi", "yogi adityanath", "mamata", "kejriwal",
     "rahul gandhi", "sonia gandhi",
+    "rbi governor", "chief justice", "army chief",
+    "ins vikrant", "rafale", "brahmos", "agni",
+    "pm kisan", "ayushman bharat", "jan dhan",
+    "viksit bharat", "make in india", "startup india",
 ]
 
 
-def check_indian_facts(text):
-    """Check if text contains known Indian facts and return relevant info"""
+# ── DYNAMIC FACTS (from DB) ───────────────────────────────────────────────────
+
+def get_dynamic_facts(db_conn=None):
+    """Load current affairs from DB (dynamic_facts table)."""
+    if db_conn is None:
+        return {}
+    try:
+        cur = db_conn.cursor()
+        cur.execute("SELECT keyword, fact FROM dynamic_facts WHERE active = TRUE")
+        rows = cur.fetchall()
+        return {row[0].lower().strip(): row[1] for row in rows}
+    except Exception:
+        return {}
+
+
+# ── CORE FUNCTIONS ─────────────────────────────────────────────────────────────
+
+def check_indian_facts(text, db_conn=None):
+    """Check if text contains known Indian facts and return relevant info."""
     text_lower = text.lower()
     matched_facts = []
     seen = set()
-    for key, fact in INDIAN_FACTS.items():
+
+    # Merge static + dynamic facts
+    all_facts = dict(INDIAN_FACTS)
+    all_facts.update(get_dynamic_facts(db_conn))
+
+    for key, fact in all_facts.items():
         if key in text_lower and fact not in seen:
             matched_facts.append(fact)
             seen.add(fact)
-    return matched_facts[:4]
+    return matched_facts[:5]
 
 
-def get_credibility_boost(text):
-    """Boost credibility score if text matches known Indian facts"""
+def get_credibility_boost(text, db_conn=None):
+    """Boost credibility score if text matches known Indian facts."""
     text_lower = text.lower()
     boost = 0
+
+    # High confidence keywords
     for key in HIGH_CONFIDENCE_KEYS:
         if key in text_lower:
             boost += 20
-    for key in INDIAN_FACTS.keys():
+
+    # Regular facts match
+    all_facts = dict(INDIAN_FACTS)
+    all_facts.update(get_dynamic_facts(db_conn))
+    for key in all_facts.keys():
         if key in text_lower:
             boost += 8
+
     return min(boost, 50)
 
 
-# ── PIB SCRAPER ──────────────────────────────────────────
-def scrape_pib_facts(limit=10):
+# ── PIB SCRAPER ───────────────────────────────────────────────────────────────
+
+def scrape_pib_headlines():
     """
-    PIB (Press Information Bureau) se latest government news scrape karo.
-    Returns list of fact strings.
+    Scrape latest press releases from PIB (Press Information Bureau).
+    Returns list of dicts: {title, summary, date}
     """
     facts = []
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-        url = "https://pib.gov.in/AllRelease.aspx"
-        response = requests.get(url, headers=headers, timeout=15)
-        soup = BeautifulSoup(response.content, 'html.parser')
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; FakeNewsDetector/1.0)"}
+        resp = requests.get("https://pib.gov.in/allRel.aspx", headers=headers, timeout=15)
+        soup = BeautifulSoup(resp.content, "html.parser")
 
-        # PIB ke press release links
-        links = soup.select('div.content-area a, .release-content a, ul li a')[:limit]
+        # PIB press release links
+        links = soup.select("div.content-area ul li a, .release-content a")[:20]
         for link in links:
             title = link.get_text(strip=True)
             if len(title) > 30:
-                facts.append(title[:200])
+                # Clean title into a fact statement
+                clean = re.sub(r'\s+', ' ', title).strip()
+                facts.append({
+                    "title": clean,
+                    "keyword": clean[:50].lower(),
+                    "fact": f"[PIB] {clean}",
+                    "source": "PIB"
+                })
     except Exception as e:
         print(f"PIB scrape error: {e}")
+    return facts[:10]
 
-    return facts
 
-
-def scrape_wikipedia_current_events(limit=15):
+def scrape_wikipedia_current_events():
     """
-    Wikipedia Current Events page se latest facts scrape karo.
-    Returns list of fact strings.
+    Scrape Wikipedia's 'Current events' portal for India-related facts.
+    Returns list of dicts: {keyword, fact}
     """
     facts = []
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-        url = "https://en.wikipedia.org/wiki/Portal:Current_events"
-        response = requests.get(url, headers=headers, timeout=15)
-        soup = BeautifulSoup(response.content, 'html.parser')
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; FakeNewsDetector/1.0)"}
+        resp = requests.get(
+            "https://en.wikipedia.org/wiki/Portal:Current_events",
+            headers=headers, timeout=15
+        )
+        soup = BeautifulSoup(resp.content, "html.parser")
 
-        # Current events ke bullet points
-        items = soup.select('div.current-events-content li, .vevent li')
-        for item in items[:limit]:
+        # Wikipedia current events list items
+        items = soup.select("div.current-events-content li")[:30]
+        for item in items:
             text = item.get_text(strip=True)
-            # Sirf India-related facts
-            india_keywords = ['india', 'indian', 'modi', 'bjp', 'delhi', 'mumbai',
-                              'pakistan', 'china', 'kashmir', 'isro', 'rupee']
-            if any(kw in text.lower() for kw in india_keywords) and len(text) > 20:
-                facts.append(text[:200])
-
+            # Filter India-related
+            india_keywords = ["india", "indian", "modi", "delhi", "mumbai", "pakistan",
+                              "bharat", "isro", "bcci", "ipl", "rupee", "rbi"]
+            if any(kw in text.lower() for kw in india_keywords) and len(text) > 40:
+                # Create a short keyword from first 4 words
+                words = text.split()[:4]
+                keyword = " ".join(words).lower().strip(".,;:")
+                fact = f"[Current Events] {text[:200]}"
+                facts.append({"keyword": keyword, "fact": fact, "source": "Wikipedia"})
     except Exception as e:
         print(f"Wikipedia scrape error: {e}")
+    return facts[:10]
 
-    return facts
 
-
-def generate_facts_with_groq(groq_client, raw_texts):
+def fetch_and_store_current_affairs(groq_client, db_conn):
     """
-    Groq AI se raw scraped text ko proper facts format mein convert karo.
-    Returns list of (key, fact) tuples.
+    Main function called by admin route.
+    1. Scrape PIB + Wikipedia
+    2. Use Groq to convert to clean fact statements
+    3. Store in dynamic_facts table
+    Returns: (added_count, error_message)
     """
-    if not raw_texts:
-        return []
+    try:
+        # Create table if not exists
+        cur = db_conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS dynamic_facts (
+                id         SERIAL PRIMARY KEY,
+                keyword    TEXT UNIQUE NOT NULL,
+                fact       TEXT NOT NULL,
+                source     VARCHAR(50) DEFAULT 'auto',
+                active     BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        db_conn.commit()
 
-    combined = "\n".join(f"- {t}" for t in raw_texts[:20])
-    prompt = f"""Convert these news headlines into factual key-value pairs for an Indian fact-checker database.
+        # Scrape raw data
+        pib_data   = scrape_pib_headlines()
+        wiki_data  = scrape_wikipedia_current_events()
+        raw_items  = pib_data + wiki_data
+
+        if not raw_items:
+            return 0, "Could not scrape any data. Check internet connection."
+
+        # Use Groq to convert raw headlines into clean facts
+        raw_text = "\n".join([f"- {item['fact']}" for item in raw_items[:15]])
+
+        prompt = f"""You are an Indian fact-checker. Convert these news headlines into verified fact statements.
 
 Headlines:
-{combined}
+{raw_text}
 
 Rules:
-1. Each fact must be a single clear sentence
-2. Key should be 2-5 words (lowercase)
-3. Fact should be specific and verifiable
-4. Skip opinions or unclear items
-5. Focus on India-related facts
+1. Return ONLY a JSON array, no other text
+2. Each item: {{"keyword": "2-4 word lowercase key", "fact": "One clear verified sentence about the event"}}
+3. Focus only on verifiable facts, skip opinions
+4. keyword must be unique and descriptive
+5. fact must be one sentence, factual, under 150 characters
+6. Maximum 10 items
 
-Respond ONLY in this JSON format (no markdown):
-[
-  {{"key": "topic keyword", "fact": "Clear factual sentence about it."}},
-  {{"key": "another topic", "fact": "Another factual sentence."}}
-]"""
+JSON array only:"""
 
-    try:
         response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,
+            max_tokens=800,
             temperature=0.1
         )
+
+        response_text = response.choices[0].message.content.strip()
+
+        # Extract JSON
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+
+        start = response_text.find('[')
+        end   = response_text.rfind(']') + 1
+        if start == -1 or end <= start:
+            return 0, "Groq returned invalid JSON"
+
         import json
-        text = response.choices[0].message.content.strip()
-        # Clean JSON
-        if '```' in text:
-            text = text.split('```')[1].replace('json', '').strip()
-        start = text.find('[')
-        end = text.rfind(']') + 1
-        if start != -1 and end > start:
-            text = text[start:end]
-        pairs = json.loads(text)
-        return [(p['key'].lower().strip(), p['fact']) for p in pairs if 'key' in p and 'fact' in p]
+        facts_list = json.loads(response_text[start:end])
+
+        # Store in DB
+        added = 0
+        for item in facts_list:
+            kw   = item.get('keyword', '').lower().strip()
+            fact = item.get('fact', '').strip()
+            if kw and fact and len(kw) > 3 and len(fact) > 10:
+                try:
+                    cur.execute("""
+                        INSERT INTO dynamic_facts (keyword, fact, source, updated_at)
+                        VALUES (%s, %s, 'auto', NOW())
+                        ON CONFLICT (keyword) DO UPDATE
+                            SET fact = EXCLUDED.fact, updated_at = NOW()
+                    """, (kw, fact))
+                    added += 1
+                except Exception:
+                    pass
+        db_conn.commit()
+        return added, None
+
     except Exception as e:
-        print(f"Groq fact generation error: {e}")
-        return []
-
-
-def auto_update_facts(groq_client, db_connection=None):
-    """
-    Main function: PIB + Wikipedia se scrape karo, Groq se format karo,
-    database mein save karo.
-
-    Returns: dict with status and count of new facts added
-    """
-    result = {
-        'status': 'success',
-        'pib_scraped': 0,
-        'wiki_scraped': 0,
-        'facts_generated': 0,
-        'facts_saved': 0,
-        'new_facts': []
-    }
-
-    # Step 1: Scrape sources
-    pib_facts = scrape_pib_facts(limit=15)
-    wiki_facts = scrape_wikipedia_current_events(limit=20)
-
-    result['pib_scraped'] = len(pib_facts)
-    result['wiki_scraped'] = len(wiki_facts)
-
-    all_raw = pib_facts + wiki_facts
-    if not all_raw:
-        result['status'] = 'no_data'
-        return result
-
-    # Step 2: Convert to facts using Groq
-    new_pairs = generate_facts_with_groq(groq_client, all_raw)
-    result['facts_generated'] = len(new_pairs)
-
-    if not new_pairs:
-        result['status'] = 'generation_failed'
-        return result
-
-    # Step 3: Save to database if connection provided
-    if db_connection:
-        try:
-            cur = db_connection.cursor()
-            saved = 0
-            for key, fact in new_pairs:
-                # Duplicate check
-                cur.execute(
-                    "INSERT INTO current_affairs (fact_key, fact_text) VALUES (%s, %s) ON CONFLICT (fact_key) DO UPDATE SET fact_text = EXCLUDED.fact_text, updated_at = NOW()",
-                    (key, fact)
-                )
-                saved += 1
-            db_connection.commit()
-            result['facts_saved'] = saved
-        except Exception as e:
-            print(f"DB save error: {e}")
-            result['status'] = 'db_error'
-            result['error'] = str(e)
-
-    # Step 4: Also update in-memory INDIAN_FACTS
-    for key, fact in new_pairs:
-        INDIAN_FACTS[key] = fact
-        result['new_facts'].append({'key': key, 'fact': fact})
-
-    return result
-
-
-def load_facts_from_db(db_connection):
-    """
-    Database se saved current affairs load karke INDIAN_FACTS mein add karo.
-    App startup pe call karo.
-    """
-    try:
-        import psycopg2.extras
-        cur = db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("SELECT fact_key, fact_text FROM current_affairs ORDER BY updated_at DESC")
-        rows = cur.fetchall()
-        for row in rows:
-            INDIAN_FACTS[row['fact_key']] = row['fact_text']
-        print(f"Loaded {len(rows)} facts from database")
-    except Exception as e:
-        print(f"Load facts from DB error: {e}")
+        return 0, str(e)
