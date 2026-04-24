@@ -6,7 +6,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-{%- raw -%}
 :root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}button,a{cursor:pointer;}
 body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:28px;}
@@ -16,67 +15,62 @@ body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var
 .orb2{width:500px;height:500px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-120px;}
 .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.02)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.02)1px,transparent 1px);background-size:60px 60px;}
 .container{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
-.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:10px;}
 .nav-logo{color:white;font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px;text-decoration:none;}
 .nav-logo .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;}
 .nav-logo span{color:var(--p3);}
-.nav-links{display:flex;gap:8px;}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap;}
 .nav-links a{color:var(--text-muted);text-decoration:none;font-size:0.78rem;padding:7px 16px;border-radius:100px;border:1px solid var(--glass-border);background:var(--glass);transition:all 0.2s;}
 .nav-links a:hover{color:white;border-color:var(--p3);}
 .page-title{font-size:2rem;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:24px;text-align:center;}
 
 /* STATS GRID */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
-.stat-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;text-align:center;transition:all 0.25s;}
+.stat-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:18px;text-align:center;transition:all 0.25s;}
 .stat-card:hover{transform:translateY(-4px);border-color:rgba(167,139,250,0.25);box-shadow:0 16px 40px rgba(124,58,237,0.12);}
 .stat-icon{font-size:1.8rem;margin-bottom:8px;}
-.stat-card h3{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-card h3{font-size:1.9rem;font-weight:800;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .stat-card p{color:var(--text-muted);font-size:0.72rem;margin-top:4px;font-family:'DM Mono',monospace;}
-
-/* SECTION */
-.section-title{color:var(--text);font-size:1rem;font-weight:700;margin:24px 0 14px;display:flex;align-items:center;gap:8px;}
-.section-title::after{content:'';flex:1;height:1px;background:var(--glass-border);}
-
-/* CARD */
-.card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;overflow:hidden;margin-bottom:20px;}
-.card-scroll{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;min-width:500px;}
-th{padding:13px 18px;text-align:left;color:var(--text-muted);font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--glass-border);font-family:'DM Mono',monospace;}
-td{padding:13px 18px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.75);font-size:0.85rem;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(255,255,255,0.02);}
-.badge{padding:4px 12px;border-radius:100px;font-size:0.7rem;font-weight:700;font-family:'DM Mono',monospace;}
-.badge-real{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;}
-.badge-fake{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;}
-.score-pill{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);color:var(--p3);padding:4px 12px;border-radius:100px;font-size:0.7rem;font-weight:700;font-family:'DM Mono',monospace;}
-
-/* CHARTS GRID */
-.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
-@media(max-width:700px){.charts-grid{grid-template-columns:1fr;}}
-.chart-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;}
-.chart-card h4{font-size:0.78rem;color:var(--text-muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
-.chart-wrap{position:relative;height:200px;}
+.stat-card.green h3{background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-card.red h3{background:linear-gradient(135deg,#f87171,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-card.teal h3{background:linear-gradient(135deg,#2dd4bf,#14b8a6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
 /* UPDATE FACTS BUTTON */
-.update-section{background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:18px;padding:22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
-.update-info h3{font-size:1rem;font-weight:700;color:white;margin-bottom:4px;}
-.update-info p{font-size:0.8rem;color:var(--text-muted);}
-.update-btn{padding:12px 28px;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;border-radius:100px;color:white;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(124,58,237,0.35);}
+.update-facts-bar{background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.update-facts-info h4{color:var(--p3);font-size:0.9rem;font-weight:700;margin-bottom:4px;}
+.update-facts-info p{color:var(--text-muted);font-size:0.78rem;}
+.update-btn{padding:11px 26px;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;border-radius:100px;color:white;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(124,58,237,0.35);}
 .update-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,58,237,0.5);}
-.update-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-.update-log{margin-top:12px;padding:12px;background:rgba(0,0,0,0.3);border-radius:10px;font-size:0.78rem;font-family:'DM Mono',monospace;color:var(--text-muted);display:none;width:100%;line-height:1.8;}
-.update-log.show{display:block;}
+.update-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.update-status{font-size:0.78rem;padding:6px 14px;border-radius:100px;margin-top:6px;display:none;}
+.update-status.success{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);}
+.update-status.error{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25);}
 
-/* FEEDBACK MINI STATS */
-.feedback-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
-.fb-box{background:rgba(6,3,15,0.7);border:1px solid var(--glass-border);border-radius:14px;padding:16px;text-align:center;}
-.fb-box .fb-n{font-size:1.6rem;font-weight:800;}
-.fb-box .fb-l{font-size:0.68rem;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:3px;}
-.fb-up .fb-n{color:#34d399;}
-.fb-down .fb-n{color:#f87171;}
-.fb-total .fb-n{color:var(--p3);}
-.fb-ca .fb-n{color:var(--p4);}
-{%- endraw -%}
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;}
+.chart-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:14px;font-family:'DM Mono',monospace;}
+.chart-wrap{position:relative;height:180px;}
+
+/* SECTION */
+.section-title{color:var(--text);font-size:0.88rem;font-weight:700;margin:24px 0 14px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--glass-border);}
+.card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;overflow:hidden;margin-bottom:20px;}
+.card-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:400px;}
+th{padding:12px 16px;text-align:left;color:var(--text-muted);font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--glass-border);font-family:'DM Mono',monospace;}
+td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.75);font-size:0.82rem;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.badge{padding:3px 10px;border-radius:100px;font-size:0.68rem;font-weight:700;font-family:'DM Mono',monospace;}
+.badge-real{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;}
+.badge-fake{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;}
+.badge-auto{background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:var(--p3);}
+.badge-pib{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);color:#fbbf24;}
+.score-pill{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);color:var(--p3);padding:3px 10px;border-radius:100px;font-size:0.68rem;font-weight:700;font-family:'DM Mono',monospace;}
+.spinner-sm{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -88,64 +82,71 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <a href="/" class="nav-logo"><div class="logo-icon">🔍</div>FakeNews<span>Detector</span></a>
     <div class="nav-links">
       <a href="/detector">🔍 Detector</a>
-      <a href="/admin/analytics" target="_blank">📊 Raw API</a>
+      <a href="/history">📋 History</a>
       <a href="/logout">🚪 Logout</a>
     </div>
   </div>
 
   <h1 class="page-title">⚙️ Admin Dashboard</h1>
 
-  <!-- MAIN STATS -->
+  <!-- STAT CARDS -->
   <div class="stats">
     <div class="stat-card"><div class="stat-icon">👥</div><h3>{{ total_users }}</h3><p>Total Users</p></div>
     <div class="stat-card"><div class="stat-icon">📊</div><h3>{{ total_analyses }}</h3><p>Total Analyses</p></div>
-    <div class="stat-card"><div class="stat-icon">❌</div><h3>{{ total_fake }}</h3><p>Fake Detected</p></div>
-    <div class="stat-card"><div class="stat-icon">✅</div><h3>{{ total_real }}</h3><p>Real Verified</p></div>
-    <div class="stat-card"><div class="stat-icon">👍</div><h3 id="s-thumbsup">—</h3><p>Thumbs Up</p></div>
-    <div class="stat-card"><div class="stat-icon">👎</div><h3 id="s-thumbsdown">—</h3><p>Thumbs Down</p></div>
+    <div class="stat-card red"><div class="stat-icon">❌</div><h3>{{ total_fake }}</h3><p>Fake Detected</p></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><h3>{{ total_real }}</h3><p>Real Verified</p></div>
+    <div class="stat-card green"><div class="stat-icon">👍</div><h3>{{ total_helpful }}</h3><p>Helpful Feedback</p></div>
+    <div class="stat-card red"><div class="stat-icon">👎</div><h3>{{ total_not_helpful }}</h3><p>Not Helpful</p></div>
+    <div class="stat-card teal"><div class="stat-icon">🗞️</div><h3>{{ total_dynamic_facts }}</h3><p>Dynamic Facts</p></div>
   </div>
 
   <!-- UPDATE CURRENT AFFAIRS -->
-  <div class="update-section">
-    <div class="update-info">
-      <h3>🔄 Update Current Affairs</h3>
-      <p>PIB + Wikipedia se latest facts scrape karo, Groq AI se format karo, database mein save karo.</p>
+  <div class="update-facts-bar">
+    <div class="update-facts-info">
+      <h4>🗞️ Update Current Affairs</h4>
+      <p>PIB + Wikipedia se latest news scrape karke Groq AI se process karein. Auto-updates database.</p>
+      <div class="update-status" id="update-status"></div>
     </div>
     <button class="update-btn" id="update-btn" onclick="updateFacts()">
-      ✨ Update Now
+      🔄 Update Now
     </button>
-    <div class="update-log" id="update-log"></div>
-  </div>
-
-  <!-- FEEDBACK STATS ROW -->
-  <div class="section-title">👥 User Feedback Stats</div>
-  <div class="feedback-row">
-    <div class="fb-box fb-total"><div class="fb-n" id="fb-total">—</div><div class="fb-l">Total Feedback</div></div>
-    <div class="fb-box fb-up"><div class="fb-n" id="fb-up">—</div><div class="fb-l">👍 Correct</div></div>
-    <div class="fb-box fb-down"><div class="fb-n" id="fb-down">—</div><div class="fb-l">👎 Incorrect</div></div>
-    <div class="fb-box fb-ca"><div class="fb-n" id="fb-ca">—</div><div class="fb-l">📰 Current Affairs</div></div>
   </div>
 
   <!-- CHARTS -->
-  <div class="section-title">📈 Analytics</div>
   <div class="charts-grid">
     <div class="chart-card">
-      <h4>📅 Daily Analyses (7 days)</h4>
+      <div class="chart-title">📈 Daily Analyses (7 Days)</div>
       <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <h4>🔵 Real vs Fake Ratio</h4>
+      <div class="chart-title">🥧 Real vs Fake Ratio</div>
       <div class="chart-wrap"><canvas id="ratioChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <h4>👤 New Users (7 days)</h4>
+      <div class="chart-title">👤 New Signups (7 Days)</div>
       <div class="chart-wrap"><canvas id="signupChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <h4>⭐ Avg Credibility Score</h4>
-      <div class="chart-wrap"><canvas id="scoreChart"></canvas></div>
+      <div class="chart-title">👍 User Feedback</div>
+      <div class="chart-wrap"><canvas id="feedbackChart"></canvas></div>
     </div>
   </div>
+
+  <!-- RECENT DYNAMIC FACTS -->
+  {% if recent_facts %}
+  <div class="section-title">🗞️ Recent Dynamic Facts</div>
+  <div class="card"><div class="card-scroll"><table>
+    <tr><th>Keyword</th><th>Fact</th><th>Source</th><th>Updated</th></tr>
+    {% for f in recent_facts %}
+    <tr>
+      <td style="color:var(--p3);font-family:'DM Mono',monospace;font-size:0.75rem;">{{ f['keyword'] }}</td>
+      <td style="color:var(--text-muted);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f['fact'][:100] }}</td>
+      <td><span class="badge {{ 'badge-pib' if f['source']=='PIB' else 'badge-auto' }}">{{ f['source'] }}</span></td>
+      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.72rem;">{{ f['updated_at'] }}</td>
+    </tr>
+    {% endfor %}
+  </table></div></div>
+  {% endif %}
 
   <!-- USERS TABLE -->
   <div class="section-title">👥 All Users</div>
@@ -153,14 +154,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <tr><th>Username</th><th>Email</th><th>Joined</th></tr>
     {% for user in all_users %}
     <tr>
-      <td>{{ user['username'] }}</td>
+      <td style="color:var(--p3);font-weight:600;">{{ user['username'] }}</td>
       <td style="color:var(--text-muted);">{{ user['email'] }}</td>
-      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.78rem;">{{ user['created_at'] }}</td>
+      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.75rem;">{{ user['created_at'] }}</td>
     </tr>
     {% endfor %}
   </table></div></div>
 
-  <!-- ANALYSES TABLE -->
+  <!-- RECENT ANALYSES TABLE -->
   <div class="section-title">📋 Recent Analyses</div>
   <div class="card"><div class="card-scroll"><table>
     <tr><th>User</th><th>News Text</th><th>Verdict</th><th>Score</th><th>Date</th></tr>
@@ -170,7 +171,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <td style="color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a['input_text'][:80] }}...</td>
       <td><span class="badge badge-{{ a['verdict'].lower() }}">{{ '✅' if a['verdict'] == 'REAL' else '❌' }} {{ a['verdict'] }}</span></td>
       <td><span class="score-pill">{{ a['credibility_score'] }}/100</span></td>
-      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.75rem;">{{ a['created_at'] }}</td>
+      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.72rem;">{{ a['created_at'] }}</td>
     </tr>
     {% endfor %}
   </table></div></div>
@@ -178,169 +179,145 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 </div>
 
 <script>
-// ── CHART.JS DEFAULT CONFIG ──────────────────────────────
-Chart.defaults.color = 'rgba(241,245,249,0.45)';
-Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
-Chart.defaults.font.family = "'DM Mono', monospace";
-Chart.defaults.font.size = 11;
+// ── CHART CONFIG ──────────────────────────────────────────────────────────────
+const chartDefaults = {
+  color: 'rgba(241,245,249,0.45)',
+  borderColor: 'rgba(255,255,255,0.06)',
+  font: { family: "'DM Mono', monospace", size: 10 }
+};
+Chart.defaults.color = chartDefaults.color;
+Chart.defaults.borderColor = chartDefaults.borderColor;
+Chart.defaults.font = chartDefaults.font;
 
-// ── LOAD ANALYTICS + FEEDBACK ON PAGE LOAD ──────────────
-window.addEventListener('DOMContentLoaded', () => {
-  loadAnalytics();
-  loadFeedbackStats();
-});
+// ── LOAD ANALYTICS ────────────────────────────────────────────────────────────
+async function loadCharts() {
+  try {
+    const res  = await fetch('/admin/analytics');
+    const data = await res.json();
+    if (data.error) return;
 
-function loadAnalytics() {
-  fetch('/admin/analytics')
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) { console.error(data.error); return; }
-      renderDailyChart(data.daily || []);
-      renderRatioChart(data.ratio || []);
-      renderSignupChart(data.signups || []);
-      renderScoreChart(data.avg_scores || []);
-    })
-    .catch(e => console.error('Analytics error:', e));
-}
-
-function loadFeedbackStats() {
-  fetch('/admin/feedback-stats')
-    .then(r => r.json())
-    .then(d => {
-      if (d.error) return;
-      document.getElementById('fb-total').textContent  = d.total_feedback    || 0;
-      document.getElementById('fb-up').textContent     = d.thumbs_up         || 0;
-      document.getElementById('fb-down').textContent   = d.thumbs_down       || 0;
-      document.getElementById('fb-ca').textContent     = d.current_affairs_count || 0;
-      document.getElementById('s-thumbsup').textContent   = d.thumbs_up  || 0;
-      document.getElementById('s-thumbsdown').textContent = d.thumbs_down || 0;
-    })
-    .catch(e => console.error('Feedback stats error:', e));
-}
-
-// ── CHART RENDERERS ───────────────────────────────────────
-function renderDailyChart(daily) {
-  const ctx = document.getElementById('dailyChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: daily.map(d => d.day.slice(5)),
-      datasets: [{
-        label: 'Analyses',
-        data: daily.map(d => d.count),
-        backgroundColor: 'rgba(124,58,237,0.55)',
-        borderColor: 'rgba(167,139,250,0.8)',
-        borderWidth: 1,
-        borderRadius: 6
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-  });
-}
-
-function renderRatioChart(ratio) {
-  const ctx = document.getElementById('ratioChart').getContext('2d');
-  const labels = ratio.map(r => r.verdict);
-  const data   = ratio.map(r => r.count);
-  const colors = labels.map(l => l === 'REAL' ? 'rgba(16,185,129,0.7)' : 'rgba(239,68,68,0.7)');
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: colors.map(c => c.replace('0.7','1')), borderWidth: 1 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { padding: 12, boxWidth: 12 } } },
-      cutout: '65%'
-    }
-  });
-}
-
-function renderSignupChart(signups) {
-  const ctx = document.getElementById('signupChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: signups.map(d => d.day.slice(5)),
-      datasets: [{
-        label: 'New Users',
-        data: signups.map(d => d.count),
-        borderColor: 'rgba(96,165,250,0.9)',
-        backgroundColor: 'rgba(96,165,250,0.1)',
-        fill: true, tension: 0.4, pointRadius: 4,
-        pointBackgroundColor: 'rgba(96,165,250,1)'
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-  });
-}
-
-function renderScoreChart(scores) {
-  const ctx = document.getElementById('scoreChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: scores.map(d => d.day.slice(5)),
-      datasets: [{
-        label: 'Avg Score',
-        data: scores.map(d => d.avg_score),
-        borderColor: 'rgba(167,139,250,0.9)',
-        backgroundColor: 'rgba(167,139,250,0.1)',
-        fill: true, tension: 0.4, pointRadius: 4,
-        pointBackgroundColor: 'rgba(167,139,250,1)'
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false } }, y: { min: 0, max: 100 } }
-    }
-  });
-}
-
-// ── UPDATE CURRENT AFFAIRS ────────────────────────────────
-function updateFacts() {
-  const btn = document.getElementById('update-btn');
-  const log = document.getElementById('update-log');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Updating...';
-  log.className = 'update-log show';
-  log.innerHTML = '🔄 PIB + Wikipedia se data fetch ho raha hai...\n';
-
-  fetch('/admin/update-facts', { method: 'POST' })
-    .then(r => r.json())
-    .then(data => {
-      btn.disabled = false;
-      btn.innerHTML = '✨ Update Now';
-
-      if (data.status === 'success' || data.facts_saved > 0) {
-        btn.innerHTML = '✅ Updated!';
-        setTimeout(() => { btn.innerHTML = '✨ Update Now'; }, 3000);
-        log.innerHTML =
-          `✅ <strong>Update successful!</strong>\n` +
-          `📰 PIB se scraped: ${data.pib_scraped} items\n` +
-          `📖 Wikipedia se scraped: ${data.wiki_scraped} items\n` +
-          `🤖 Groq ne generate kiye: ${data.facts_generated} facts\n` +
-          `💾 Database mein save: ${data.facts_saved} facts\n\n` +
-          `📋 New Facts Added:\n` +
-          (data.new_facts || []).map(f => `  • ${f.key}: ${f.fact}`).join('\n');
-      } else {
-        log.innerHTML =
-          `⚠️ Status: ${data.status}\n` +
-          `Error: ${data.error || 'Unknown error'}\n` +
-          `PIB: ${data.pib_scraped || 0} items | Wiki: ${data.wiki_scraped || 0} items`;
+    // 1. Daily Analyses
+    const dailyLabels = data.daily.map(d => d.day.slice(5));
+    const dailyCounts = data.daily.map(d => d.count);
+    new Chart(document.getElementById('dailyChart'), {
+      type: 'bar',
+      data: {
+        labels: dailyLabels,
+        datasets: [{
+          label: 'Analyses',
+          data: dailyCounts,
+          backgroundColor: 'rgba(124,58,237,0.5)',
+          borderColor: '#7c3aed',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
       }
-      // Refresh feedback stats after update
-      loadFeedbackStats();
-    })
-    .catch(err => {
-      btn.disabled = false;
-      btn.innerHTML = '✨ Update Now';
-      log.innerHTML = `❌ Error: ${err.message}`;
     });
+
+    // 2. Fake vs Real Doughnut
+    const ratioLabels = data.ratio.map(r => r.verdict);
+    const ratioCounts = data.ratio.map(r => r.count);
+    new Chart(document.getElementById('ratioChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ratioLabels,
+        datasets: [{
+          data: ratioCounts,
+          backgroundColor: ['rgba(16,185,129,0.7)', 'rgba(239,68,68,0.7)'],
+          borderColor: ['#10b981', '#ef4444'],
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '60%'
+      }
+    });
+
+    // 3. Signups
+    const signupLabels = data.signups.map(d => d.day.slice(5));
+    const signupCounts = data.signups.map(d => d.count);
+    new Chart(document.getElementById('signupChart'), {
+      type: 'line',
+      data: {
+        labels: signupLabels,
+        datasets: [{
+          label: 'Signups',
+          data: signupCounts,
+          borderColor: '#60a5fa',
+          backgroundColor: 'rgba(96,165,250,0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#60a5fa'
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      }
+    });
+
+    // 4. Feedback Doughnut
+    const fbLabels = (data.feedback || []).map(f => f.type === 'helpful' ? '👍 Helpful' : '👎 Not Helpful');
+    const fbCounts = (data.feedback || []).map(f => f.count);
+    new Chart(document.getElementById('feedbackChart'), {
+      type: 'doughnut',
+      data: {
+        labels: fbLabels.length ? fbLabels : ['No feedback yet'],
+        datasets: [{
+          data: fbCounts.length ? fbCounts : [1],
+          backgroundColor: ['rgba(16,185,129,0.7)', 'rgba(239,68,68,0.7)'],
+          borderColor: ['#10b981', '#ef4444'],
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '60%'
+      }
+    });
+
+  } catch(e) { console.error('Chart load error:', e); }
 }
+
+// ── UPDATE CURRENT AFFAIRS ────────────────────────────────────────────────────
+async function updateFacts() {
+  const btn    = document.getElementById('update-btn');
+  const status = document.getElementById('update-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-sm"></span> Updating...';
+  status.style.display = 'none';
+
+  try {
+    const res  = await fetch('/admin/update-facts', { method: 'POST' });
+    const data = await res.json();
+    status.style.display = 'inline-block';
+    if (data.status === 'ok') {
+      status.className = 'update-status success';
+      status.textContent = data.message;
+      // Reload page after 2s to show new facts
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      status.className = 'update-status error';
+      status.textContent = '❌ ' + (data.message || 'Update failed');
+    }
+  } catch(e) {
+    status.style.display = 'inline-block';
+    status.className = 'update-status error';
+    status.textContent = '❌ Server error!';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔄 Update Now';
+  }
+}
+
+// Load charts on page load
+loadCharts();
 </script>
 </body>
 </html>
