@@ -193,6 +193,51 @@
         .source-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
         .source-red { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
 
+        /* ★ FEEDBACK BAR */
+        .feedback-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; margin-top: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px; flex-wrap: wrap; gap: 10px;
+        }
+        .feedback-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .feedback-btns { display: flex; gap: 8px; align-items: center; }
+        .fb-btn {
+            padding: 8px 20px; border-radius: 100px; font-size: 0.82rem;
+            font-weight: 700; cursor: pointer; transition: all 0.2s;
+            font-family: inherit; border: 1px solid;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .fb-btn-up {
+            background: rgba(16,185,129,0.1); color: #34d399;
+            border-color: rgba(16,185,129,0.3);
+        }
+        .fb-btn-up:hover, .fb-btn-up.active {
+            background: rgba(16,185,129,0.25); box-shadow: 0 0 16px rgba(16,185,129,0.2);
+        }
+        .fb-btn-down {
+            background: rgba(239,68,68,0.1); color: #f87171;
+            border-color: rgba(239,68,68,0.3);
+        }
+        .fb-btn-down:hover, .fb-btn-down.active {
+            background: rgba(239,68,68,0.25); box-shadow: 0 0 16px rgba(239,68,68,0.2);
+        }
+        .fb-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .feedback-msg { font-size: 0.75rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+        /* SHARE + PDF ROW */
+        .result-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .result-action-btn {
+            padding: 9px 20px; border-radius: 100px; font-size: 0.8rem; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; font-family: inherit;
+            border: 1px solid; display: flex; align-items: center; gap: 6px; text-decoration: none;
+        }
+        .btn-share { background: rgba(124,58,237,0.12); color: var(--p3); border-color: rgba(124,58,237,0.3); }
+        .btn-share:hover { background: rgba(124,58,237,0.25); }
+        .btn-pdf { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.25); }
+        .btn-pdf:hover { background: rgba(239,68,68,0.2); }
+
         /* RIGHT PANEL */
         .right-panel { width: 290px; min-width: 290px; background: rgba(6,3,15,0.7); border-left: 1px solid var(--glass-border); padding: 18px 14px; position: fixed; right: 0; top: var(--topbar-h); height: calc(100vh - var(--topbar-h)); overflow-y: auto; backdrop-filter: blur(20px); }
         .right-panel h3 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
@@ -226,9 +271,9 @@
         ::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 3px; }
 
         @media (max-width: 900px) { .right-panel { display: none; } .center-panel { max-width: 100%; } }
-        @media (max-width: 600px) { .sidebar { width: 56px; } --sidebar-w: 56px; .main { margin-left: 56px; } .topbar { left: 56px; } .topbar-subtitle { display: none; } }
-    {%- endraw -%}
-</style>
+        @media (max-width: 600px) { .sidebar { width: 56px; } .main { margin-left: 56px; } .topbar { left: 56px; } .topbar-subtitle { display: none; } }
+{%- endraw -%}
+    </style>
 </head>
 <body>
 
@@ -318,29 +363,57 @@
                         <span class="action-chip">✅ Fact Check</span>
                         <span class="action-chip">🏏 Cricket</span>
                     </div>
-                    <a href="/chatbot" style="padding:11px 20px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:100px;color:#a78bfa;font-size:0.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;">🤖 FakeBot</a>
-                    <button class="analyze-btn" onclick="detectText()">🔍 Analyze Now</button>
+                    <div style="display:flex;gap:8px;">
+                        <a href="/chatbot" style="padding:11px 20px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:100px;color:#a78bfa;font-size:0.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;">🤖 FakeBot</a>
+                        <button class="analyze-btn" onclick="detectText()">🔍 Analyze Now</button>
+                    </div>
                 </div>
             </div>
+
             <div class="loading-wrap" id="text-loading"><div class="spinner"></div><p>Analyzing with Groq AI...</p></div>
+
             <div class="result-card" id="text-result">
+                <!-- VERDICT BANNER -->
                 <div class="verdict-banner" id="verdict-banner">
                     <div class="verdict-emoji" id="verdict-emoji"></div>
                     <div class="verdict-text"><h2 id="verdict-text"></h2><p id="verdict-sub"></p></div>
                 </div>
+
+                <!-- GAUGE -->
                 <div class="gauge-wrap">
                     <div class="gauge-label">Credibility Score</div>
                     <div class="gauge-bar-bg"><div class="gauge-bar" id="gauge-bar" style="width:0%"></div></div>
                     <div class="gauge-score" id="gauge-score"></div>
                 </div>
+
+                <!-- INFO BOXES -->
                 <div class="info-row">
                     <div class="info-box" id="ai-box" style="display:none;"><h4>🤖 AI Analysis</h4><p id="ai-reason"></p><div id="ai-facts" style="margin-top:8px;"></div></div>
                     <div class="info-box" id="lang-box" style="display:none;"><h4>🌐 Language</h4><p>Detected: <span class="lang-badge" id="lang-name"></span></p><p style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);">Auto-translated to English</p></div>
                     <div class="info-box" id="source-box" style="display:none;"><h4>🏛️ Source Reputation</h4><span class="source-badge" id="source-label"></span><p id="source-desc" style="margin-top:6px;font-size:0.78rem;"></p></div>
                     <div class="info-box" id="india-box" style="display:none;"><h4>🇮🇳 Indian Facts</h4><div id="india-facts"></div></div>
                 </div>
+
                 <div class="info-box" id="factcheck-box" style="display:none;margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
                 <div class="info-box" id="cricket-box" style="display:none;margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
+
+                <!-- ★ ACTION BUTTONS: Share + PDF -->
+                <div class="result-actions" id="result-actions" style="display:none;">
+                    <button class="result-action-btn btn-share" onclick="shareResult()">🔗 Share Result</button>
+                    <button class="result-action-btn btn-pdf" onclick="downloadPDF()">📄 Download PDF</button>
+                </div>
+
+                <!-- ★ FEEDBACK BAR -->
+                <div class="feedback-bar" id="feedback-bar" style="display:none;">
+                    <div>
+                        <div class="feedback-label">Was this analysis helpful?</div>
+                        <div class="feedback-msg" id="feedback-msg"></div>
+                    </div>
+                    <div class="feedback-btns">
+                        <button class="fb-btn fb-btn-up" id="fb-up" onclick="submitFeedback('helpful')">👍 Helpful</button>
+                        <button class="fb-btn fb-btn-down" id="fb-down" onclick="submitFeedback('not_helpful')">👎 Not Helpful</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -493,8 +566,8 @@
             <p>Hindi, Bengali, Tamil, Telugu — type in any Indian language, AI auto-detects.</p>
         </div>
         <div class="tip-card">
-            <h4>🤖 FakeBot</h4>
-            <p>Chat with FakeBot for media literacy tips and fact-check help.</p>
+            <h4>👍 Feedback</h4>
+            <p>After analysis, rate the result to help improve accuracy.</p>
         </div>
 
         <div class="right-divider"></div>
@@ -504,7 +577,10 @@
 </div>
 
 <script>
-    // ===== MODE SWITCHING =====
+    // ── GLOBAL STATE ──────────────────────────────────────────────────────────
+    let _lastResult = {};   // stores last detection result for feedback & PDF
+
+    // ── MODE SWITCHING ────────────────────────────────────────────────────────
     function setMode(mode) {
         ['text','image','video','voice'].forEach(m => {
             document.getElementById('tab-'+m).classList.remove('active');
@@ -520,127 +596,313 @@
         if(si) si.classList.add('active');
     }
 
-    // ===== TEXT DETECTION (original logic preserved) =====
+    // ── TEXT DETECTION ────────────────────────────────────────────────────────
     function detectText() {
         const text = document.getElementById('news_text').value.trim();
         const url  = document.getElementById('news_url').value.trim();
         if (!text && !url) { alert('Please enter news text or URL!'); return; }
+
         const btn = document.querySelector('#tab-text .analyze-btn');
         btn.disabled = true; btn.textContent = '⏳ Analyzing...';
         document.getElementById('text-loading').classList.add('show');
         document.getElementById('text-result').classList.remove('show');
-        const fd = new FormData(); fd.append('news_text', text); fd.append('news_url', url);
-        fetch('/detect', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+
+        // Reset feedback bar
+        document.getElementById('feedback-bar').style.display = 'none';
+        document.getElementById('result-actions').style.display = 'none';
+        document.getElementById('feedback-msg').textContent = '';
+        document.getElementById('fb-up').classList.remove('active');
+        document.getElementById('fb-down').classList.remove('active');
+        document.getElementById('fb-up').disabled = false;
+        document.getElementById('fb-down').disabled = false;
+
+        const fd = new FormData();
+        fd.append('news_text', text);
+        fd.append('news_url', url);
+
+        fetch('/detect', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(data => {
             btn.disabled = false; btn.textContent = '🔍 Analyze Now';
             document.getElementById('text-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
+
+            // Store result for feedback & PDF
+            _lastResult = {
+                verdict:          data.verdict,
+                credibility_score: data.credibility_score,
+                confidence:        data.confidence,
+                share_id:          data.share_id,
+                input_text:        data.input_text,
+                reason:            data.gemini_reason,
+                facts:             data.gemini_facts,
+                detected_lang:     data.detected_lang,
+                fact_results:      data.fact_results,
+                source_label:      data.reputation?.label || 'N/A',
+                share_url:         data.share_url,
+            };
+
             const isReal = data.verdict === 'REAL';
             const banner = document.getElementById('verdict-banner');
             banner.className = 'verdict-banner ' + (isReal ? 'real' : 'fake');
             document.getElementById('verdict-emoji').textContent = isReal ? '✅' : '❌';
-            document.getElementById('verdict-text').textContent = isReal ? 'REAL NEWS' : 'FAKE NEWS';
-            document.getElementById('verdict-sub').textContent = 'Confidence: ' + data.confidence + '%';
+            document.getElementById('verdict-text').textContent  = isReal ? 'REAL NEWS' : 'FAKE NEWS';
+            document.getElementById('verdict-sub').textContent   = 'Confidence: ' + data.confidence + '%';
+
             const score = data.credibility_score;
-            const bar = document.getElementById('gauge-bar');
-            bar.style.background = isReal ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#ef4444,#f87171)';
+            const bar   = document.getElementById('gauge-bar');
+            bar.style.background = isReal
+                ? 'linear-gradient(90deg,#10b981,#34d399)'
+                : 'linear-gradient(90deg,#ef4444,#f87171)';
             setTimeout(() => { bar.style.width = score + '%'; }, 100);
             const scoreEl = document.getElementById('gauge-score');
-            scoreEl.textContent = score + '/100'; scoreEl.style.color = isReal ? '#34d399' : '#f87171';
-            if (data.grok_reason) { document.getElementById('ai-reason').textContent = data.grok_reason; const fe = document.getElementById('ai-facts'); fe.innerHTML = ''; (data.grok_facts||[]).forEach(f => { fe.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('ai-box').style.display = 'block'; }
-            if (data.detected_lang && data.detected_lang !== 'English') { document.getElementById('lang-name').textContent = data.detected_lang; document.getElementById('lang-box').style.display = 'block'; }
-            if (data.reputation && data.reputation.found) { const rep = data.reputation; const sl = document.getElementById('source-label'); sl.textContent = rep.label; sl.className = 'source-badge ' + (rep.tier===1?'source-green':rep.tier===2?'source-yellow':'source-red'); document.getElementById('source-desc').textContent = rep.desc; document.getElementById('source-box').style.display = 'block'; }
-            if (data.indian_facts && data.indian_facts.length > 0) { const el = document.getElementById('india-facts'); el.innerHTML = ''; data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('india-box').style.display = 'block'; }
-            if (data.fact_results && data.fact_results.length > 0) { const el = document.getElementById('factcheck-list'); el.innerHTML = ''; data.fact_results.forEach(i => { el.innerHTML += `<div class="fact-item">${i.text} <strong>[${i.rating}]</strong></div>`; }); document.getElementById('factcheck-box').style.display = 'block'; }
-            if (data.cricket_scores && data.cricket_scores.length > 0) { const el = document.getElementById('cricket-list'); el.innerHTML = ''; data.cricket_scores.forEach(m => { el.innerHTML += `<div class="cricket-match"><h4>🏏 ${m.team1} vs ${m.team2}</h4><div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div><div class="cricket-status">${m.status} • ${m.seriesName}</div></div>`; }); document.getElementById('cricket-box').style.display = 'block'; }
+            scoreEl.textContent = score + '/100';
+            scoreEl.style.color = isReal ? '#34d399' : '#f87171';
+
+            // AI reason
+            if (data.gemini_reason) {
+                document.getElementById('ai-reason').textContent = data.gemini_reason;
+                const fe = document.getElementById('ai-facts');
+                fe.innerHTML = '';
+                (data.gemini_facts||[]).forEach(f => { fe.innerHTML += `<div class="fact-item">${f}</div>`; });
+                document.getElementById('ai-box').style.display = 'block';
+            }
+            // Language
+            if (data.detected_lang && data.detected_lang !== 'English') {
+                document.getElementById('lang-name').textContent = data.detected_lang;
+                document.getElementById('lang-box').style.display = 'block';
+            }
+            // Source
+            if (data.reputation && data.reputation.found) {
+                const rep = data.reputation;
+                const sl  = document.getElementById('source-label');
+                sl.textContent = rep.label;
+                sl.className   = 'source-badge ' + (rep.tier===1?'source-green':rep.tier===2?'source-yellow':'source-red');
+                document.getElementById('source-desc').textContent = rep.desc;
+                document.getElementById('source-box').style.display = 'block';
+            }
+            // Indian facts
+            if (data.indian_facts && data.indian_facts.length > 0) {
+                const el = document.getElementById('india-facts');
+                el.innerHTML = '';
+                data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; });
+                document.getElementById('india-box').style.display = 'block';
+            }
+            // Fact check
+            if (data.fact_results && data.fact_results.length > 0) {
+                const el = document.getElementById('factcheck-list');
+                el.innerHTML = '';
+                data.fact_results.forEach(i => { el.innerHTML += `<div class="fact-item">${i.text} <strong>[${i.rating}]</strong></div>`; });
+                document.getElementById('factcheck-box').style.display = 'block';
+            }
+            // Cricket
+            if (data.cricket_scores && data.cricket_scores.length > 0) {
+                const el = document.getElementById('cricket-list');
+                el.innerHTML = '';
+                data.cricket_scores.forEach(m => {
+                    el.innerHTML += `<div class="cricket-match"><h4>🏏 ${m.team1} vs ${m.team2}</h4><div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div><div class="cricket-status">${m.status} • ${m.seriesName}</div></div>`;
+                });
+                document.getElementById('cricket-box').style.display = 'block';
+            }
+
+            // ★ Show action buttons + feedback bar
+            document.getElementById('result-actions').style.display = 'flex';
+            document.getElementById('feedback-bar').style.display = 'flex';
+
             document.getElementById('text-result').classList.add('show');
-        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Now'; document.getElementById('text-loading').classList.remove('show'); alert('Error!'); });
+        })
+        .catch(() => {
+            btn.disabled = false; btn.textContent = '🔍 Analyze Now';
+            document.getElementById('text-loading').classList.remove('show');
+            alert('Error connecting to server!');
+        });
     }
 
-    // ===== IMAGE DETECTION (original logic preserved) =====
+    // ── ★ FEEDBACK ────────────────────────────────────────────────────────────
+    async function submitFeedback(type) {
+        const upBtn   = document.getElementById('fb-up');
+        const downBtn = document.getElementById('fb-down');
+        const msg     = document.getElementById('feedback-msg');
+
+        upBtn.disabled   = true;
+        downBtn.disabled = true;
+
+        if (type === 'helpful') upBtn.classList.add('active');
+        else downBtn.classList.add('active');
+
+        try {
+            const res  = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    feedback:          type,
+                    share_id:          _lastResult.share_id,
+                    verdict:           _lastResult.verdict,
+                    credibility_score: _lastResult.credibility_score,
+                    input_text:        _lastResult.input_text,
+                })
+            });
+            const data = await res.json();
+            msg.textContent = data.message || 'Feedback recorded! ✓';
+        } catch(e) {
+            msg.textContent = 'Could not save feedback.';
+        }
+    }
+
+    // ── ★ SHARE RESULT ────────────────────────────────────────────────────────
+    function shareResult() {
+        if (!_lastResult.share_url) { alert('No result to share!'); return; }
+        const fullUrl = window.location.origin + _lastResult.share_url;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(fullUrl)
+                .then(() => alert('✅ Share link copied!\n' + fullUrl))
+                .catch(() => prompt('Copy this link:', fullUrl));
+        } else {
+            prompt('Copy this link:', fullUrl);
+        }
+    }
+
+    // ── ★ DOWNLOAD PDF ────────────────────────────────────────────────────────
+    async function downloadPDF() {
+        if (!_lastResult.verdict) { alert('Run analysis first!'); return; }
+        try {
+            const res = await fetch('/download-pdf', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(_lastResult)
+            });
+            const blob = await res.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = 'fakenews_report.pdf';
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch(e) {
+            alert('PDF download failed!');
+        }
+    }
+
+    // ── IMAGE DETECTION ───────────────────────────────────────────────────────
     function handleImg(e) {
         const file = e.target.files[0]; if (!file) return;
         if (file.size > 10*1024*1024) { alert('Max 10MB!'); e.target.value=''; return; }
         const reader = new FileReader();
-        reader.onload = ev => { document.getElementById('img-preview').src = ev.target.result; document.getElementById('img-preview-wrap').style.display = 'block'; document.getElementById('img-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)'; document.getElementById('img-btn').disabled = false; };
-        reader.readAsDataURL(file); document.getElementById('img-result').classList.remove('show');
+        reader.onload = ev => {
+            document.getElementById('img-preview').src = ev.target.result;
+            document.getElementById('img-preview-wrap').style.display = 'block';
+            document.getElementById('img-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+            document.getElementById('img-btn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+        document.getElementById('img-result').classList.remove('show');
     }
+
     function detectImage() {
-        const fi = document.getElementById('img-input'); if (!fi.files[0]) { alert('Select an image!'); return; }
-        const btn = document.getElementById('img-btn'); btn.disabled = true; btn.textContent = '⏳ Analyzing...';
-        document.getElementById('img-loading').classList.add('show'); document.getElementById('img-result').classList.remove('show');
+        const fi = document.getElementById('img-input');
+        if (!fi.files[0]) { alert('Select an image!'); return; }
+        const btn = document.getElementById('img-btn');
+        btn.disabled = true; btn.textContent = '⏳ Analyzing...';
+        document.getElementById('img-loading').classList.add('show');
+        document.getElementById('img-result').classList.remove('show');
         const fd = new FormData(); fd.append('image', fi.files[0]);
-        fetch('/detect-image', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show');
+        fetch('/detect-image', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(data => {
+            btn.disabled = false; btn.textContent = '🔍 Analyze Image';
+            document.getElementById('img-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
             const isFake = data.final_verdict.includes('FAKE') || data.final_verdict.includes('AI');
             document.getElementById('img-verdict-banner').className = 'verdict-banner ' + (isFake ? 'fake' : 'real');
             document.getElementById('img-verdict-emoji').textContent = isFake ? '⚠️' : '✅';
-            document.getElementById('img-verdict-text').textContent = data.final_verdict;
-            document.getElementById('img-verdict-sub').textContent = 'AI Score: ' + data.overall_score + '%';
-            const bar = document.getElementById('img-gauge'); bar.style.background = isFake ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
+            document.getElementById('img-verdict-text').textContent  = data.final_verdict;
+            document.getElementById('img-verdict-sub').textContent   = 'AI Score: ' + data.overall_score + '%';
+            const bar = document.getElementById('img-gauge');
+            bar.style.background = isFake ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
             setTimeout(() => { bar.style.width = data.overall_score + '%'; }, 100);
-            const sc = document.getElementById('img-score'); sc.textContent = data.overall_score + '%'; sc.style.color = isFake ? '#f87171' : '#34d399';
-            if (data.sightengine) { document.getElementById('img-se-verdict').textContent = data.sightengine.verdict; document.getElementById('img-se-verdict').style.color = data.sightengine.is_fake ? '#f87171' : '#34d399'; document.getElementById('img-se-score').textContent = 'AI Generated: ' + data.sightengine.ai_generated_score + '% | Confidence: ' + data.sightengine.confidence + '%'; }
+            const sc = document.getElementById('img-score');
+            sc.textContent = data.overall_score + '%'; sc.style.color = isFake ? '#f87171' : '#34d399';
+            if (data.sightengine) {
+                document.getElementById('img-se-verdict').textContent = data.sightengine.verdict;
+                document.getElementById('img-se-verdict').style.color = data.sightengine.is_fake ? '#f87171' : '#34d399';
+                document.getElementById('img-se-score').textContent   = 'AI Generated: ' + data.sightengine.ai_generated_score + '% | Confidence: ' + data.sightengine.confidence + '%';
+            }
             document.getElementById('img-result').classList.add('show');
-        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show'); alert('Error!'); });
+        })
+        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show'); alert('Error!'); });
     }
 
-    // ===== VIDEO DETECTION (original logic preserved) =====
+    // ── VIDEO DETECTION ───────────────────────────────────────────────────────
     function handleVid(e) {
         const file = e.target.files[0]; if (!file) return;
         if (file.size > 50*1024*1024) { alert('Max 50MB!'); e.target.value=''; return; }
         document.getElementById('vid-preview').src = URL.createObjectURL(file);
         document.getElementById('vid-preview-wrap').style.display = 'block';
         document.getElementById('vid-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
-        document.getElementById('vid-btn').disabled = false; document.getElementById('vid-result').classList.remove('show');
+        document.getElementById('vid-btn').disabled = false;
+        document.getElementById('vid-result').classList.remove('show');
     }
+
     function detectVideo() {
-        const fi = document.getElementById('vid-input'); if (!fi.files[0]) { alert('Select a video!'); return; }
-        const btn = document.getElementById('vid-btn'); btn.disabled = true; btn.textContent = '⏳ Analyzing (30-60s)...';
-        document.getElementById('vid-loading').classList.add('show'); document.getElementById('vid-result').classList.remove('show');
+        const fi = document.getElementById('vid-input');
+        if (!fi.files[0]) { alert('Select a video!'); return; }
+        const btn = document.getElementById('vid-btn');
+        btn.disabled = true; btn.textContent = '⏳ Analyzing (30-60s)...';
+        document.getElementById('vid-loading').classList.add('show');
+        document.getElementById('vid-result').classList.remove('show');
         const fd = new FormData(); fd.append('video', fi.files[0]);
-        fetch('/detect-video', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show');
+        fetch('/detect-video', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(data => {
+            btn.disabled = false; btn.textContent = '🔍 Analyze Video';
+            document.getElementById('vid-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
             const isDF = data.final_verdict.includes('DEEPFAKE');
             document.getElementById('vid-verdict-banner').className = 'verdict-banner ' + (isDF ? 'fake' : 'real');
             document.getElementById('vid-verdict-emoji').textContent = isDF ? '⚠️' : '✅';
-            document.getElementById('vid-verdict-text').textContent = data.final_verdict;
-            document.getElementById('vid-verdict-sub').textContent = 'Deepfake Score: ' + data.overall_score + '%';
-            const bar = document.getElementById('vid-gauge'); bar.style.background = isDF ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
+            document.getElementById('vid-verdict-text').textContent  = data.final_verdict;
+            document.getElementById('vid-verdict-sub').textContent   = 'Deepfake Score: ' + data.overall_score + '%';
+            const bar = document.getElementById('vid-gauge');
+            bar.style.background = isDF ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
             setTimeout(() => { bar.style.width = data.overall_score + '%'; }, 100);
-            const sc = document.getElementById('vid-score'); sc.textContent = data.overall_score + '%'; sc.style.color = isDF ? '#f87171' : '#34d399';
-            if (data.sightengine) { document.getElementById('vid-frames').textContent = data.sightengine.frames_analyzed + ' frames'; document.getElementById('vid-frames').style.color = '#a78bfa'; document.getElementById('vid-max').textContent = data.sightengine.max_deepfake_score + '%'; document.getElementById('vid-max').style.color = isDF ? '#f87171' : '#34d399'; }
+            const sc = document.getElementById('vid-score');
+            sc.textContent = data.overall_score + '%'; sc.style.color = isDF ? '#f87171' : '#34d399';
+            if (data.sightengine) {
+                document.getElementById('vid-frames').textContent = data.sightengine.frames_analyzed + ' frames';
+                document.getElementById('vid-frames').style.color = '#a78bfa';
+                document.getElementById('vid-max').textContent    = data.sightengine.max_deepfake_score + '%';
+                document.getElementById('vid-max').style.color    = isDF ? '#f87171' : '#34d399';
+            }
             document.getElementById('vid-result').classList.add('show');
-        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show'); alert('Error!'); });
+        })
+        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show'); alert('Error!'); });
     }
 
-    // ===== VOICE (original logic preserved) =====
+    // ── VOICE ─────────────────────────────────────────────────────────────────
     let recognition; let finalText = "";
     function setupRecognition() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) { document.getElementById('voice-status').textContent = "Chrome use karo!"; return null; }
         const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-        r.onstart = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Sun raha hoon..."; finalText = ""; };
+        r.onstart  = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Sun raha hoon..."; finalText = ""; };
         r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
-        r.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Suna nahi — phir try karo"; };
-        r.onerror = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
+        r.onend    = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Suna nahi — phir try karo"; };
+        r.onerror  = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
         return r;
     }
     function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
-    function stopListening() { if (recognition) recognition.stop(); }
+    function stopListening()  { if (recognition) recognition.stop(); }
     async function sendVoiceToAI(text) {
-        document.getElementById('voice-status').textContent = "Analyze ho raha hai...";
+        document.getElementById('voice-status').textContent   = "Analyze ho raha hai...";
         document.getElementById('voice-response').textContent = "...";
         document.getElementById('voice-transcript').textContent = "Tumne kaha: " + text;
         try {
-            const res = await fetch('/api/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }) });
+            const res  = await fetch('/api/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }) });
             const data = await res.json();
-            const reply = data.reply;
-            document.getElementById('voice-response').textContent = reply;
-            document.getElementById('voice-status').textContent = "Analysis complete!";
-            speak(reply);
-        } catch (err) { document.getElementById('voice-status').textContent = "Error — server se connect nahi hua"; }
+            document.getElementById('voice-response').textContent = data.reply;
+            document.getElementById('voice-status').textContent   = "Analysis complete!";
+            speak(data.reply);
+        } catch { document.getElementById('voice-status').textContent = "Error — server se connect nahi hua"; }
     }
     function speak(text) {
         document.getElementById('voice-orb').className = 'voice-orb speaking';
@@ -650,11 +912,10 @@
         speechSynthesis.speak(utter);
     }
 
-    // Drag-drop for upload areas
+    // Drag-drop
     ['img-upload','vid-upload'].forEach(id => {
-        const area = document.getElementById(id);
-        if(!area) return;
-        area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor='var(--p3)'; });
+        const area = document.getElementById(id); if(!area) return;
+        area.addEventListener('dragover',  e => { e.preventDefault(); area.style.borderColor='var(--p3)'; });
         area.addEventListener('dragleave', () => { area.style.borderColor=''; });
         area.addEventListener('drop', e => { e.preventDefault(); area.style.borderColor=''; const input = area.querySelector('input'); input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); });
     });
