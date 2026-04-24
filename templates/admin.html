@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - FakeNews Detector</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 {%- raw -%}
 :root{--p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);}
@@ -14,7 +15,7 @@ body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var
 .orb1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;right:-100px;}
 .orb2{width:500px;height:500px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-120px;}
 .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.02)1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.02)1px,transparent 1px);background-size:60px 60px;}
-.container{position:relative;z-index:1;max-width:1100px;margin:0 auto;}
+.container{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
 .nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
 .nav-logo{color:white;font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px;text-decoration:none;}
 .nav-logo .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;}
@@ -23,14 +24,20 @@ body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var
 .nav-links a{color:var(--text-muted);text-decoration:none;font-size:0.78rem;padding:7px 16px;border-radius:100px;border:1px solid var(--glass-border);background:var(--glass);transition:all 0.2s;}
 .nav-links a:hover{color:white;border-color:var(--p3);}
 .page-title{font-size:2rem;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:24px;text-align:center;}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;}
-.stat-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:22px;text-align:center;transition:all 0.25s;}
+
+/* STATS GRID */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
+.stat-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;text-align:center;transition:all 0.25s;}
 .stat-card:hover{transform:translateY(-4px);border-color:rgba(167,139,250,0.25);box-shadow:0 16px 40px rgba(124,58,237,0.12);}
-.stat-icon{font-size:2rem;margin-bottom:10px;}
-.stat-card h3{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.stat-card p{color:var(--text-muted);font-size:0.78rem;margin-top:4px;font-family:'DM Mono',monospace;}
+.stat-icon{font-size:1.8rem;margin-bottom:8px;}
+.stat-card h3{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-card p{color:var(--text-muted);font-size:0.72rem;margin-top:4px;font-family:'DM Mono',monospace;}
+
+/* SECTION */
 .section-title{color:var(--text);font-size:1rem;font-weight:700;margin:24px 0 14px;display:flex;align-items:center;gap:8px;}
 .section-title::after{content:'';flex:1;height:1px;background:var(--glass-border);}
+
+/* CARD */
 .card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;overflow:hidden;margin-bottom:20px;}
 .card-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;min-width:500px;}
@@ -42,30 +49,118 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .badge-real{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;}
 .badge-fake{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;}
 .score-pill{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);color:var(--p3);padding:4px 12px;border-radius:100px;font-size:0.7rem;font-weight:700;font-family:'DM Mono',monospace;}
+
+/* CHARTS GRID */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{background:rgba(6,3,15,0.7);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;}
+.chart-card h4{font-size:0.78rem;color:var(--text-muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.chart-wrap{position:relative;height:200px;}
+
+/* UPDATE FACTS BUTTON */
+.update-section{background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:18px;padding:22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.update-info h3{font-size:1rem;font-weight:700;color:white;margin-bottom:4px;}
+.update-info p{font-size:0.8rem;color:var(--text-muted);}
+.update-btn{padding:12px 28px;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;border-radius:100px;color:white;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(124,58,237,0.35);}
+.update-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,58,237,0.5);}
+.update-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.update-log{margin-top:12px;padding:12px;background:rgba(0,0,0,0.3);border-radius:10px;font-size:0.78rem;font-family:'DM Mono',monospace;color:var(--text-muted);display:none;width:100%;line-height:1.8;}
+.update-log.show{display:block;}
+
+/* FEEDBACK MINI STATS */
+.feedback-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.fb-box{background:rgba(6,3,15,0.7);border:1px solid var(--glass-border);border-radius:14px;padding:16px;text-align:center;}
+.fb-box .fb-n{font-size:1.6rem;font-weight:800;}
+.fb-box .fb-l{font-size:0.68rem;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:3px;}
+.fb-up .fb-n{color:#34d399;}
+.fb-down .fb-n{color:#f87171;}
+.fb-total .fb-n{color:var(--p3);}
+.fb-ca .fb-n{color:var(--p4);}
 {%- endraw -%}
 </style>
 </head>
 <body>
 <div class="bg-scene"><div class="orb orb1"></div><div class="orb orb2"></div><div class="grid-bg"></div></div>
 <div class="container">
+
+  <!-- NAV -->
   <div class="nav">
     <a href="/" class="nav-logo"><div class="logo-icon">🔍</div>FakeNews<span>Detector</span></a>
-    <div class="nav-links"><a href="/detector">🔍 Detector</a><a href="/logout">🚪 Logout</a></div>
+    <div class="nav-links">
+      <a href="/detector">🔍 Detector</a>
+      <a href="/admin/analytics" target="_blank">📊 Raw API</a>
+      <a href="/logout">🚪 Logout</a>
+    </div>
   </div>
+
   <h1 class="page-title">⚙️ Admin Dashboard</h1>
+
+  <!-- MAIN STATS -->
   <div class="stats">
     <div class="stat-card"><div class="stat-icon">👥</div><h3>{{ total_users }}</h3><p>Total Users</p></div>
     <div class="stat-card"><div class="stat-icon">📊</div><h3>{{ total_analyses }}</h3><p>Total Analyses</p></div>
     <div class="stat-card"><div class="stat-icon">❌</div><h3>{{ total_fake }}</h3><p>Fake Detected</p></div>
     <div class="stat-card"><div class="stat-icon">✅</div><h3>{{ total_real }}</h3><p>Real Verified</p></div>
+    <div class="stat-card"><div class="stat-icon">👍</div><h3 id="s-thumbsup">—</h3><p>Thumbs Up</p></div>
+    <div class="stat-card"><div class="stat-icon">👎</div><h3 id="s-thumbsdown">—</h3><p>Thumbs Down</p></div>
   </div>
+
+  <!-- UPDATE CURRENT AFFAIRS -->
+  <div class="update-section">
+    <div class="update-info">
+      <h3>🔄 Update Current Affairs</h3>
+      <p>PIB + Wikipedia se latest facts scrape karo, Groq AI se format karo, database mein save karo.</p>
+    </div>
+    <button class="update-btn" id="update-btn" onclick="updateFacts()">
+      ✨ Update Now
+    </button>
+    <div class="update-log" id="update-log"></div>
+  </div>
+
+  <!-- FEEDBACK STATS ROW -->
+  <div class="section-title">👥 User Feedback Stats</div>
+  <div class="feedback-row">
+    <div class="fb-box fb-total"><div class="fb-n" id="fb-total">—</div><div class="fb-l">Total Feedback</div></div>
+    <div class="fb-box fb-up"><div class="fb-n" id="fb-up">—</div><div class="fb-l">👍 Correct</div></div>
+    <div class="fb-box fb-down"><div class="fb-n" id="fb-down">—</div><div class="fb-l">👎 Incorrect</div></div>
+    <div class="fb-box fb-ca"><div class="fb-n" id="fb-ca">—</div><div class="fb-l">📰 Current Affairs</div></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-title">📈 Analytics</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h4>📅 Daily Analyses (7 days)</h4>
+      <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h4>🔵 Real vs Fake Ratio</h4>
+      <div class="chart-wrap"><canvas id="ratioChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h4>👤 New Users (7 days)</h4>
+      <div class="chart-wrap"><canvas id="signupChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h4>⭐ Avg Credibility Score</h4>
+      <div class="chart-wrap"><canvas id="scoreChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- USERS TABLE -->
   <div class="section-title">👥 All Users</div>
   <div class="card"><div class="card-scroll"><table>
     <tr><th>Username</th><th>Email</th><th>Joined</th></tr>
     {% for user in all_users %}
-    <tr><td>{{ user['username'] }}</td><td style="color:var(--text-muted);">{{ user['email'] }}</td><td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.78rem;">{{ user['created_at'] }}</td></tr>
+    <tr>
+      <td>{{ user['username'] }}</td>
+      <td style="color:var(--text-muted);">{{ user['email'] }}</td>
+      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:0.78rem;">{{ user['created_at'] }}</td>
+    </tr>
     {% endfor %}
   </table></div></div>
+
+  <!-- ANALYSES TABLE -->
   <div class="section-title">📋 Recent Analyses</div>
   <div class="card"><div class="card-scroll"><table>
     <tr><th>User</th><th>News Text</th><th>Verdict</th><th>Score</th><th>Date</th></tr>
@@ -79,6 +174,173 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </tr>
     {% endfor %}
   </table></div></div>
+
 </div>
+
+<script>
+// ── CHART.JS DEFAULT CONFIG ──────────────────────────────
+Chart.defaults.color = 'rgba(241,245,249,0.45)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+
+// ── LOAD ANALYTICS + FEEDBACK ON PAGE LOAD ──────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadAnalytics();
+  loadFeedbackStats();
+});
+
+function loadAnalytics() {
+  fetch('/admin/analytics')
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { console.error(data.error); return; }
+      renderDailyChart(data.daily || []);
+      renderRatioChart(data.ratio || []);
+      renderSignupChart(data.signups || []);
+      renderScoreChart(data.avg_scores || []);
+    })
+    .catch(e => console.error('Analytics error:', e));
+}
+
+function loadFeedbackStats() {
+  fetch('/admin/feedback-stats')
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) return;
+      document.getElementById('fb-total').textContent  = d.total_feedback    || 0;
+      document.getElementById('fb-up').textContent     = d.thumbs_up         || 0;
+      document.getElementById('fb-down').textContent   = d.thumbs_down       || 0;
+      document.getElementById('fb-ca').textContent     = d.current_affairs_count || 0;
+      document.getElementById('s-thumbsup').textContent   = d.thumbs_up  || 0;
+      document.getElementById('s-thumbsdown').textContent = d.thumbs_down || 0;
+    })
+    .catch(e => console.error('Feedback stats error:', e));
+}
+
+// ── CHART RENDERERS ───────────────────────────────────────
+function renderDailyChart(daily) {
+  const ctx = document.getElementById('dailyChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: daily.map(d => d.day.slice(5)),
+      datasets: [{
+        label: 'Analyses',
+        data: daily.map(d => d.count),
+        backgroundColor: 'rgba(124,58,237,0.55)',
+        borderColor: 'rgba(167,139,250,0.8)',
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+function renderRatioChart(ratio) {
+  const ctx = document.getElementById('ratioChart').getContext('2d');
+  const labels = ratio.map(r => r.verdict);
+  const data   = ratio.map(r => r.count);
+  const colors = labels.map(l => l === 'REAL' ? 'rgba(16,185,129,0.7)' : 'rgba(239,68,68,0.7)');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: colors.map(c => c.replace('0.7','1')), borderWidth: 1 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 12, boxWidth: 12 } } },
+      cutout: '65%'
+    }
+  });
+}
+
+function renderSignupChart(signups) {
+  const ctx = document.getElementById('signupChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: signups.map(d => d.day.slice(5)),
+      datasets: [{
+        label: 'New Users',
+        data: signups.map(d => d.count),
+        borderColor: 'rgba(96,165,250,0.9)',
+        backgroundColor: 'rgba(96,165,250,0.1)',
+        fill: true, tension: 0.4, pointRadius: 4,
+        pointBackgroundColor: 'rgba(96,165,250,1)'
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+function renderScoreChart(scores) {
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: scores.map(d => d.day.slice(5)),
+      datasets: [{
+        label: 'Avg Score',
+        data: scores.map(d => d.avg_score),
+        borderColor: 'rgba(167,139,250,0.9)',
+        backgroundColor: 'rgba(167,139,250,0.1)',
+        fill: true, tension: 0.4, pointRadius: 4,
+        pointBackgroundColor: 'rgba(167,139,250,1)'
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { display: false } }, y: { min: 0, max: 100 } }
+    }
+  });
+}
+
+// ── UPDATE CURRENT AFFAIRS ────────────────────────────────
+function updateFacts() {
+  const btn = document.getElementById('update-btn');
+  const log = document.getElementById('update-log');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Updating...';
+  log.className = 'update-log show';
+  log.innerHTML = '🔄 PIB + Wikipedia se data fetch ho raha hai...\n';
+
+  fetch('/admin/update-facts', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Update Now';
+
+      if (data.status === 'success' || data.facts_saved > 0) {
+        btn.innerHTML = '✅ Updated!';
+        setTimeout(() => { btn.innerHTML = '✨ Update Now'; }, 3000);
+        log.innerHTML =
+          `✅ <strong>Update successful!</strong>\n` +
+          `📰 PIB se scraped: ${data.pib_scraped} items\n` +
+          `📖 Wikipedia se scraped: ${data.wiki_scraped} items\n` +
+          `🤖 Groq ne generate kiye: ${data.facts_generated} facts\n` +
+          `💾 Database mein save: ${data.facts_saved} facts\n\n` +
+          `📋 New Facts Added:\n` +
+          (data.new_facts || []).map(f => `  • ${f.key}: ${f.fact}`).join('\n');
+      } else {
+        log.innerHTML =
+          `⚠️ Status: ${data.status}\n` +
+          `Error: ${data.error || 'Unknown error'}\n` +
+          `PIB: ${data.pib_scraped || 0} items | Wiki: ${data.wiki_scraped || 0} items`;
+      }
+      // Refresh feedback stats after update
+      loadFeedbackStats();
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Update Now';
+      log.innerHTML = `❌ Error: ${err.message}`;
+    });
+}
+</script>
 </body>
 </html>
