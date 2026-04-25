@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - FakeNews Detector</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 20px; color: white; }
+        .container { max-width: 750px; margin: 0 auto; }
+        .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 10px; }
+        .nav-logo { font-size: 1.2em; font-weight: 700; }
+        .nav-logo span { color: #e94560; }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+        .hero { text-align: center; margin-bottom: 30px; }
+        .hero h1 { font-size: 2.2em; font-weight: 800; background: linear-gradient(90deg, #f59e0b, #e94560, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        .hero p { color: rgba(255,255,255,0.5); }
+        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 24px; margin-bottom: 16px; }
+        .top3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .top-card { background: rgba(255,255,255,0.06); border-radius: 16px; padding: 20px 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .top-card.gold { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.08); }
+        .top-card.silver { border-color: rgba(192,192,192,0.4); background: rgba(192,192,192,0.06); }
+        .top-card.bronze { border-color: rgba(205,127,50,0.4); background: rgba(205,127,50,0.06); }
+        .medal { font-size: 2.5em; margin-bottom: 8px; }
+        .top-name { font-weight: 700; font-size: 0.95em; margin-bottom: 4px; }
+        .top-score { font-size: 1.4em; font-weight: 800; color: #f59e0b; }
+        .top-acc { font-size: 0.75em; color: rgba(255,255,255,0.5); margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 14px; font-size: 0.75em; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        td { padding: 12px 14px; font-size: 0.9em; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        .rank { font-weight: 800; color: #a855f7; }
+        .username { font-weight: 600; }
+        .score-val { color: #f59e0b; font-weight: 700; }
+        .acc-val { color: #10b981; }
+        .streak-val { color: #a855f7; }
+        .empty-state { text-align: center; padding: 40px; color: rgba(255,255,255,0.4); }
+        .empty-state .icon { font-size: 3em; margin-bottom: 12px; }
+        .play-btn { display: inline-block; margin-top: 16px; padding: 12px 28px; background: linear-gradient(90deg, #e94560, #a855f7); color: white; border-radius: 12px; text-decoration: none; font-weight: 700; }
+        @media (max-width: 500px) { .top3 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
+        <div class="nav-links">
+            <a href="/quiz">🎮 Quiz</a>
+            <a href="/detector">🔍 Detector</a>
+            <a href="/logout">🚪 Logout</a>
+        </div>
+    </div>
+    <div class="hero">
+        <h1>🏆 Leaderboard</h1>
+        <p>Top Fact Checkers of FakeNews Detector</p>
+    </div>
+
+    {% if scores %}
+    {% if scores|length >= 3 %}
+    <div class="top3">
+        <div class="top-card silver">
+            <div class="medal">🥈</div>
+            <div class="top-name">{{ scores[1].username }}</div>
+            <div class="top-score">{{ scores[1].best_score }}</div>
+            <div class="top-acc">{{ scores[1].avg_accuracy }}% accuracy</div>
+        </div>
+        <div class="top-card gold">
+            <div class="medal">🥇</div>
+            <div class="top-name">{{ scores[0].username }}</div>
+            <div class="top-score">{{ scores[0].best_score }}</div>
+            <div class="top-acc">{{ scores[0].avg_accuracy }}% accuracy</div>
+        </div>
+        <div class="top-card bronze">
+            <div class="medal">🥉</div>
+            <div class="top-name">{{ scores[2].username }}</div>
+            <div class="top-score">{{ scores[2].best_score }}</div>
+            <div class="top-acc">{{ scores[2].avg_accuracy }}% accuracy</div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="card">
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Best Score</th>
+                <th>Accuracy</th>
+                <th>Streak</th>
+                <th>Games</th>
+            </tr>
+            {% for s in scores %}
+            <tr>
+                <td class="rank">
+                    {% if loop.index == 1 %}🥇
+                    {% elif loop.index == 2 %}🥈
+                    {% elif loop.index == 3 %}🥉
+                    {% else %}{{ loop.index }}{% endif %}
+                </td>
+                <td class="username">{{ s.username }}</td>
+                <td class="score-val">{{ s.best_score }}</td>
+                <td class="acc-val">{{ s.avg_accuracy }}%</td>
+                <td class="streak-val">🔥{{ s.best_streak }}</td>
+                <td>{{ s.games_played }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="empty-state">
+            <div class="icon">🎮</div>
+            <p>Abhi koi score nahi hai!</p>
+            <p>Pehle quiz khelo aur leaderboard pe apna naam daalo!</p>
+            <a href="/quiz" class="play-btn">🎮 Quiz Khelo →</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
