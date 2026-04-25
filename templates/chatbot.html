@@ -213,27 +213,27 @@ body {
 
   <div class="messages" id="messages">
     <div class="msg msg-bot">
-      👋 Namaste! Main <b>FakeBot</b> hoon — FakeNews Detector ka AI assistant.<br><br>
-      Mujhse poochh sakte ho:<br>
-      • Koi bhi news fake hai ya real? 🔍<br>
+      👋 Hello! I am <b>FakeBot</b> — the AI assistant for FakeNews Detector.<br><br>
+      You can ask me about:<br>
+      • Whether any news looks fake or real 🔍<br>
       • Media literacy tips 📚<br>
-      • Website features ke baare mein ℹ️<br>
-      • Deepfake kya hota hai? 🎭<br><br>
-      <i>Hindi ya English — dono chalega! 😊</i>
+      • Website features ℹ️<br>
+      • What deepfakes are 🎭<br><br>
+      <i>Ask your question in English for the best experience. 😊</i>
       <div class="msg-time">Just now</div>
     </div>
   </div>
 
   <div class="suggestions" id="suggestions">
-    <span class="suggestion-chip" onclick="sendSuggestion(this)">Deepfake kya hai?</span>
-    <span class="suggestion-chip" onclick="sendSuggestion(this)">Fake news kaise pahchane?</span>
-    <span class="suggestion-chip" onclick="sendSuggestion(this)">Website features batao</span>
-    <span class="suggestion-chip" onclick="sendSuggestion(this)">Operation Sindoor real hai?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">What is a deepfake?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">How can I spot fake news?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">Show website features</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this)">Is Operation Sindoor real?</span>
   </div>
 
   <div class="input-area">
     <input type="text" class="chat-input" id="chatInput"
-           placeholder="Koi bhi news ya sawaal likhein…" autocomplete="off">
+           placeholder="Type any news or question…" autocomplete="off">
     <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
@@ -292,12 +292,12 @@ body {
       });
       const data = await res.json();
       hideTyping();
-      appendMsg('bot', data.reply || 'Koi error aa gaya, dobara try karein.');
+      appendMsg('bot', data.reply || 'Something went wrong. Please try again.');
       history.push({role:'assistant', content: data.reply});
       if (history.length > 20) history = history.slice(-20);
     } catch(e) {
       hideTyping();
-      appendMsg('bot', '❌ Server se connect nahi ho pa raha. Please reload karein.');
+      appendMsg('bot', '❌ Could not connect to the server. Please reload the page.');
     }
     btn.disabled = false;
     input.focus();

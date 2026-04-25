@@ -348,14 +348,14 @@
 
     <div class="hero">
         <h1>🎮 Quiz Mode</h1>
-        <p>Real ya Fake? Test your media literacy skills!</p>
+        <p>Real or Fake? Test your media literacy skills!</p>
     </div>
 
     <!-- START SCREEN -->
     <div class="start-screen" id="startScreen">
-        <h2>🎯 Kya tum fake news pehchan sakte ho?</h2>
-        <p>10 sawalon mein apni media literacy test karo.<br>
-           Har sahi jawab pe points milenge — jitna tez, utna zyada!</p>
+        <h2>🎯 Can you spot fake news?</h2>
+        <p>Test your media literacy across 10 questions.<br>
+           Every correct answer earns points — faster answers score more!</p>
 
         <div class="difficulty-select">
             <button class="diff-btn active" onclick="setDifficulty('easy')">😊 Easy</button>
@@ -371,7 +371,7 @@
         </div>
 
         <button class="btn-primary" onclick="startQuiz()" style="font-size:1.1em; padding:14px 40px;">
-            🚀 Quiz Shuru Karo!
+            🚀 Start Quiz!
         </button>
     </div>
 
@@ -382,11 +382,11 @@
             <div class="value yellow" id="currentScore">0</div>
         </div>
         <div class="score-item">
-            <div class="label">Sahi</div>
+            <div class="label">Correct</div>
             <div class="value green" id="correctCount">0</div>
         </div>
         <div class="score-item">
-            <div class="label">Galat</div>
+            <div class="label">Wrong</div>
             <div class="value red" id="wrongCount">0</div>
         </div>
         <div class="score-item">
@@ -451,7 +451,7 @@
             </div>
         </div>
         <div class="result-actions">
-            <button class="btn-primary" onclick="restartQuiz()">🔄 Dobara Khelo</button>
+            <button class="btn-primary" onclick="restartQuiz()">🔄 Play Again</button>
             <a href="/leaderboard" class="btn-secondary">🏆 Leaderboard</a>
             <a href="/detector" class="btn-secondary">🔍 Detector</a>
         </div>
@@ -462,40 +462,40 @@
 // ── QUESTION BANK ─────────────────────────────────────────────────────────
 const QUESTIONS = {
     easy: [
-        { text: "Narendra Modi is the Prime Minister of India since 2014.", answer: "REAL", category: "Politics", explanation: "Narendra Modi BJP ke neta hain aur 2014 se India ke PM hain. 2024 mein teesri baar PM bane." },
-        { text: "India has 28 states and 8 Union Territories.", answer: "REAL", category: "Geography", explanation: "Bilkul sahi! India mein 28 states aur 8 Union Territories hain. J&K 2019 mein UT bana." },
-        { text: "India won the T20 World Cup 2024, defeating South Africa.", answer: "REAL", category: "Cricket", explanation: "Haan! India ne 29 June 2024 ko Barbados mein South Africa ko harakar T20 WC jeeta." },
-        { text: "Ranchi is the capital of Jharkhand.", answer: "REAL", category: "Geography", explanation: "Bilkul sahi! Ranchi Jharkhand ki rajdhani hai. Jharkhand 2000 mein Bihar se alag hua." },
-        { text: "WhatsApp will be banned in India next week by government order.", answer: "FAKE", category: "Viral", explanation: "Ye ek common fake news hai jo baar baar viral hoti hai. WhatsApp India mein band nahi ho raha." },
-        { text: "Free recharge for all Indians — government scheme, register now!", answer: "FAKE", category: "Scam", explanation: "Ye ek scam message hai. Koi bhi free recharge scheme is tarah viral messages se nahi milti." },
-        { text: "5G towers are spreading coronavirus — proven by research.", answer: "FAKE", category: "Health", explanation: "Ye bilkul jhooth hai. 5G towers electromagnetic radiation emit karte hain jo virus nahi failate." },
-        { text: "Droupadi Murmu is the President of India since July 2022.", answer: "REAL", category: "Politics", explanation: "Haan! Droupadi Murmu 15th President of India hain aur pehli tribal mahila President hain." },
-        { text: "Chandrayaan-3 successfully landed on Moon's south pole on 23 August 2023.", answer: "REAL", category: "Science", explanation: "India ne 23 August 2023 ko Chandrayaan-3 se chand ke south pole pe pehli successful landing ki." },
-        { text: "Bill Gates has microchipped all Indians through COVID vaccines.", answer: "FAKE", category: "Health", explanation: "Ye ek dangerous conspiracy theory hai. Vaccines mein koi microchip nahi hota." },
+        { text: "Narendra Modi is the Prime Minister of India since 2014.", answer: "REAL", category: "Politics", explanation: "Narendra Modi has been India's Prime Minister since 2014 and began his third term in 2024." },
+        { text: "India has 28 states and 8 Union Territories.", answer: "REAL", category: "Geography", explanation: "Correct. India has 28 states and 8 Union Territories. Jammu and Kashmir became a Union Territory in 2019." },
+        { text: "India won the T20 World Cup 2024, defeating South Africa.", answer: "REAL", category: "Cricket", explanation: "Correct. India defeated South Africa in Barbados on 29 June 2024 to win the T20 World Cup." },
+        { text: "Ranchi is the capital of Jharkhand.", answer: "REAL", category: "Geography", explanation: "Correct. Ranchi is the capital of Jharkhand, which was formed in 2000." },
+        { text: "WhatsApp will be banned in India next week by government order.", answer: "FAKE", category: "Viral", explanation: "This is a common fake forward. There is no verified government order banning WhatsApp in India next week." },
+        { text: "Free recharge for all Indians — government scheme, register now!", answer: "FAKE", category: "Scam", explanation: "This is a scam-style claim. Genuine government schemes are not distributed through random viral registration links." },
+        { text: "5G towers are spreading coronavirus — proven by research.", answer: "FAKE", category: "Health", explanation: "False. Viruses do not spread through 5G towers or electromagnetic signals." },
+        { text: "Droupadi Murmu is the President of India since July 2022.", answer: "REAL", category: "Politics", explanation: "Correct. Droupadi Murmu has served as India's 15th President since July 2022." },
+        { text: "Chandrayaan-3 successfully landed on Moon's south pole on 23 August 2023.", answer: "REAL", category: "Science", explanation: "Correct. Chandrayaan-3 successfully landed near the Moon's south pole on 23 August 2023." },
+        { text: "Bill Gates has microchipped all Indians through COVID vaccines.", answer: "FAKE", category: "Health", explanation: "False. This is a conspiracy theory with no scientific evidence." },
     ],
     medium: [
-        { text: "D Gukesh became World Chess Champion in December 2024 at age 18, the youngest ever.", answer: "REAL", category: "Sports", explanation: "D Gukesh ne December 2024 mein Ding Liren ko harakar sabse kam umra mein World Chess Champion banne ka record banaya." },
-        { text: "RCB won IPL 2025 championship title.", answer: "REAL", category: "Cricket", explanation: "Royal Challengers Bengaluru ne IPL 2025 jeeta — apna pehla IPL title." },
-        { text: "Operation Sindoor was launched by India in May 2025 against terrorist camps in Pakistan.", answer: "REAL", category: "Defence", explanation: "Operation Sindoor India ki military operation thi jo May 2025 mein Pakistan aur PoK mein terrorist camps ke khilaf launch ki gayi." },
-        { text: "India's GDP is the 3rd largest in the world as of 2024.", answer: "FAKE", category: "Economy", explanation: "India 2024 mein 5th largest economy hai, 3rd nahi. USA, China, Germany aur Japan India se aage hain." },
-        { text: "Neeraj Chopra won Silver medal at Paris Olympics 2024 in javelin throw.", answer: "REAL", category: "Sports", explanation: "Neeraj Chopra ne Paris 2024 mein Silver medal jeeta. Gold Pakistan ke Arshad Nadeem ne jeeta." },
-        { text: "GST was implemented in India on 1 July 2017.", answer: "REAL", category: "Economy", explanation: "Haan! GST (Goods and Services Tax) 1 July 2017 ko lagu hua. Ye ek historic tax reform tha." },
-        { text: "India secretly sold Kashmir to China in a secret deal.", answer: "FAKE", category: "Political", explanation: "Ye bilkul jhooth hai. India ne koi aisa deal nahi ki. Ye dangerous fake news hai." },
-        { text: "Sanjay Malhotra is the Governor of RBI since December 2024.", answer: "REAL", category: "Economy", explanation: "Sanjay Malhotra ne Shaktikanta Das ki jagah December 2024 mein RBI Governor ka charge liya." },
-        { text: "Australia won ODI World Cup 2023, defeating India in the final in Ahmedabad.", answer: "REAL", category: "Cricket", explanation: "Australia ne November 2023 mein Ahmedabad mein India ko harakar ODI World Cup jeeta." },
-        { text: "India will split into 5 countries by 2026 according to UN report.", answer: "FAKE", category: "Political", explanation: "UN ne koi aisa report nahi diya. Ye ek dangerous fake news hai jo India ki ekta ko nuqsan pahunchane ke liye failayi jaati hai." },
+        { text: "D Gukesh became World Chess Champion in December 2024 at age 18, the youngest ever.", answer: "REAL", category: "Sports", explanation: "Correct. D Gukesh defeated Ding Liren in December 2024 and became the youngest World Chess Champion." },
+        { text: "RCB won IPL 2025 championship title.", answer: "REAL", category: "Cricket", explanation: "Correct. Royal Challengers Bengaluru won IPL 2025, their first IPL title." },
+        { text: "Operation Sindoor was launched by India in May 2025 against terrorist camps in Pakistan.", answer: "REAL", category: "Defence", explanation: "Correct. Operation Sindoor was an Indian military operation launched in May 2025 against terrorist camps in Pakistan and PoK." },
+        { text: "India's GDP is the 3rd largest in the world as of 2024.", answer: "FAKE", category: "Economy", explanation: "False. In 2024, India was the world's 5th largest economy, not the 3rd." },
+        { text: "Neeraj Chopra won Silver medal at Paris Olympics 2024 in javelin throw.", answer: "REAL", category: "Sports", explanation: "Correct. Neeraj Chopra won silver at Paris 2024, while Arshad Nadeem won gold." },
+        { text: "GST was implemented in India on 1 July 2017.", answer: "REAL", category: "Economy", explanation: "Correct. GST was implemented in India on 1 July 2017 as a major tax reform." },
+        { text: "India secretly sold Kashmir to China in a secret deal.", answer: "FAKE", category: "Political", explanation: "False. There is no verified evidence of any such deal." },
+        { text: "Sanjay Malhotra is the Governor of RBI since December 2024.", answer: "REAL", category: "Economy", explanation: "Correct. Sanjay Malhotra took charge as RBI Governor in December 2024." },
+        { text: "Australia won ODI World Cup 2023, defeating India in the final in Ahmedabad.", answer: "REAL", category: "Cricket", explanation: "Correct. Australia defeated India in Ahmedabad to win the ODI World Cup in November 2023." },
+        { text: "India will split into 5 countries by 2026 according to UN report.", answer: "FAKE", category: "Political", explanation: "False. There is no such UN report." },
     ],
     hard: [
-        { text: "Rohan Bopanna won Australian Open 2024 men's doubles at age 43.", answer: "REAL", category: "Tennis", explanation: "Rohan Bopanna aur Matthew Ebden ne January 2024 mein Australian Open men's doubles title jeeta. 43 saal ki umra mein!" },
-        { text: "BNS (Bharatiya Nyaya Sanhita) replaced IPC from 1 July 2024.", answer: "REAL", category: "Law", explanation: "Haan! IPC ko Bharatiya Nyaya Sanhita se replace kiya gaya 1 July 2024 se. Ye historic legal reform tha." },
-        { text: "Sanjiv Khanna is the Chief Justice of India since November 2024.", answer: "REAL", category: "Law", explanation: "Justice Sanjiv Khanna ne November 2024 mein D.Y. Chandrachud ki jagah CJI ka pad sambhala." },
-        { text: "India has successfully tested a nuclear missile that can reach any part of the world.", answer: "FAKE", category: "Defence", explanation: "India ki Agni-V missile 5000+ km range ki hai, par 'world ke har hisse' wala claim exaggerated hai." },
-        { text: "Sunil Chhetri retired from international football in 2024.", answer: "REAL", category: "Football", explanation: "India ke greatest footballer Sunil Chhetri ne 6 June 2024 ko Kuwait ke khilaf apna last international match khela." },
-        { text: "India's Aditya-L1 solar mission was launched in September 2023.", answer: "REAL", category: "Science", explanation: "ISRO ka Aditya-L1 2 September 2023 ko launch hua. Ye India ka pehla solar mission hai." },
-        { text: "Pakistan's nuclear weapons have been transferred to China for safekeeping.", answer: "FAKE", category: "Defence", explanation: "Ye fake news hai. Pakistan apne nuclear weapons maintain karta hai. Koi aisa transfer nahi hua." },
-        { text: "Euro 2024 was won by Spain, defeating England in the final.", answer: "REAL", category: "Football", explanation: "Spain ne July 2024 mein Berlin mein England ko 2-1 se harakar Euro 2024 jeeta." },
-        { text: "India became the most populous country in the world in 2023, surpassing China.", answer: "REAL", category: "Geography", explanation: "UN ke anusaar April 2023 mein India China ko peeche chhod kar duniya ka sabse aabad desh ban gaya." },
-        { text: "A new study proves that reading WhatsApp forwards for 30 minutes causes cancer.", answer: "FAKE", category: "Health", explanation: "Koi bhi scientific study ne aisa prove nahi kiya. WhatsApp padne se cancer nahi hota." },
+        { text: "Rohan Bopanna won Australian Open 2024 men's doubles at age 43.", answer: "REAL", category: "Tennis", explanation: "Correct. Rohan Bopanna and Matthew Ebden won the Australian Open 2024 men's doubles title." },
+        { text: "BNS (Bharatiya Nyaya Sanhita) replaced IPC from 1 July 2024.", answer: "REAL", category: "Law", explanation: "Correct. The Bharatiya Nyaya Sanhita replaced the IPC from 1 July 2024." },
+        { text: "Sanjiv Khanna is the Chief Justice of India since November 2024.", answer: "REAL", category: "Law", explanation: "Correct. Justice Sanjiv Khanna became Chief Justice of India in November 2024." },
+        { text: "India has successfully tested a nuclear missile that can reach any part of the world.", answer: "FAKE", category: "Defence", explanation: "Misleading. Agni-V has a range above 5,000 km, but the claim that it can reach any part of the world is exaggerated." },
+        { text: "Sunil Chhetri retired from international football in 2024.", answer: "REAL", category: "Football", explanation: "Correct. Sunil Chhetri played his final international match against Kuwait on 6 June 2024." },
+        { text: "India's Aditya-L1 solar mission was launched in September 2023.", answer: "REAL", category: "Science", explanation: "Correct. ISRO launched Aditya-L1 on 2 September 2023." },
+        { text: "Pakistan's nuclear weapons have been transferred to China for safekeeping.", answer: "FAKE", category: "Defence", explanation: "False. There is no verified evidence of such a transfer." },
+        { text: "Euro 2024 was won by Spain, defeating England in the final.", answer: "REAL", category: "Football", explanation: "Correct. Spain defeated England 2-1 in Berlin to win Euro 2024." },
+        { text: "India became the most populous country in the world in 2023, surpassing China.", answer: "REAL", category: "Geography", explanation: "Correct. UN estimates placed India ahead of China by population in 2023." },
+        { text: "A new study proves that reading WhatsApp forwards for 30 minutes causes cancer.", answer: "FAKE", category: "Health", explanation: "False. No credible scientific study supports this claim." },
     ]
 };
 
@@ -608,7 +608,7 @@ function submitAnswer(userAnswer) {
 
         const clickedBtn = userAnswer === 'REAL' ? realBtn : fakeBtn;
         clickedBtn.classList.add('correct');
-        showFeedback(true, `✅ Bilkul Sahi! +${basePoints + timeBonus + streakBonus} points`, q.explanation);
+        showFeedback(true, `✅ Correct! +${basePoints + timeBonus + streakBonus} points`, q.explanation);
     } else {
         wrong++;
         streak = 0;
@@ -657,10 +657,10 @@ function showResult() {
     document.getElementById('finalStreak').textContent   = bestStreak;
 
     let emoji, title, subtitle;
-    if (accuracy >= 90) { emoji = '🏆'; title = 'Fact-Check Champion!'; subtitle = 'Kamaal kar diya! Tum fake news expert ho!'; }
-    else if (accuracy >= 70) { emoji = '🎉'; title = 'Bahut Badiya!'; subtitle = 'Tum media literacy mein expert ho!'; }
-    else if (accuracy >= 50) { emoji = '👍'; title = 'Theek Hai!'; subtitle = 'Practice karo aur agle baar aur better karo!'; }
-    else { emoji = '📚'; title = 'Seekhte Rahो!'; subtitle = 'Fake news pehchanna mushkil hai — practice karo!'; }
+    if (accuracy >= 90) { emoji = '🏆'; title = 'Fact-Check Champion!'; subtitle = 'Excellent work! You are great at spotting fake news.'; }
+    else if (accuracy >= 70) { emoji = '🎉'; title = 'Great Job!'; subtitle = 'You have strong media literacy skills.'; }
+    else if (accuracy >= 50) { emoji = '👍'; title = 'Good Effort!'; subtitle = 'Keep practicing and improve your score next time.'; }
+    else { emoji = '📚'; title = 'Keep Learning!'; subtitle = 'Spotting fake news is difficult. Practice will help.'; }
 
     document.getElementById('resultEmoji').textContent   = emoji;
     document.getElementById('resultTitle').textContent   = title;

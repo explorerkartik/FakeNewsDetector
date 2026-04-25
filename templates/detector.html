@@ -613,19 +613,19 @@
             <div class="input-card">
                 <div class="input-card-header">
                     <span>🎙️ Voice News Check</span>
-                    <span>Hindi + English + 10 more</span>
+                    <span>English + supported Indian languages</span>
                 </div>
                 <div class="voice-container">
                     <div class="voice-orb" id="voice-orb">🎙️</div>
-                    <div class="voice-status" id="voice-status">Hold button aur news bolo</div>
+                    <div class="voice-status" id="voice-status">Hold the button and speak the news</div>
                     <div class="voice-transcript" id="voice-transcript"></div>
-                    <div class="voice-response" id="voice-response">Result yahan aayega...</div>
+                    <div class="voice-response" id="voice-response">Your result will appear here...</div>
                     <button class="voice-hold-btn" id="voice-hold-btn"
                         ontouchstart="startListening()" ontouchend="stopListening()"
                         onmousedown="startListening()" onmouseup="stopListening()">
-                        🎙️ Hold karke bolo
+                        🎙️ Hold to speak
                     </button>
-                    <div class="voice-tip">Chrome browser mein best kaam karta hai · Hindi / English dono chalega</div>
+                    <div class="voice-tip">Works best in Chrome · English and supported Indian languages</div>
                 </div>
             </div>
         </div>
@@ -666,7 +666,7 @@
         </div>
         <div class="tip-card">
             <h4>🌐 Multi-language</h4>
-            <p>Hindi, Bengali, Tamil, Telugu — type in any Indian language, AI auto-detects.</p>
+            <p>English and supported Indian languages are auto-detected and translated for analysis.</p>
         </div>
         <div class="tip-card">
             <h4>👍 Feedback</h4>
@@ -1094,33 +1094,33 @@
     let recognition; let finalText = "";
     function setupRecognition() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) { document.getElementById('voice-status').textContent = "Chrome use karo!"; return null; }
+        if (!SR) { document.getElementById('voice-status').textContent = "Please use Chrome for voice input."; return null; }
         const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-        r.onstart  = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Sun raha hoon..."; finalText = ""; };
+        r.onstart  = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Listening..."; finalText = ""; };
         r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
-        r.onend    = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Suna nahi — phir try karo"; };
+        r.onend    = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Nothing was heard. Please try again."; };
         r.onerror  = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
         return r;
     }
     function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
     function stopListening()  { if (recognition) recognition.stop(); }
     async function sendVoiceToAI(text) {
-        document.getElementById('voice-status').textContent   = "Analyze ho raha hai...";
+        document.getElementById('voice-status').textContent   = "Analyzing...";
         document.getElementById('voice-response').textContent = "...";
-        document.getElementById('voice-transcript').textContent = "Tumne kaha: " + text;
+        document.getElementById('voice-transcript').textContent = "You said: " + text;
         try {
             const res  = await fetch('/api/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }) });
             const data = await res.json();
             document.getElementById('voice-response').textContent = data.reply;
             document.getElementById('voice-status').textContent   = "Analysis complete!";
             speak(data.reply);
-        } catch { document.getElementById('voice-status').textContent = "Error — server se connect nahi hua"; }
+        } catch { document.getElementById('voice-status').textContent = "Error — could not connect to the server."; }
     }
     function speak(text) {
         document.getElementById('voice-orb').className = 'voice-orb speaking';
-        document.getElementById('voice-status').textContent = "Bol raha hoon...";
+        document.getElementById('voice-status').textContent = "Speaking...";
         const utter = new SpeechSynthesisUtterance(text); utter.lang = 'hi-IN'; utter.rate = 1.0;
-        utter.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; document.getElementById('voice-status').textContent = "Hold karke dobara bolo"; };
+        utter.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; document.getElementById('voice-status').textContent = "Hold the button to speak again"; };
         speechSynthesis.speak(utter);
     }
 

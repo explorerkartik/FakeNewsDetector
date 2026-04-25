@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voice Check - FakeNews Detector</title>
@@ -47,53 +47,53 @@ h1 span{background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-backgroun
 <div class="card">
   <div class="page-tag"><span class="dot"></span> Hands-Free Detection</div>
   <h1><span>Voice</span> Check</h1>
-  <p class="page-sub">Button dabao aur news bolo — AI analyze karega</p>
+  <p class="page-sub">Hold the button and speak the news — AI will analyze it</p>
   <div class="orb-wrap">
     <div class="orb-ring"></div><div class="orb-ring2"></div>
     <div id="orb">🎙️</div>
   </div>
-  <div id="status">Button dabao aur news bolo</div>
+  <div id="status">Hold the button and speak the news</div>
   <div id="transcript"></div>
-  <div id="response">Result yahan aayega...</div>
+  <div id="response">Your result will appear here...</div>
   <button id="holdBtn"
     ontouchstart="startListening()" ontouchend="stopListening()"
     onmousedown="startListening()" onmouseup="stopListening()">
-    🎙️ Hold karke bolo
+    🎙️ Hold to speak
   </button>
-  <div class="back-link"><a href="/detector">← Detector pe wapas jao</a></div>
+  <div class="back-link"><a href="/detector">← Back to Detector</a></div>
 </div>
 <script>
 /* ===== ORIGINAL VOICE JS — FULLY PRESERVED ===== */
 let recognition; let finalText = "";
 function setupRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { document.getElementById('status').textContent = "Chrome use karo!"; return null; }
-  const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-  r.onstart = () => { document.getElementById('orb').className = 'listening'; document.getElementById('status').textContent = "Sun raha hoon..."; finalText = ""; };
+  if (!SR) { document.getElementById('status').textContent = "Please use Chrome for voice input."; return null; }
+  const r = new SR(); r.lang = 'en-IN'; r.continuous = false; r.interimResults = true;
+  r.onstart = () => { document.getElementById('orb').className = 'listening'; document.getElementById('status').textContent = "Listening..."; finalText = ""; };
   r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('transcript').textContent = finalText || interim; };
-  r.onend = () => { document.getElementById('orb').className = ''; if (finalText.trim()) sendToAI(finalText.trim()); else document.getElementById('status').textContent = "Suna nahi — phir try karo"; };
+  r.onend = () => { document.getElementById('orb').className = ''; if (finalText.trim()) sendToAI(finalText.trim()); else document.getElementById('status').textContent = "Nothing was heard. Please try again."; };
   r.onerror = (e) => { document.getElementById('status').textContent = "Error: " + e.error; document.getElementById('orb').className = ''; };
   return r;
 }
 function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
 function stopListening() { if (recognition) recognition.stop(); }
 async function sendToAI(text) {
-  document.getElementById('status').textContent = "Analyze ho raha hai...";
+  document.getElementById('status').textContent = "Analyzing...";
   document.getElementById('response').textContent = "...";
-  document.getElementById('transcript').textContent = "Tumne kaha: " + text;
+  document.getElementById('transcript').textContent = "You said: " + text;
   try {
     const res = await fetch('/api/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }) });
     const data = await res.json();
     const reply = data.reply;
     document.getElementById('response').textContent = reply;
     speak(reply);
-  } catch (err) { document.getElementById('status').textContent = "Error — server se connect nahi hua"; }
+  } catch (err) { document.getElementById('status').textContent = "Error — could not connect to the server."; }
 }
 function speak(text) {
   document.getElementById('orb').className = 'speaking';
-  document.getElementById('status').textContent = "Bol raha hoon...";
-  const utter = new SpeechSynthesisUtterance(text); utter.lang = 'hi-IN'; utter.rate = 1.0;
-  utter.onend = () => { document.getElementById('orb').className = ''; document.getElementById('status').textContent = "Button dabao aur news bolo"; };
+  document.getElementById('status').textContent = "Speaking...";
+  const utter = new SpeechSynthesisUtterance(text); utter.lang = 'en-IN'; utter.rate = 1.0;
+  utter.onend = () => { document.getElementById('orb').className = ''; document.getElementById('status').textContent = "Hold the button and speak the news"; };
   speechSynthesis.speak(utter);
 }
 </script>

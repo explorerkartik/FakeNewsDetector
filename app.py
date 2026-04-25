@@ -321,7 +321,7 @@ def analyze_video_sightengine(video_file):
 #  LANGUAGE
 # ─────────────────────────────────────────────────────────────────────────────
 LANGUAGE_DISPLAY_NAMES = {
-    'en':'English','hi':'Hindi','ta':'Tamil','te':'Telugu',
+    'en':'English','hi':'Indian Language','ta':'Tamil','te':'Telugu',
     'mr':'Marathi','gu':'Gujarati','pa':'Punjabi','bn':'Bengali',
     'ml':'Malayalam','kn':'Kannada','ur':'Urdu','or':'Odia',
 }
@@ -1250,7 +1250,7 @@ def chatbot_api():
     history = data.get('history', [])
 
     if not message:
-        return jsonify({'reply': 'Kuch toh likhiye! 😊'})
+        return jsonify({'reply': 'Please type a message. 😊'})
 
     system_prompt = """You are FakeBot — the friendly AI assistant of FakeNews Detector.
 You help users:
@@ -1260,7 +1260,7 @@ You help users:
 4. Understand AI/deepfake concepts
 
 Rules:
-- Reply in the same language the user writes (Hindi or English)
+- Reply in English.
 - Keep replies short and helpful (2-4 sentences max unless asked for detail)
 - Be friendly and use emojis occasionally
 - If asked to check specific news, give a brief analysis
@@ -1280,7 +1280,7 @@ Rules:
         )
         reply = response.choices[0].message.content
     except Exception as e:
-        reply = "Sorry, abhi server busy hai. Thodi der baad try karein. 🙏"
+        reply = "Sorry, the server is busy right now. Please try again in a moment. 🙏"
         print(f"Chatbot error: {e}")
 
     if current_user.is_authenticated:
@@ -1358,11 +1358,11 @@ def voice_assistant():
     data         = request.get_json()
     user_message = data.get('message', '')
     if not user_message:
-        return jsonify({"reply": "Kuch suna nahi, dobara boliye"})
+        return jsonify({"reply": "I could not hear anything. Please try again."})
     response = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": "Tum ek Fake News Detector assistant ho. User jo bhi news bolega, tum analyze karke batao ki wo fake hai ya real. Chhota aur clear jawab do Hindi mein."},
+            {"role": "system", "content": "You are a Fake News Detector assistant. Analyze the news or claim the user speaks and explain whether it seems fake or real. Reply briefly and clearly in English."},
             {"role": "user", "content": user_message}
         ],
         max_tokens=150
@@ -1375,17 +1375,17 @@ def voice_page():
     return render_template('voice.html')
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  HINDI UI – language preference API
+#  UI language preference API
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/set-language', methods=['POST'])
 def set_language():
-    lang = request.get_json().get('lang', 'en')
+    lang = 'en'
     session['ui_lang'] = lang
     return jsonify({'status': 'ok', 'lang': lang})
 
 @app.route('/get-translations')
 def get_translations():
-    lang = request.args.get('lang', session.get('ui_lang', 'en'))
+    lang = 'en'
     translations = {
         'en': {
             'title': 'FakeNews Detector',
@@ -1402,18 +1402,18 @@ def get_translations():
             'chatbot': 'Ask FakeBot',
         },
         'hi': {
-            'title': 'फेक न्यूज़ डिटेक्टर',
-            'detect_btn': 'अभी जांचें',
-            'paste_placeholder': 'यहाँ खबर का टेक्स्ट पेस्ट करें…',
-            'url_placeholder': 'या यहाँ URL पेस्ट करें…',
-            'verdict_real': 'सच्ची खबर ✅',
-            'verdict_fake': 'झूठी खबर ❌',
-            'credibility': 'विश्वसनीयता स्कोर',
-            'download_pdf': 'PDF रिपोर्ट डाउनलोड करें',
-            'share': 'परिणाम शेयर करें',
-            'history': 'मेरा इतिहास',
-            'logout': 'लॉग आउट',
-            'chatbot': 'फेकबॉट से पूछें',
+            'title': 'FakeNews Detector',
+            'detect_btn': 'Detect Now',
+            'paste_placeholder': 'Paste news text here…',
+            'url_placeholder': 'Or paste URL here…',
+            'verdict_real': 'REAL NEWS',
+            'verdict_fake': 'FAKE NEWS',
+            'credibility': 'Credibility Score',
+            'download_pdf': 'Download PDF Report',
+            'share': 'Share Result',
+            'history': 'My History',
+            'logout': 'Logout',
+            'chatbot': 'Ask FakeBot',
         }
     }
     return jsonify(translations.get(lang, translations['en']))
