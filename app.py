@@ -36,8 +36,78 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_APP_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 mail = Mail(app)
 
-with open('model.pkl', 'rb') as f:
-    model = pickle.load(f)
+# ── MODEL LOADING (safe fallback if pkl corrupted) ───────────────────────────
+try:
+    with open('model.pkl', 'rb') as f:
+        model = pickle.load(f)
+    print("✅ model.pkl loaded successfully")
+except Exception as e:
+    print(f"⚠️  model.pkl load failed ({e}), building fallback model...")
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline, FeatureUnion
+    import re as _re
+
+    def _clean(text):
+        if not isinstance(text, str): return ""
+        text = _re.sub(r'http\S+|<[^>]+>', ' ', text)
+        text = _re.sub(r'[^\w\s\u0900-\u097F]', ' ', text)
+        return _re.sub(r'\s+', ' ', text).strip().lower()
+
+    _REAL = [
+        "narendra modi is the prime minister of india",
+        "chandrayaan 3 landed on moon south pole successfully",
+        "india won t20 world cup 2024 defeating south africa",
+        "rcb won ipl 2025 championship title",
+        "operation sindoor india military operation 2025",
+        "ram mandir inaugurated ayodhya january 2024",
+        "neeraj chopra silver medal paris olympics 2024",
+        "india gdp fifth largest economy world",
+        "chandrayaan 3 ne chand par landing ki",
+        "india ne t20 world cup 2024 jeeta",
+        "modi ji pradhan mantri hain bharat ke",
+        "rcb ne ipl 2025 jita",
+        "operation sindoor india ki military operation thi",
+        "bharat ki jansankhya 1 arab 44 crore hai",
+        "gst 1 july 2017 ko lagu hua",
+        "article 370 hataya gaya 2019 mein",
+        "droupadi murmu president of india since 2022",
+        "isro chandrayaan mission successful moon landing",
+        "india 28 states 8 union territories",
+        "pm kisan yojana farmers 6000 rupees annually",
+    ]
+    _FAKE = [
+        "modi fled country went to pakistan secret sources",
+        "free recharge for all indians government scheme register now",
+        "whatsapp banned india next week government order",
+        "5g towers spreading coronavirus proven research",
+        "bill gates microchipped indians covid vaccines",
+        "india secretly sold states to china",
+        "rbi ran out of gold reserves hidden crisis",
+        "chandrayaan landing video filmed in studio fake",
+        "india china nuclear war started breaking news",
+        "modi ne desh chhod diya pakistan gaye",
+        "free recharge milega sarkar ki taraf se",
+        "vaccine mein chip laga hai government spy",
+        "india china war nuclear bomb gira",
+        "free iphone milega sarkar ki taraf se register",
+        "whatsapp band ho raha hai india mein",
+        "5g towers corona failate hain scientific proof",
+        "modi ji resign kar diye aaj raat",
+        "rupee zero hone wala hai next month",
+        "army ne delhi mein coup kiya hai",
+        "sarkar ne bank accounts freeze karne ka order diya",
+    ]
+    _texts  = [_clean(t) for t in _REAL + _FAKE]
+    _labels = ['REAL'] * len(_REAL) + ['FAKE'] * len(_FAKE)
+
+    _vec = FeatureUnion([
+        ('char', TfidfVectorizer(analyzer='char_wb', ngram_range=(2,5), max_features=50000, sublinear_tf=True)),
+        ('word', TfidfVectorizer(analyzer='word',    ngram_range=(1,2), max_features=30000, sublinear_tf=True)),
+    ])
+    model = Pipeline([('tfidf', _vec), ('clf', LogisticRegression(C=1.0, max_iter=500, class_weight='balanced', random_state=42))])
+    model.fit(_texts, _labels)
+    print("✅ Fallback model built successfully")
 
 # ── GROQ ──────────────────────────────────────────────────────────────────────
 groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
