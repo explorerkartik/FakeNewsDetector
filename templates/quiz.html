@@ -3,48 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard - FakeNews Detector</title>
+    <title>Quiz Mode - FakeNews Detector</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 20px; color: white; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
         .container { max-width: 750px; margin: 0 auto; }
-        .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 10px; }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
         .nav-logo { font-size: 1.2em; font-weight: 700; }
         .nav-logo span { color: #e94560; }
-        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
-        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.85em;
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
         .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+
         .hero { text-align: center; margin-bottom: 30px; }
-        .hero h1 { font-size: 2.2em; font-weight: 800; background: linear-gradient(90deg, #f59e0b, #e94560, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-        .hero p { color: rgba(255,255,255,0.5); }
-        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 24px; margin-bottom: 16px; }
-        .top3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-        .top-card { background: rgba(255,255,255,0.06); border-radius: 16px; padding: 20px 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .top-card.gold { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.08); }
-        .top-card.silver { border-color: rgba(192,192,192,0.4); background: rgba(192,192,192,0.06); }
-        .top-card.bronze { border-color: rgba(205,127,50,0.4); background: rgba(205,127,50,0.06); }
-        .medal { font-size: 2.5em; margin-bottom: 8px; }
-        .top-name { font-weight: 700; font-size: 0.95em; margin-bottom: 4px; }
-        .top-score { font-size: 1.4em; font-weight: 800; color: #f59e0b; }
-        .top-acc { font-size: 0.75em; color: rgba(255,255,255,0.5); margin-top: 2px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 10px 14px; font-size: 0.75em; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        td { padding: 12px 14px; font-size: 0.9em; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.03); }
-        .rank { font-weight: 800; color: #a855f7; }
-        .username { font-weight: 600; }
-        .score-val { color: #f59e0b; font-weight: 700; }
-        .acc-val { color: #10b981; }
-        .streak-val { color: #a855f7; }
-        .diff-badge { padding: 2px 8px; border-radius: 8px; font-size: 0.75em; }
-        .diff-badge.easy { background: rgba(16,185,129,0.2); color: #10b981; }
-        .diff-badge.medium { background: rgba(245,158,11,0.2); color: #f59e0b; }
-        .diff-badge.hard { background: rgba(233,69,96,0.2); color: #e94560; }
-        .empty-state { text-align: center; padding: 40px; color: rgba(255,255,255,0.4); }
-        .empty-state .icon { font-size: 3em; margin-bottom: 12px; }
-        .play-btn { display: inline-block; margin-top: 16px; padding: 12px 28px; background: linear-gradient(90deg, #e94560, #a855f7); color: white; border-radius: 12px; text-decoration: none; font-weight: 700; }
-        @media (max-width: 500px) { .top3 { grid-template-columns: 1fr; } }
+        .hero h1 {
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(90deg, #e94560, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .hero p { color: rgba(255,255,255,0.5); font-size: 0.95em; }
+
+        /* SCORE BAR */
+        .score-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+        }
+        .score-item { text-align: center; }
+        .score-item .label { font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+        .score-item .value { font-size: 1.8em; font-weight: 800; margin-top: 2px; }
+        .score-item .value.green { color: #10b981; }
+        .score-item .value.red { color: #e94560; }
+        .score-item .value.yellow { color: #f59e0b; }
+        .score-item .value.purple { color: #a855f7; }
+
+        /* PROGRESS */
+        .progress-wrap { margin-bottom: 20px; }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 6px;
+        }
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a855f7, #3b82f6);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* QUESTION CARD */
+        .question-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .q-number {
+            background: rgba(168,85,247,0.2);
+            border: 1px solid rgba(168,85,247,0.4);
+            color: #c084fc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .q-category {
+            background: rgba(59,130,246,0.2);
+            border: 1px solid rgba(59,130,246,0.4);
+            color: #93c5fd;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .question-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border-left: 3px solid #a855f7;
+        }
+
+        /* ANSWER BUTTONS */
+        .answer-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .answer-btn {
+            padding: 16px 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+        .answer-btn.real {
+            background: rgba(16,185,129,0.1);
+            color: #10b981;
+            border-color: rgba(16,185,129,0.3);
+        }
+        .answer-btn.fake {
+            background: rgba(233,69,96,0.1);
+            color: #e94560;
+            border-color: rgba(233,69,96,0.3);
+        }
+        .answer-btn.real:hover {
+            background: rgba(16,185,129,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+        }
+        .answer-btn.fake:hover {
+            background: rgba(233,69,96,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(233,69,96,0.3);
+        }
+        .answer-btn:disabled { cursor: not-allowed; transform: none; }
+        .answer-btn.correct {
+            background: rgba(16,185,129,0.4) !important;
+            border-color: #10b981 !important;
+            color: white !important;
+        }
+        .answer-btn.wrong {
+            background: rgba(233,69,96,0.4) !important;
+            border-color: #e94560 !important;
+            color: white !important;
+        }
+
+        /* FEEDBACK BOX */
+        .feedback-box {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .feedback-box.correct-fb { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); }
+        .feedback-box.wrong-fb { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); }
+        .feedback-box h4 { font-size: 1em; margin-bottom: 6px; }
+        .feedback-box p { font-size: 0.88em; color: rgba(255,255,255,0.75); line-height: 1.5; }
+
+        /* NEXT BUTTON */
+        .next-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #a855f7, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: none;
+            margin-top: 12px;
+        }
+        .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(168,85,247,0.4); }
+
+        /* TIMER */
+        .timer-wrap { text-align: center; margin-bottom: 16px; }
+        .timer {
+            display: inline-block;
+            font-size: 1.5em;
+            font-weight: 800;
+            color: #f59e0b;
+            background: rgba(245,158,11,0.1);
+            border: 2px solid rgba(245,158,11,0.3);
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            line-height: 52px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+        .timer.danger { color: #e94560; border-color: rgba(233,69,96,0.5); background: rgba(233,69,96,0.1); }
+
+        /* RESULT SCREEN */
+        .result-screen {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .result-emoji { font-size: 4em; margin-bottom: 16px; }
+        .result-title { font-size: 2em; font-weight: 800; margin-bottom: 8px; }
+        .result-subtitle { color: rgba(255,255,255,0.6); margin-bottom: 24px; }
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 16px 10px;
+        }
+        .stat-box .s-label { font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+        .stat-box .s-value { font-size: 1.8em; font-weight: 800; margin-top: 4px; }
+        .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            padding: 12px 28px;
+            background: linear-gradient(90deg, #e94560, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary {
+            padding: 12px 28px;
+            background: rgba(255,255,255,0.08);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary:hover, .btn-secondary:hover { transform: translateY(-2px); }
+
+        /* START SCREEN */
+        .start-screen {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .start-screen h2 { font-size: 1.6em; margin-bottom: 12px; }
+        .start-screen p { color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.6; }
+        .difficulty-select {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .diff-btn {
+            padding: 10px 20px;
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .diff-btn.active { border-color: #a855f7; background: rgba(168,85,247,0.2); }
+        .features-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .feature-item {
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.75);
+        }
+
+        @media (max-width: 600px) {
+            .answer-buttons { grid-template-columns: 1fr; }
+            .result-stats { grid-template-columns: 1fr 1fr; }
+            .features-list { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.6em; }
+        }
     </style>
 </head>
 <body>
@@ -52,79 +339,357 @@
     <div class="nav">
         <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
         <div class="nav-links">
-            <a href="/quiz">🎮 Quiz</a>
             <a href="/detector">🔍 Detector</a>
+            <a href="/history">📋 History</a>
+            <a href="/leaderboard">🏆 Leaderboard</a>
             <a href="/logout">🚪 Logout</a>
         </div>
     </div>
+
     <div class="hero">
-        <h1>🏆 Leaderboard</h1>
-        <p>Top Fact Checkers of FakeNews Detector</p>
+        <h1>🎮 Quiz Mode</h1>
+        <p>Real ya Fake? Test your media literacy skills!</p>
     </div>
 
-    {% if scores %}
-    <!-- TOP 3 -->
-    {% if scores|length >= 3 %}
-    <div class="top3">
-        <div class="top-card silver">
-            <div class="medal">🥈</div>
-            <div class="top-name">{{ scores[1].username }}</div>
-            <div class="top-score">{{ scores[1].best_score }}</div>
-            <div class="top-acc">{{ scores[1].avg_accuracy }}% accuracy</div>
-        </div>
-        <div class="top-card gold">
-            <div class="medal">🥇</div>
-            <div class="top-name">{{ scores[0].username }}</div>
-            <div class="top-score">{{ scores[0].best_score }}</div>
-            <div class="top-acc">{{ scores[0].avg_accuracy }}% accuracy</div>
-        </div>
-        <div class="top-card bronze">
-            <div class="medal">🥉</div>
-            <div class="top-name">{{ scores[2].username }}</div>
-            <div class="top-score">{{ scores[2].best_score }}</div>
-            <div class="top-acc">{{ scores[2].avg_accuracy }}% accuracy</div>
-        </div>
-    </div>
-    {% endif %}
+    <!-- START SCREEN -->
+    <div class="start-screen" id="startScreen">
+        <h2>🎯 Kya tum fake news pehchan sakte ho?</h2>
+        <p>10 sawalon mein apni media literacy test karo.<br>
+           Har sahi jawab pe points milenge — jitna tez, utna zyada!</p>
 
-    <!-- FULL TABLE -->
-    <div class="card">
-        <table>
-            <tr>
-                <th>#</th>
-                <th>Player</th>
-                <th>Best Score</th>
-                <th>Accuracy</th>
-                <th>Streak</th>
-                <th>Games</th>
-            </tr>
-            {% for s in scores %}
-            <tr>
-                <td class="rank">
-                    {% if loop.index == 1 %}🥇
-                    {% elif loop.index == 2 %}🥈
-                    {% elif loop.index == 3 %}🥉
-                    {% else %}{{ loop.index }}{% endif %}
-                </td>
-                <td class="username">{{ s.username }}</td>
-                <td class="score-val">{{ s.best_score }}</td>
-                <td class="acc-val">{{ s.avg_accuracy }}%</td>
-                <td class="streak-val">🔥{{ s.best_streak }}</td>
-                <td>{{ s.games_played }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="difficulty-select">
+            <button class="diff-btn active" onclick="setDifficulty('easy')">😊 Easy</button>
+            <button class="diff-btn" onclick="setDifficulty('medium')">🔥 Medium</button>
+            <button class="diff-btn" onclick="setDifficulty('hard')">💀 Hard</button>
+        </div>
+
+        <div class="features-list">
+            <div class="feature-item">⏱️ 15 second timer per question</div>
+            <div class="feature-item">💡 AI explanation after each answer</div>
+            <div class="feature-item">🏆 Score on leaderboard</div>
+            <div class="feature-item">📊 10 questions per round</div>
+        </div>
+
+        <button class="btn-primary" onclick="startQuiz()" style="font-size:1.1em; padding:14px 40px;">
+            🚀 Quiz Shuru Karo!
+        </button>
     </div>
-    {% else %}
-    <div class="card">
-        <div class="empty-state">
-            <div class="icon">🎮</div>
-            <p>Abhi koi score nahi hai!</p>
-            <p>Pehle quiz khelo aur leaderboard pe apna naam daalo!</p>
-            <a href="/quiz" class="play-btn">Quiz Khelo →</a>
+
+    <!-- SCORE BAR -->
+    <div class="score-bar" id="scoreBar" style="display:none;">
+        <div class="score-item">
+            <div class="label">Score</div>
+            <div class="value yellow" id="currentScore">0</div>
+        </div>
+        <div class="score-item">
+            <div class="label">Sahi</div>
+            <div class="value green" id="correctCount">0</div>
+        </div>
+        <div class="score-item">
+            <div class="label">Galat</div>
+            <div class="value red" id="wrongCount">0</div>
+        </div>
+        <div class="score-item">
+            <div class="label">Streak</div>
+            <div class="value purple" id="streakCount">🔥0</div>
         </div>
     </div>
-    {% endif %}
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-label">
+            <span id="progressText">Question 1 of 10</span>
+            <span id="progressPct">10%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:10%"></div>
+        </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="timer-wrap" id="timerWrap" style="display:none;">
+        <div class="timer" id="timer">15</div>
+    </div>
+
+    <!-- QUESTION CARD -->
+    <div class="question-card" id="questionCard" style="display:none;">
+        <div class="question-meta">
+            <span class="q-number" id="qNumber">Q1</span>
+            <span class="q-category" id="qCategory">Politics</span>
+        </div>
+        <div class="question-text" id="questionText"></div>
+        <div class="answer-buttons">
+            <button class="answer-btn real" onclick="submitAnswer('REAL')" id="realBtn">✅ REAL NEWS</button>
+            <button class="answer-btn fake" onclick="submitAnswer('FAKE')" id="fakeBtn">❌ FAKE NEWS</button>
+        </div>
+        <div class="feedback-box" id="feedbackBox">
+            <h4 id="feedbackTitle"></h4>
+            <p id="feedbackText"></p>
+        </div>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+            Next Question →
+        </button>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div class="result-screen" id="resultScreen">
+        <div class="result-emoji" id="resultEmoji">🎉</div>
+        <div class="result-title" id="resultTitle">Quiz Complete!</div>
+        <div class="result-subtitle" id="resultSubtitle"></div>
+        <div class="result-stats">
+            <div class="stat-box">
+                <div class="s-label">Final Score</div>
+                <div class="s-value" style="color:#f59e0b;" id="finalScore">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="s-label">Accuracy</div>
+                <div class="s-value" style="color:#10b981;" id="finalAccuracy">0%</div>
+            </div>
+            <div class="stat-box">
+                <div class="s-label">Best Streak</div>
+                <div class="s-value" style="color:#a855f7;" id="finalStreak">0</div>
+            </div>
+        </div>
+        <div class="result-actions">
+            <button class="btn-primary" onclick="restartQuiz()">🔄 Dobara Khelo</button>
+            <a href="/leaderboard" class="btn-secondary">🏆 Leaderboard</a>
+            <a href="/detector" class="btn-secondary">🔍 Detector</a>
+        </div>
+    </div>
 </div>
+
+<script>
+// ── QUESTION BANK ─────────────────────────────────────────────────────────
+const QUESTIONS = {
+    easy: [
+        { text: "Narendra Modi is the Prime Minister of India since 2014.", answer: "REAL", category: "Politics", explanation: "Narendra Modi BJP ke neta hain aur 2014 se India ke PM hain. 2024 mein teesri baar PM bane." },
+        { text: "India has 28 states and 8 Union Territories.", answer: "REAL", category: "Geography", explanation: "Bilkul sahi! India mein 28 states aur 8 Union Territories hain. J&K 2019 mein UT bana." },
+        { text: "India won the T20 World Cup 2024, defeating South Africa.", answer: "REAL", category: "Cricket", explanation: "Haan! India ne 29 June 2024 ko Barbados mein South Africa ko harakar T20 WC jeeta." },
+        { text: "Ranchi is the capital of Jharkhand.", answer: "REAL", category: "Geography", explanation: "Bilkul sahi! Ranchi Jharkhand ki rajdhani hai. Jharkhand 2000 mein Bihar se alag hua." },
+        { text: "WhatsApp will be banned in India next week by government order.", answer: "FAKE", category: "Viral", explanation: "Ye ek common fake news hai jo baar baar viral hoti hai. WhatsApp India mein band nahi ho raha." },
+        { text: "Free recharge for all Indians — government scheme, register now!", answer: "FAKE", category: "Scam", explanation: "Ye ek scam message hai. Koi bhi free recharge scheme is tarah viral messages se nahi milti." },
+        { text: "5G towers are spreading coronavirus — proven by research.", answer: "FAKE", category: "Health", explanation: "Ye bilkul jhooth hai. 5G towers electromagnetic radiation emit karte hain jo virus nahi failate." },
+        { text: "Droupadi Murmu is the President of India since July 2022.", answer: "REAL", category: "Politics", explanation: "Haan! Droupadi Murmu 15th President of India hain aur pehli tribal mahila President hain." },
+        { text: "Chandrayaan-3 successfully landed on Moon's south pole on 23 August 2023.", answer: "REAL", category: "Science", explanation: "India ne 23 August 2023 ko Chandrayaan-3 se chand ke south pole pe pehli successful landing ki." },
+        { text: "Bill Gates has microchipped all Indians through COVID vaccines.", answer: "FAKE", category: "Health", explanation: "Ye ek dangerous conspiracy theory hai. Vaccines mein koi microchip nahi hota." },
+    ],
+    medium: [
+        { text: "D Gukesh became World Chess Champion in December 2024 at age 18, the youngest ever.", answer: "REAL", category: "Sports", explanation: "D Gukesh ne December 2024 mein Ding Liren ko harakar sabse kam umra mein World Chess Champion banne ka record banaya." },
+        { text: "RCB won IPL 2025 championship title.", answer: "REAL", category: "Cricket", explanation: "Royal Challengers Bengaluru ne IPL 2025 jeeta — apna pehla IPL title." },
+        { text: "Operation Sindoor was launched by India in May 2025 against terrorist camps in Pakistan.", answer: "REAL", category: "Defence", explanation: "Operation Sindoor India ki military operation thi jo May 2025 mein Pakistan aur PoK mein terrorist camps ke khilaf launch ki gayi." },
+        { text: "India's GDP is the 3rd largest in the world as of 2024.", answer: "FAKE", category: "Economy", explanation: "India 2024 mein 5th largest economy hai, 3rd nahi. USA, China, Germany aur Japan India se aage hain." },
+        { text: "Neeraj Chopra won Silver medal at Paris Olympics 2024 in javelin throw.", answer: "REAL", category: "Sports", explanation: "Neeraj Chopra ne Paris 2024 mein Silver medal jeeta. Gold Pakistan ke Arshad Nadeem ne jeeta." },
+        { text: "GST was implemented in India on 1 July 2017.", answer: "REAL", category: "Economy", explanation: "Haan! GST (Goods and Services Tax) 1 July 2017 ko lagu hua. Ye ek historic tax reform tha." },
+        { text: "India secretly sold Kashmir to China in a secret deal.", answer: "FAKE", category: "Political", explanation: "Ye bilkul jhooth hai. India ne koi aisa deal nahi ki. Ye dangerous fake news hai." },
+        { text: "Sanjay Malhotra is the Governor of RBI since December 2024.", answer: "REAL", category: "Economy", explanation: "Sanjay Malhotra ne Shaktikanta Das ki jagah December 2024 mein RBI Governor ka charge liya." },
+        { text: "Australia won ODI World Cup 2023, defeating India in the final in Ahmedabad.", answer: "REAL", category: "Cricket", explanation: "Australia ne November 2023 mein Ahmedabad mein India ko harakar ODI World Cup jeeta." },
+        { text: "India will split into 5 countries by 2026 according to UN report.", answer: "FAKE", category: "Political", explanation: "UN ne koi aisa report nahi diya. Ye ek dangerous fake news hai jo India ki ekta ko nuqsan pahunchane ke liye failayi jaati hai." },
+    ],
+    hard: [
+        { text: "Rohan Bopanna won Australian Open 2024 men's doubles at age 43.", answer: "REAL", category: "Tennis", explanation: "Rohan Bopanna aur Matthew Ebden ne January 2024 mein Australian Open men's doubles title jeeta. 43 saal ki umra mein!" },
+        { text: "BNS (Bharatiya Nyaya Sanhita) replaced IPC from 1 July 2024.", answer: "REAL", category: "Law", explanation: "Haan! IPC ko Bharatiya Nyaya Sanhita se replace kiya gaya 1 July 2024 se. Ye historic legal reform tha." },
+        { text: "Sanjiv Khanna is the Chief Justice of India since November 2024.", answer: "REAL", category: "Law", explanation: "Justice Sanjiv Khanna ne November 2024 mein D.Y. Chandrachud ki jagah CJI ka pad sambhala." },
+        { text: "India has successfully tested a nuclear missile that can reach any part of the world.", answer: "FAKE", category: "Defence", explanation: "India ki Agni-V missile 5000+ km range ki hai, par 'world ke har hisse' wala claim exaggerated hai." },
+        { text: "Sunil Chhetri retired from international football in 2024.", answer: "REAL", category: "Football", explanation: "India ke greatest footballer Sunil Chhetri ne 6 June 2024 ko Kuwait ke khilaf apna last international match khela." },
+        { text: "India's Aditya-L1 solar mission was launched in September 2023.", answer: "REAL", category: "Science", explanation: "ISRO ka Aditya-L1 2 September 2023 ko launch hua. Ye India ka pehla solar mission hai." },
+        { text: "Pakistan's nuclear weapons have been transferred to China for safekeeping.", answer: "FAKE", category: "Defence", explanation: "Ye fake news hai. Pakistan apne nuclear weapons maintain karta hai. Koi aisa transfer nahi hua." },
+        { text: "Euro 2024 was won by Spain, defeating England in the final.", answer: "REAL", category: "Football", explanation: "Spain ne July 2024 mein Berlin mein England ko 2-1 se harakar Euro 2024 jeeta." },
+        { text: "India became the most populous country in the world in 2023, surpassing China.", answer: "REAL", category: "Geography", explanation: "UN ke anusaar April 2023 mein India China ko peeche chhod kar duniya ka sabse aabad desh ban gaya." },
+        { text: "A new study proves that reading WhatsApp forwards for 30 minutes causes cancer.", answer: "FAKE", category: "Health", explanation: "Koi bhi scientific study ne aisa prove nahi kiya. WhatsApp padne se cancer nahi hota." },
+    ]
+};
+
+// ── GAME STATE ────────────────────────────────────────────────────────────
+let currentQ     = 0;
+let score        = 0;
+let correct      = 0;
+let wrong        = 0;
+let streak       = 0;
+let bestStreak   = 0;
+let difficulty   = 'easy';
+let questions    = [];
+let timerVal     = 15;
+let timerInt     = null;
+let answered     = false;
+
+function setDifficulty(d) {
+    difficulty = d;
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function startQuiz() {
+    questions = shuffle([...QUESTIONS[difficulty]]).slice(0, 10);
+    currentQ = score = correct = wrong = streak = bestStreak = 0;
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('scoreBar').style.display = 'flex';
+    document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('timerWrap').style.display = 'block';
+    document.getElementById('questionCard').style.display = 'block';
+    document.getElementById('resultScreen').style.display = 'none';
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if (currentQ >= questions.length) { showResult(); return; }
+    answered = false;
+    const q = questions[currentQ];
+
+    document.getElementById('qNumber').textContent   = `Q${currentQ + 1}`;
+    document.getElementById('qCategory').textContent = q.category;
+    document.getElementById('questionText').textContent = q.text;
+    document.getElementById('feedbackBox').style.display = 'none';
+    document.getElementById('nextBtn').style.display     = 'none';
+
+    const realBtn = document.getElementById('realBtn');
+    const fakeBtn = document.getElementById('fakeBtn');
+    realBtn.disabled = fakeBtn.disabled = false;
+    realBtn.className = 'answer-btn real';
+    fakeBtn.className = 'answer-btn fake';
+
+    const pct = Math.round(((currentQ + 1) / questions.length) * 100);
+    document.getElementById('progressText').textContent = `Question ${currentQ + 1} of ${questions.length}`;
+    document.getElementById('progressPct').textContent  = `${pct}%`;
+    document.getElementById('progressFill').style.width = `${pct}%`;
+
+    updateScoreUI();
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timerInt);
+    timerVal = difficulty === 'hard' ? 10 : difficulty === 'medium' ? 12 : 15;
+    const timerEl = document.getElementById('timer');
+    timerEl.textContent = timerVal;
+    timerEl.className   = 'timer';
+
+    timerInt = setInterval(() => {
+        timerVal--;
+        timerEl.textContent = timerVal;
+        if (timerVal <= 5) timerEl.className = 'timer danger';
+        if (timerVal <= 0) {
+            clearInterval(timerInt);
+            if (!answered) timeOut();
+        }
+    }, 1000);
+}
+
+function timeOut() {
+    answered = true;
+    streak   = 0;
+    wrong++;
+    const q = questions[currentQ];
+    document.getElementById('realBtn').disabled = true;
+    document.getElementById('fakeBtn').disabled = true;
+    showFeedback(false, '⏰ Time Out!', `Sahi jawab tha: ${q.answer}. ${q.explanation}`);
+    updateScoreUI();
+}
+
+function submitAnswer(userAnswer) {
+    if (answered) return;
+    answered = true;
+    clearInterval(timerInt);
+
+    const q          = questions[currentQ];
+    const isCorrect  = userAnswer === q.answer;
+    const timeBonus  = Math.floor(timerVal * 2);
+    const basePoints = difficulty === 'hard' ? 150 : difficulty === 'medium' ? 100 : 75;
+
+    const realBtn = document.getElementById('realBtn');
+    const fakeBtn = document.getElementById('fakeBtn');
+    realBtn.disabled = fakeBtn.disabled = true;
+
+    if (isCorrect) {
+        correct++;
+        streak++;
+        if (streak > bestStreak) bestStreak = streak;
+        const streakBonus = streak > 1 ? (streak - 1) * 25 : 0;
+        score += basePoints + timeBonus + streakBonus;
+
+        const clickedBtn = userAnswer === 'REAL' ? realBtn : fakeBtn;
+        clickedBtn.classList.add('correct');
+        showFeedback(true, `✅ Bilkul Sahi! +${basePoints + timeBonus + streakBonus} points`, q.explanation);
+    } else {
+        wrong++;
+        streak = 0;
+        const clickedBtn = userAnswer === 'REAL' ? realBtn : fakeBtn;
+        clickedBtn.classList.add('wrong');
+        const correctBtn = q.answer === 'REAL' ? realBtn : fakeBtn;
+        correctBtn.classList.add('correct');
+        showFeedback(false, `❌ Galat Jawab!`, `Sahi jawab tha: ${q.answer}. ${q.explanation}`);
+    }
+
+    updateScoreUI();
+    document.getElementById('nextBtn').style.display = 'block';
+}
+
+function showFeedback(isCorrect, title, text) {
+    const box  = document.getElementById('feedbackBox');
+    box.className  = `feedback-box ${isCorrect ? 'correct-fb' : 'wrong-fb'}`;
+    box.style.display = 'block';
+    document.getElementById('feedbackTitle').textContent = title;
+    document.getElementById('feedbackText').textContent  = text;
+}
+
+function nextQuestion() {
+    currentQ++;
+    loadQuestion();
+}
+
+function updateScoreUI() {
+    document.getElementById('currentScore').textContent = score;
+    document.getElementById('correctCount').textContent = correct;
+    document.getElementById('wrongCount').textContent   = wrong;
+    document.getElementById('streakCount').textContent  = `🔥${streak}`;
+}
+
+function showResult() {
+    clearInterval(timerInt);
+    document.getElementById('scoreBar').style.display    = 'none';
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('timerWrap').style.display   = 'none';
+    document.getElementById('questionCard').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+
+    const accuracy = Math.round((correct / questions.length) * 100);
+    document.getElementById('finalScore').textContent    = score;
+    document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+    document.getElementById('finalStreak').textContent   = bestStreak;
+
+    let emoji, title, subtitle;
+    if (accuracy >= 90) { emoji = '🏆'; title = 'Fact-Check Champion!'; subtitle = 'Kamaal kar diya! Tum fake news expert ho!'; }
+    else if (accuracy >= 70) { emoji = '🎉'; title = 'Bahut Badiya!'; subtitle = 'Tum media literacy mein expert ho!'; }
+    else if (accuracy >= 50) { emoji = '👍'; title = 'Theek Hai!'; subtitle = 'Practice karo aur agle baar aur better karo!'; }
+    else { emoji = '📚'; title = 'Seekhte Rahो!'; subtitle = 'Fake news pehchanna mushkil hai — practice karo!'; }
+
+    document.getElementById('resultEmoji').textContent   = emoji;
+    document.getElementById('resultTitle').textContent   = title;
+    document.getElementById('resultSubtitle').textContent = subtitle;
+
+    // Save score to leaderboard
+    saveScore(score, accuracy, bestStreak);
+}
+
+function saveScore(score, accuracy, streak) {
+    fetch('/quiz/save-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score, accuracy, streak, difficulty })
+    }).catch(() => {});
+}
+
+function restartQuiz() {
+    document.getElementById('resultScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display  = 'block';
+}
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+</script>
 </body>
 </html>
