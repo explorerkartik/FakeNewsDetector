@@ -441,15 +441,13 @@ def scrape_wikipedia_current_events():
 
 def fetch_and_store_current_affairs(groq_client, db_conn):
     """
-    Main function called by admin route.
-    1. Scrape PIB + Wikipedia
-    2. Use Groq to convert to clean fact statements
-    3. Store in dynamic_facts table
+    ek click = saare static INDIAN_FACTS + PIB + Wikipedia sab DB mein store.
     Returns: (added_count, error_message)
     """
+    import json as _json
     try:
-        # Create table if not exists
         cur = db_conn.cursor()
+        # Ensure table exists
         cur.execute("""
             CREATE TABLE IF NOT EXISTS dynamic_facts (
                 id         SERIAL PRIMARY KEY,
@@ -463,65 +461,17 @@ def fetch_and_store_current_affairs(groq_client, db_conn):
         """)
         db_conn.commit()
 
-        # Scrape raw data
-        pib_data   = scrape_pib_headlines()
-        wiki_data  = scrape_wikipedia_current_events()
-        raw_items  = pib_data + wiki_data
-
-        if not raw_items:
-            return 0, "Could not scrape any data. Check internet connection."
-
-        # Use Groq to convert raw headlines into clean facts
-        raw_text = "\n".join([f"- {item['fact']}" for item in raw_items[:15]])
-
-        prompt = f"""You are an Indian fact-checker. Convert these news headlines into verified fact statements.
-
-Headlines:
-{raw_text}
-
-Rules:
-1. Return ONLY a JSON array, no other text
-2. Each item: {{"keyword": "2-4 word lowercase key", "fact": "One clear verified sentence about the event"}}
-3. Focus only on verifiable facts, skip opinions
-4. keyword must be unique and descriptive
-5. fact must be one sentence, factual, under 150 characters
-6. Maximum 10 items
-
-JSON array only:"""
-
-        response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=800,
-            temperature=0.1
-        )
-
-        response_text = response.choices[0].message.content.strip()
-
-        # Extract JSON
-        if '```json' in response_text:
-            response_text = response_text.split('```json')[1].split('```')[0].strip()
-        elif '```' in response_text:
-            response_text = response_text.split('```')[1].split('```')[0].strip()
-
-        start = response_text.find('[')
-        end   = response_text.rfind(']') + 1
-        if start == -1 or end <= start:
-            return 0, "Groq returned invalid JSON"
-
-        import json
-        facts_list = json.loads(response_text[start:end])
-
-        # Store in DB
         added = 0
-        for item in facts_list:
-            kw   = item.get('keyword', '').lower().strip()
-            fact = item.get('fact', '').strip()
-            if kw and fact and len(kw) > 3 and len(fact) > 10:
+
+        # ── STEP 1: Store ALL static INDIAN_FACTS into DB ─────────────────────
+        for kw, fact in INDIAN_FACTS.items():
+            kw   = kw.lower().strip()
+            fact = fact.strip()
+            if kw and fact:
                 try:
                     cur.execute("""
                         INSERT INTO dynamic_facts (keyword, fact, source, updated_at)
-                        VALUES (%s, %s, 'auto', NOW())
+                        VALUES (%s, %s, 'static', NOW())
                         ON CONFLICT (keyword) DO UPDATE
                             SET fact = EXCLUDED.fact, updated_at = NOW()
                     """, (kw, fact))
@@ -529,7 +479,60 @@ JSON array only:"""
                 except Exception:
                     pass
         db_conn.commit()
+
+        # ── STEP 2: Scrape PIB + Wikipedia ────────────────────────────────────
+        pib_data  = scrape_pib_headlines()
+        wiki_data = scrape_wikipedia_current_events()
+        raw_items = pib_data + wiki_data
+
+        if raw_items:
+            raw_text = "\n".join([f"- {item['fact']}" for item in raw_items[:20]])
+            prompt = f"""You are an Indian fact-checker. Convert these headlines into verified fact statements.
+
+Headlines:
+{raw_text}
+
+Rules:
+1. Return ONLY a JSON array, no other text
+2. Each item: {{"keyword": "2-4 word lowercase key", "fact": "One clear factual sentence under 150 chars"}}
+3. Skip opinions, only verifiable facts
+4. Maximum 20 items
+
+JSON array only:"""
+
+            response = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.1
+            )
+            response_text = response.choices[0].message.content.strip()
+            if '```json' in response_text:
+                response_text = response_text.split('```json')[1].split('```')[0].strip()
+            elif '```' in response_text:
+                response_text = response_text.split('```')[1].split('```')[0].strip()
+            s = response_text.find('[')
+            e = response_text.rfind(']') + 1
+            if s != -1 and e > s:
+                facts_list = _json.loads(response_text[s:e])
+                for item in facts_list:
+                    kw   = item.get('keyword', '').lower().strip()
+                    fact = item.get('fact', '').strip()
+                    if kw and fact and len(kw) > 3 and len(fact) > 10:
+                        try:
+                            cur.execute("""
+                                INSERT INTO dynamic_facts (keyword, fact, source, updated_at)
+                                VALUES (%s, %s, 'pib_wiki', NOW())
+                                ON CONFLICT (keyword) DO UPDATE
+                                    SET fact = EXCLUDED.fact, updated_at = NOW()
+                            """, (kw, fact))
+                            added += 1
+                        except Exception:
+                            pass
+                db_conn.commit()
+
         return added, None
 
     except Exception as e:
         return 0, str(e)
+
