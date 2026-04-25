@@ -1307,9 +1307,10 @@ def extension_manifest():
     return jsonify(manifest)
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  STARTUP
+#  STARTUP — runs on both gunicorn and direct python
 # ─────────────────────────────────────────────────────────────────────────────
+with app.app_context():
+    init_db_extras()
+
 if __name__ == '__main__':
-    with app.app_context():
-        init_db_extras()
     app.run(host="0.0.0.0", port=10000)
