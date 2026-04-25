@@ -387,6 +387,163 @@ def check_source_reputation(url):
     except:
         return {'found': False}
 
+CLICKBAIT_PATTERNS = [
+    ('sensational_words', ['shocking', 'unbelievable', 'secret', 'exposed', 'viral', 'miracle', 'banned', 'breaking']),
+    ('urgency', ['must read', 'share now', 'before it is deleted', 'last chance', 'do not ignore']),
+    ('bait_phrases', ['you will not believe', 'what happened next', 'doctors hate', 'truth about', 'media will not show']),
+    ('free_giveaway', ['free recharge', 'free iphone', 'claim now', 'limited offer', 'register now']),
+]
+
+STATE_RISK_DATA = [
+    {'state': 'Maharashtra', 'risk': 72, 'topics': ['politics', 'finance', 'health'], 'volume': 'High'},
+    {'state': 'Uttar Pradesh', 'risk': 69, 'topics': ['elections', 'communal rumors', 'jobs'], 'volume': 'High'},
+    {'state': 'Delhi', 'risk': 66, 'topics': ['policy', 'crime', 'pollution'], 'volume': 'High'},
+    {'state': 'West Bengal', 'risk': 63, 'topics': ['politics', 'border rumors', 'schemes'], 'volume': 'Medium'},
+    {'state': 'Tamil Nadu', 'risk': 58, 'topics': ['weather', 'cinema', 'policy'], 'volume': 'Medium'},
+    {'state': 'Karnataka', 'risk': 57, 'topics': ['technology', 'jobs', 'politics'], 'volume': 'Medium'},
+    {'state': 'Telangana', 'risk': 55, 'topics': ['schemes', 'jobs', 'health'], 'volume': 'Medium'},
+    {'state': 'Rajasthan', 'risk': 53, 'topics': ['weather', 'exams', 'local politics'], 'volume': 'Medium'},
+    {'state': 'Gujarat', 'risk': 51, 'topics': ['business', 'schemes', 'weather'], 'volume': 'Medium'},
+    {'state': 'Kerala', 'risk': 44, 'topics': ['health', 'weather', 'migration'], 'volume': 'Low'},
+]
+
+def extract_text_from_url(url):
+    response = requests.get(url, timeout=10)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    return ' '.join([p.get_text() for p in soup.find_all('p')])
+
+def detect_clickbait_signals(text, url=''):
+    content = (text or '').strip()
+    lowered = content.lower()
+    score = 0
+    signals = []
+
+    if content.count('!') >= 2:
+        score += 14
+        signals.append('Repeated exclamation marks')
+    if sum(1 for c in content if c.isupper()) >= 12 and len(content) >= 30:
+        score += 12
+        signals.append('Heavy uppercase emphasis')
+    if '?' in content and any(phrase in lowered for phrase in ['why', 'how', 'what', 'which']):
+        score += 8
+        signals.append('Question-style curiosity hook')
+    if any(char.isdigit() for char in content):
+        score += 6
+        signals.append('Number-led headline pattern')
+
+    for label, phrases in CLICKBAIT_PATTERNS:
+        hits = [phrase for phrase in phrases if phrase in lowered]
+        if hits:
+            score += min(28, 10 + len(hits) * 6)
+            signals.append(label.replace('_', ' ').title() + ': ' + ', '.join(hits[:3]))
+
+    reputation = check_source_reputation(url) if url else {'found': False}
+    if reputation.get('tier') == 3:
+        score += 18
+        signals.append('Source has misinformation reputation warning')
+    elif reputation.get('tier') == 1:
+        score -= 10
+        signals.append('Known credible source reduces clickbait risk')
+
+    score = max(0, min(100, score))
+    if score >= 70:
+        label = 'High Clickbait Risk'
+    elif score >= 40:
+        label = 'Moderate Clickbait Risk'
+    else:
+        label = 'Low Clickbait Risk'
+
+    return {
+        'score': score,
+        'label': label,
+        'signals': signals or ['No strong clickbait signals found'],
+        'reputation': reputation,
+    }
+
+def analyze_claim_text(text, url='', save_result=True):
+    if url:
+        text = extract_text_from_url(url)
+
+    if not text.strip():
+        return {'error': 'Please enter some text!'}
+
+    english_text, detected_lang = translate_to_english(text)
+    groq_result = analyze_with_groq(english_text)
+
+    if groq_result:
+        prediction        = groq_result['verdict']
+        credibility_score = groq_result['credibility_score']
+        confidence        = groq_result['confidence']
+        gemini_reason     = groq_result['reason']
+        gemini_facts      = groq_result['gemini_facts']
+        indian_facts_matched = check_indian_facts(english_text)
+    else:
+        prediction        = model.predict([english_text])[0]
+        confidence        = max(model.predict_proba([english_text])[0]) * 100
+        credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+        gemini_reason     = ''
+        gemini_facts      = []
+        indian_facts_matched = check_indian_facts(english_text)
+
+    facts_boost = get_credibility_boost(english_text)
+    if facts_boost >= 40:
+        credibility_score = min(100, 70 + (facts_boost - 40))
+        prediction = 'REAL'
+    elif facts_boost >= 20:
+        credibility_score = min(100, credibility_score + facts_boost)
+        if credibility_score >= 45:
+            prediction = 'REAL'
+    else:
+        credibility_score = min(100, credibility_score + facts_boost)
+
+    reputation = {}
+    if url:
+        reputation = check_source_reputation(url)
+        if reputation.get('tier') == 3:
+            credibility_score = max(0, credibility_score - 20)
+
+    fact_results   = check_facts(english_text)
+    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
+    clickbait      = detect_clickbait_signals(text, url)
+
+    share_id = None
+    if save_result:
+        try:
+            db  = get_db()
+            cur = dict_cursor(db)
+            if current_user.is_authenticated:
+                cur.execute(
+                    "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s,%s,%s,%s)",
+                    (current_user.id, text[:500], prediction, credibility_score)
+                )
+            cur.execute(
+                """INSERT INTO shared_results (input_text, verdict, credibility_score, reason)
+                   VALUES (%s,%s,%s,%s) RETURNING share_id""",
+                (text[:500], prediction, credibility_score, gemini_reason)
+            )
+            share_id = str(cur.fetchone()['share_id'])
+            db.commit()
+            db.close()
+        except:
+            pass
+
+    return {
+        'verdict':           prediction,
+        'credibility_score': credibility_score,
+        'confidence':        round(confidence, 2),
+        'detected_lang':     detected_lang,
+        'reputation':        reputation,
+        'fact_results':      fact_results,
+        'indian_facts':      indian_facts_matched,
+        'gemini_reason':     gemini_reason,
+        'gemini_facts':      gemini_facts,
+        'cricket_scores':    cricket_scores,
+        'clickbait':         clickbait,
+        'share_id':          share_id,
+        'share_url':         f"/result/{share_id}" if share_id else None,
+        'input_text':        text[:300]
+    }
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  DATABASE
 # ─────────────────────────────────────────────────────────────────────────────
@@ -749,90 +906,66 @@ def detect():
     text = request.form.get('news_text', '')
     url  = request.form.get('news_url', '')
 
-    if url:
-        try:
-            response = requests.get(url, timeout=10)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            text = ' '.join([p.get_text() for p in soup.find_all('p')])
-        except:
-            return jsonify({'error': 'Could not fetch content from URL!'})
-
-    if not text.strip():
-        return jsonify({'error': 'Please enter some text!'})
-
-    english_text, detected_lang = translate_to_english(text)
-    groq_result = analyze_with_groq(english_text)
-
-    if groq_result:
-        prediction        = groq_result['verdict']
-        credibility_score = groq_result['credibility_score']
-        confidence        = groq_result['confidence']
-        gemini_reason     = groq_result['reason']
-        gemini_facts      = groq_result['gemini_facts']
-        indian_facts_matched = check_indian_facts(english_text)
-    else:
-        prediction        = model.predict([english_text])[0]
-        confidence        = max(model.predict_proba([english_text])[0]) * 100
-        credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
-        gemini_reason     = ''
-        gemini_facts      = []
-        indian_facts_matched = check_indian_facts(english_text)
-
-    facts_boost = get_credibility_boost(english_text)
-    if facts_boost >= 40:
-        credibility_score = min(100, 70 + (facts_boost - 40))
-        prediction = 'REAL'
-    elif facts_boost >= 20:
-        credibility_score = min(100, credibility_score + facts_boost)
-        if credibility_score >= 45:
-            prediction = 'REAL'
-    else:
-        credibility_score = min(100, credibility_score + facts_boost)
-
-    reputation = {}
-    if url:
-        reputation = check_source_reputation(url)
-        if reputation.get('tier') == 3:
-            credibility_score = max(0, credibility_score - 20)
-
-    fact_results   = check_facts(english_text)
-    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
-
-    share_id = None
     try:
-        db  = get_db()
-        cur = dict_cursor(db)
-        if current_user.is_authenticated:
-            cur.execute(
-                "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s,%s,%s,%s)",
-                (current_user.id, text[:500], prediction, credibility_score)
-            )
-        cur.execute(
-            """INSERT INTO shared_results (input_text, verdict, credibility_score, reason)
-               VALUES (%s,%s,%s,%s) RETURNING share_id""",
-            (text[:500], prediction, credibility_score, gemini_reason)
-        )
-        share_id = str(cur.fetchone()['share_id'])
-        db.commit()
-        db.close()
+        result = analyze_claim_text(text, url, save_result=True)
     except:
-        pass
+        return jsonify({'error': 'Could not fetch content from URL!'})
+    return jsonify(result)
 
-    return jsonify({
-        'verdict':           prediction,
-        'credibility_score': credibility_score,
-        'confidence':        round(confidence, 2),
-        'detected_lang':     detected_lang,
-        'reputation':        reputation,
-        'fact_results':      fact_results,
-        'indian_facts':      indian_facts_matched,
-        'gemini_reason':     gemini_reason,
-        'gemini_facts':      gemini_facts,
-        'cricket_scores':    cricket_scores,
-        'share_id':          share_id,
-        'share_url':         f"/result/{share_id}" if share_id else None,
-        'input_text':        text[:300]
-    })
+@app.route('/bulk-detect', methods=['POST'])
+def bulk_detect():
+    data = request.get_json(silent=True) or {}
+    raw_items = data.get('items') or request.form.get('bulk_text', '').splitlines()
+    items = [item.strip() for item in raw_items if item and item.strip()][:10]
+    if not items:
+        return jsonify({'error': 'Add at least one claim to analyze.'}), 400
+
+    results = []
+    for index, item in enumerate(items, start=1):
+        try:
+            result = analyze_claim_text(item, save_result=False)
+            result['index'] = index
+            results.append(result)
+        except Exception as e:
+            results.append({'index': index, 'input_text': item[:300], 'error': str(e)})
+    return jsonify({'count': len(results), 'results': results})
+
+@app.route('/compare-detect', methods=['POST'])
+def compare_detect():
+    data = request.get_json(silent=True) or {}
+    claim_a = (data.get('claim_a') or request.form.get('claim_a', '')).strip()
+    claim_b = (data.get('claim_b') or request.form.get('claim_b', '')).strip()
+    if not claim_a or not claim_b:
+        return jsonify({'error': 'Enter both claims to compare.'}), 400
+
+    first = analyze_claim_text(claim_a, save_result=False)
+    second = analyze_claim_text(claim_b, save_result=False)
+    delta = abs(first.get('credibility_score', 0) - second.get('credibility_score', 0))
+    if first.get('credibility_score', 0) > second.get('credibility_score', 0):
+        summary = 'Claim A is more credible based on the current analysis.'
+    elif second.get('credibility_score', 0) > first.get('credibility_score', 0):
+        summary = 'Claim B is more credible based on the current analysis.'
+    else:
+        summary = 'Both claims have the same credibility score.'
+    return jsonify({'claim_a': first, 'claim_b': second, 'delta': delta, 'summary': summary})
+
+@app.route('/clickbait-detect', methods=['POST'])
+def clickbait_detect():
+    data = request.get_json(silent=True) or {}
+    headline = (data.get('headline') or request.form.get('headline', '')).strip()
+    url = (data.get('url') or request.form.get('url', '')).strip()
+    if not headline and not url:
+        return jsonify({'error': 'Enter a headline or URL.'}), 400
+    if url and not headline:
+        try:
+            headline = extract_text_from_url(url)[:300]
+        except:
+            return jsonify({'error': 'Could not fetch content from URL!'}), 400
+    return jsonify(detect_clickbait_signals(headline, url))
+
+@app.route('/api/state-map')
+def state_map():
+    return jsonify({'updated_at': datetime.now().isoformat(), 'states': STATE_RISK_DATA})
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  SHAREABLE RESULT PAGE

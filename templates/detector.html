@@ -226,6 +226,24 @@
         .fb-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .feedback-msg { font-size: 0.75rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
 
+        .tool-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 18px; }
+        .tool-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; }
+        .tool-card h4 { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+        .tool-card strong { display: block; font-size: 1.05rem; color: white; margin-bottom: 4px; }
+        .tool-card p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+        .tool-list { display: flex; flex-direction: column; gap: 10px; padding: 18px; }
+        .tool-row { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+        .tool-row-title { font-size: 0.86rem; color: var(--text); line-height: 1.45; }
+        .tool-row-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+        .risk-pill { padding: 5px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 800; font-family: 'DM Mono', monospace; }
+        .risk-real { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+        .risk-fake { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+        .risk-mid { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+        .state-bars { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+        .state-bar { display: grid; grid-template-columns: 120px 1fr 48px; gap: 10px; align-items: center; font-size: 0.78rem; color: var(--text-muted); }
+        .state-track { height: 8px; border-radius: 20px; background: rgba(255,255,255,0.06); overflow: hidden; }
+        .state-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg,#f59e0b,#ef4444); }
+
         /* SHARE + PDF ROW */
         .result-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
         .result-action-btn {
@@ -341,6 +359,10 @@
 
         <div class="mode-tabs">
             <button class="mode-tab active" id="tab-text-btn" onclick="setMode('text')">📝 Text / URL</button>
+            <button class="mode-tab" id="tab-bulk-btn" onclick="setMode('bulk')">Bulk</button>
+            <button class="mode-tab" id="tab-compare-btn" onclick="setMode('compare')">Compare</button>
+            <button class="mode-tab" id="tab-clickbait-btn" onclick="setMode('clickbait')">Clickbait</button>
+            <button class="mode-tab" id="tab-map-btn" onclick="setMode('map'); loadStateMap();">Map</button>
             <button class="mode-tab" id="tab-image-btn" onclick="setMode('image')">🖼️ Image</button>
             <button class="mode-tab" id="tab-video-btn" onclick="setMode('video')">🎥 Video</button>
             <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="setMode('voice')">🎙️ Voice</button>
@@ -415,6 +437,86 @@
                         <button class="fb-btn fb-btn-down" id="fb-down" onclick="submitFeedback('not_helpful')">👎 Not Helpful</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- BULK TAB -->
+        <div class="tab-content" id="tab-bulk">
+            <div class="input-card">
+                <div class="input-card-header">
+                    <span>Bulk Analysis</span>
+                    <span>Up to 10 claims</span>
+                </div>
+                <textarea class="main-input" id="bulk_text" placeholder="Paste one claim per line..."></textarea>
+                <div class="action-bar">
+                    <div class="action-bar-left">
+                        <span class="action-chip">Batch Scan</span>
+                        <span class="action-chip">Same AI Pipeline</span>
+                    </div>
+                    <button class="analyze-btn" onclick="detectBulk()">Analyze Batch</button>
+                </div>
+            </div>
+            <div class="loading-wrap" id="bulk-loading"><div class="spinner"></div><p>Analyzing batch...</p></div>
+            <div class="result-card" id="bulk-result"><div class="tool-list" id="bulk-list"></div></div>
+        </div>
+
+        <!-- COMPARE TAB -->
+        <div class="tab-content" id="tab-compare">
+            <div class="input-card">
+                <div class="input-card-header">
+                    <span>Comparison Tool</span>
+                    <span>Claim A vs Claim B</span>
+                </div>
+                <textarea class="main-input" id="claim_a" placeholder="Claim A"></textarea>
+                <textarea class="main-input" id="claim_b" placeholder="Claim B" style="border-top:1px solid var(--glass-border);"></textarea>
+                <div class="action-bar">
+                    <div class="action-bar-left">
+                        <span class="action-chip">Credibility Delta</span>
+                        <span class="action-chip">Side-by-side Verdict</span>
+                    </div>
+                    <button class="analyze-btn" onclick="compareClaims()">Compare Claims</button>
+                </div>
+            </div>
+            <div class="loading-wrap" id="compare-loading"><div class="spinner"></div><p>Comparing claims...</p></div>
+            <div class="result-card" id="compare-result">
+                <div class="tool-grid" id="compare-grid"></div>
+            </div>
+        </div>
+
+        <!-- CLICKBAIT TAB -->
+        <div class="tab-content" id="tab-clickbait">
+            <div class="input-card">
+                <div class="input-card-header">
+                    <span>Clickbait Detector</span>
+                    <span>Headline + URL signals</span>
+                </div>
+                <textarea class="main-input" id="clickbait_headline" placeholder="Paste a headline, WhatsApp forward title, or short post..."></textarea>
+                <div class="url-input-wrap">
+                    <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">Optional URL:</span>
+                    <input class="url-input" type="text" id="clickbait_url" placeholder="https://example.com/article">
+                </div>
+                <div class="action-bar">
+                    <div class="action-bar-left">
+                        <span class="action-chip">Sensational Tone</span>
+                        <span class="action-chip">Urgency Phrases</span>
+                    </div>
+                    <button class="analyze-btn" onclick="detectClickbait()">Score Headline</button>
+                </div>
+            </div>
+            <div class="loading-wrap" id="clickbait-loading"><div class="spinner"></div><p>Checking headline signals...</p></div>
+            <div class="result-card" id="clickbait-result">
+                <div class="tool-grid" id="clickbait-grid"></div>
+            </div>
+        </div>
+
+        <!-- MAP TAB -->
+        <div class="tab-content" id="tab-map">
+            <div class="input-card">
+                <div class="input-card-header">
+                    <span>State-wise Map</span>
+                    <span>Misinformation risk snapshot</span>
+                </div>
+                <div class="state-bars" id="state-bars"></div>
             </div>
         </div>
 
@@ -583,7 +685,7 @@
 
     // ── MODE SWITCHING ────────────────────────────────────────────────────────
     function setMode(mode) {
-        ['text','image','video','voice'].forEach(m => {
+        ['text','bulk','compare','clickbait','map','image','video','voice'].forEach(m => {
             document.getElementById('tab-'+m).classList.remove('active');
             const btn = document.getElementById('tab-'+m+'-btn');
             if(btn) btn.classList.remove('active');
@@ -785,6 +887,115 @@
     }
 
     // ── IMAGE DETECTION ───────────────────────────────────────────────────────
+    function verdictPill(verdict, score) {
+        const cls = verdict === 'REAL' ? 'risk-real' : 'risk-fake';
+        return `<span class="risk-pill ${cls}">${verdict} ${score}/100</span>`;
+    }
+
+    function htmlSafe(value) {
+        return String(value || '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+    }
+
+    async function detectBulk() {
+        const raw = document.getElementById('bulk_text').value.trim();
+        if (!raw) { alert('Paste one claim per line.'); return; }
+        document.getElementById('bulk-loading').classList.add('show');
+        document.getElementById('bulk-result').classList.remove('show');
+        try {
+            const res = await fetch('/bulk-detect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ items: raw.split(/\n+/).map(x => x.trim()).filter(Boolean) })
+            });
+            const data = await res.json();
+            const list = document.getElementById('bulk-list');
+            list.innerHTML = '';
+            (data.results || []).forEach(item => {
+                if (item.error) {
+                    list.innerHTML += `<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">${htmlSafe(item.error)}</div></div><span class="risk-pill risk-mid">ERROR</span></div>`;
+                } else {
+                    list.innerHTML += `<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">Confidence ${item.confidence}% · Clickbait ${item.clickbait?.score || 0}/100</div></div>${verdictPill(item.verdict, item.credibility_score)}</div>`;
+                }
+            });
+            document.getElementById('bulk-result').classList.add('show');
+        } catch(e) {
+            alert('Bulk analysis failed.');
+        } finally {
+            document.getElementById('bulk-loading').classList.remove('show');
+        }
+    }
+
+    async function compareClaims() {
+        const claimA = document.getElementById('claim_a').value.trim();
+        const claimB = document.getElementById('claim_b').value.trim();
+        if (!claimA || !claimB) { alert('Enter both claims.'); return; }
+        document.getElementById('compare-loading').classList.add('show');
+        document.getElementById('compare-result').classList.remove('show');
+        try {
+            const res = await fetch('/compare-detect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ claim_a: claimA, claim_b: claimB })
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); return; }
+            document.getElementById('compare-grid').innerHTML = `
+                <div class="tool-card"><h4>Claim A</h4><strong>${data.claim_a.verdict} · ${data.claim_a.credibility_score}/100</strong><p>${htmlSafe(data.claim_a.gemini_reason || data.claim_a.input_text)}</p></div>
+                <div class="tool-card"><h4>Claim B</h4><strong>${data.claim_b.verdict} · ${data.claim_b.credibility_score}/100</strong><p>${htmlSafe(data.claim_b.gemini_reason || data.claim_b.input_text)}</p></div>
+                <div class="tool-card"><h4>Credibility Delta</h4><strong>${data.delta} points</strong><p>${data.summary}</p></div>
+                <div class="tool-card"><h4>Clickbait Risk</h4><strong>A ${data.claim_a.clickbait.score}/100 · B ${data.claim_b.clickbait.score}/100</strong><p>Use this with the verdict to spot true-but-sensational framing.</p></div>`;
+            document.getElementById('compare-result').classList.add('show');
+        } catch(e) {
+            alert('Comparison failed.');
+        } finally {
+            document.getElementById('compare-loading').classList.remove('show');
+        }
+    }
+
+    async function detectClickbait() {
+        const headline = document.getElementById('clickbait_headline').value.trim();
+        const url = document.getElementById('clickbait_url').value.trim();
+        if (!headline && !url) { alert('Enter a headline or URL.'); return; }
+        document.getElementById('clickbait-loading').classList.add('show');
+        document.getElementById('clickbait-result').classList.remove('show');
+        try {
+            const res = await fetch('/clickbait-detect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ headline, url })
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); return; }
+            const cls = data.score >= 70 ? 'risk-fake' : data.score >= 40 ? 'risk-mid' : 'risk-real';
+            document.getElementById('clickbait-grid').innerHTML = `
+                <div class="tool-card"><h4>Risk Score</h4><strong><span class="risk-pill ${cls}">${data.score}/100</span></strong><p>${data.label}</p></div>
+                <div class="tool-card"><h4>Signals Found</h4><p>${(data.signals || []).map(htmlSafe).join('<br>')}</p></div>`;
+            document.getElementById('clickbait-result').classList.add('show');
+        } catch(e) {
+            alert('Clickbait check failed.');
+        } finally {
+            document.getElementById('clickbait-loading').classList.remove('show');
+        }
+    }
+
+    async function loadStateMap() {
+        const box = document.getElementById('state-bars');
+        if (box.dataset.loaded) return;
+        try {
+            const res = await fetch('/api/state-map');
+            const data = await res.json();
+            box.innerHTML = '';
+            data.states.forEach(s => {
+                box.innerHTML += `<div class="state-bar"><strong>${s.state}</strong><div><div class="state-track"><div class="state-fill" style="width:${s.risk}%"></div></div><div class="tool-row-meta">${s.volume} volume · ${s.topics.join(', ')}</div></div><span>${s.risk}</span></div>`;
+            });
+            box.dataset.loaded = '1';
+        } catch(e) {
+            box.innerHTML = '<div class="tool-card"><p>Could not load state data.</p></div>';
+        }
+    }
+
     function handleImg(e) {
         const file = e.target.files[0]; if (!file) return;
         if (file.size > 10*1024*1024) { alert('Max 10MB!'); e.target.value=''; return; }
