@@ -1312,5 +1312,74 @@ def extension_manifest():
 with app.app_context():
     init_db_extras()
 
+# ── QUIZ MODE ─────────────────────────────────────────────────────────────────
+@app.route('/quiz')
+def quiz():
+    return render_template('quiz.html')
+
+@app.route('/quiz/save-score', methods=['POST'])
+def quiz_save_score():
+    data       = request.get_json()
+    score      = data.get('score', 0)
+    accuracy   = data.get('accuracy', 0)
+    streak     = data.get('streak', 0)
+    difficulty = data.get('difficulty', 'easy')
+    user_id    = current_user.id if current_user.is_authenticated else None
+    username   = current_user.username if current_user.is_authenticated else 'Guest'
+    try:
+        db  = get_db()
+        cur = dict_cursor(db)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS quiz_scores (
+                id         SERIAL PRIMARY KEY,
+                user_id    INT,
+                username   VARCHAR(100),
+                score      INT,
+                accuracy   INT,
+                streak     INT,
+                difficulty VARCHAR(10),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        cur.execute("""
+            INSERT INTO quiz_scores (user_id, username, score, accuracy, streak, difficulty)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (user_id, username, score, accuracy, streak, difficulty))
+        db.commit()
+        db.close()
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/leaderboard')
+def leaderboard():
+    try:
+        db  = get_db()
+        cur = dict_cursor(db)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS quiz_scores (
+                id SERIAL PRIMARY KEY,
+                user_id INT, username VARCHAR(100),
+                score INT, accuracy INT, streak INT,
+                difficulty VARCHAR(10),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        cur.execute("""
+            SELECT username, MAX(score) as best_score,
+                   ROUND(AVG(accuracy)) as avg_accuracy,
+                   MAX(streak) as best_streak,
+                   COUNT(*) as games_played
+            FROM quiz_scores
+            GROUP BY username
+            ORDER BY best_score DESC
+            LIMIT 20
+        """)
+        scores = cur.fetchall()
+        db.close()
+    except:
+        scores = []
+    return render_template('leaderboard.html', scores=scores)
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=10000)
