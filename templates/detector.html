@@ -696,7 +696,6 @@
         if(btn) btn.classList.add('active');
         const si = document.querySelector(`.sidebar-item[data-mode="${mode}"]`);
         if(si) si.classList.add('active');
-        currentMode = mode;
         if (mode === 'voice') resumeVoiceAfterModeSwitch();
     }
 
@@ -1100,10 +1099,9 @@
     // ── VOICE ─────────────────────────────────────────────────────────────────
     let recognition;
     let finalText = "";
-    let voiceAutoResume = false;
     let voiceResumePending = false;
     let voiceStopReason = null;
-    let currentMode = 'text';
+    let voiceAwaitingStop = false;
 
     function setVoiceState(state, statusText) {
         const orb = document.getElementById('voice-orb');
@@ -1119,7 +1117,10 @@
         if (btn) {
             const listening = state === 'listening';
             btn.classList.toggle('active', listening);
-            btn.textContent = listening ? 'Stop listening' : (voiceResumePending ? 'Resume listening' : 'Start listening');
+            btn.disabled = voiceAwaitingStop;
+            btn.textContent = listening
+                ? 'Stop listening'
+                : (voiceAwaitingStop ? 'Preparing mic...' : (voiceResumePending ? 'Resume listening' : 'Start listening'));
         }
 
         if (statusText !== undefined && status) status.textContent = statusText;
@@ -1132,6 +1133,8 @@
         r.onstart  = () => {
             if (recognition !== r) return;
             finalText = "";
+            voiceAwaitingStop = false;
+            voiceResumePending = false;
             voiceStopReason = null;
             setVoiceState('listening', "Listening... Click again to stop.");
         };
@@ -1148,9 +1151,11 @@
             if (recognition !== r) return;
             const stopReason = voiceStopReason;
             recognition = null;
+            voiceAwaitingStop = false;
             voiceStopReason = null;
 
             if (stopReason === 'tab-switch') {
+                voiceResumePending = true;
                 setVoiceState('idle', "Voice paused. Tap Resume listening.");
                 return;
             }
@@ -1165,8 +1170,17 @@
         };
         r.onerror  = (e) => {
             if (recognition !== r) return;
-            if (e.error === 'aborted' && (voiceStopReason === 'toggle-off' || voiceStopReason === 'tab-switch')) return;
+            if (e.error === 'aborted' && (voiceStopReason === 'toggle-off' || voiceStopReason === 'tab-switch')) {
+                const abortedByTabSwitch = voiceStopReason === 'tab-switch';
+                recognition = null;
+                voiceAwaitingStop = false;
+                voiceStopReason = null;
+                voiceResumePending = abortedByTabSwitch;
+                setVoiceState('idle', abortedByTabSwitch ? "Voice paused. Tap Resume listening." : "Voice stopped.");
+                return;
+            }
             recognition = null;
+            voiceAwaitingStop = false;
             voiceStopReason = null;
             setVoiceState('idle', "Error: " + e.error);
         };
@@ -1184,26 +1198,28 @@
     }
     function stopListening(reason = 'toggle-off')  {
         if (!recognition) {
-            setVoiceState('idle', reason === 'tab-switch' ? "Voice paused. Come back to Voice to resume." : "Voice stopped.");
+            setVoiceState('idle', reason === 'tab-switch' ? "Voice paused. Tap Resume listening." : "Voice stopped.");
             return;
         }
         voiceStopReason = reason;
         if (reason === 'tab-switch') {
             finalText = "";
-            const activeRecognition = recognition;
-            recognition = null;
-            try { activeRecognition.abort(); }
+            voiceAwaitingStop = true;
+            try { recognition.abort(); }
             catch {}
             return;
         }
         recognition.stop();
     }
     function toggleVoiceListening() {
-        voiceAutoResume = false;
         if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
         if (recognition) {
             voiceResumePending = false;
             stopListening('toggle-off');
+            return;
+        }
+        if (voiceAwaitingStop) {
+            setVoiceState('idle', "Preparing mic...");
             return;
         }
         const resumingFromPause = voiceResumePending;
@@ -1213,14 +1229,22 @@
     }
     function pauseVoiceForModeSwitch() {
         const wasSpeaking = Boolean(window.speechSynthesis && speechSynthesis.speaking);
-        voiceAutoResume = Boolean(recognition || wasSpeaking);
-        voiceResumePending = voiceAutoResume;
         if (wasSpeaking) speechSynthesis.cancel();
-        if (recognition) stopListening('tab-switch');
-        else if (voiceAutoResume) setVoiceState('idle', "Voice paused. Tap Resume listening.");
+        if (recognition) {
+            voiceResumePending = true;
+            stopListening('tab-switch');
+            setVoiceState('idle', "Preparing mic...");
+        } else if (wasSpeaking) {
+            voiceResumePending = true;
+            setVoiceState('idle', "Voice paused. Tap Resume listening.");
+        }
     }
     function resumeVoiceAfterModeSwitch() {
-        if (!voiceAutoResume && !voiceResumePending) return;
+        if (voiceAwaitingStop) {
+            setVoiceState('idle', "Preparing mic...");
+            return;
+        }
+        if (!voiceResumePending) return;
         setVoiceState('idle', "Voice paused. Tap Resume listening.");
     }
     async function sendVoiceToAI(text) {
