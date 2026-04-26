@@ -696,6 +696,7 @@
         if(btn) btn.classList.add('active');
         const si = document.querySelector(`.sidebar-item[onclick*="'${mode}'"]`);
         if(si) si.classList.add('active');
+        currentMode = mode;
         if (mode === 'voice') resumeVoiceAfterModeSwitch();
     }
 
@@ -1094,7 +1095,9 @@
     let recognition;
     let finalText = "";
     let voiceAutoResume = false;
+    let voiceResumePending = false;
     let voiceStopReason = null;
+    let currentMode = 'text';
 
     function setVoiceState(state, statusText) {
         const orb = document.getElementById('voice-orb');
@@ -1128,6 +1131,13 @@
             voiceStopReason = null;
 
             if (stopReason === 'tab-switch') {
+                if (currentMode === 'voice' && (voiceAutoResume || voiceResumePending)) {
+                    voiceAutoResume = false;
+                    voiceResumePending = false;
+                    setVoiceState('idle', "Voice resumed. Start speaking...");
+                    startListening();
+                    return;
+                }
                 setVoiceState('idle', "Voice paused. Come back to Voice to resume.");
                 return;
             }
@@ -1168,6 +1178,7 @@
     }
     function toggleVoiceListening() {
         voiceAutoResume = false;
+        voiceResumePending = false;
         if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
         if (recognition) {
             stopListening('toggle-off');
@@ -1179,13 +1190,20 @@
     function pauseVoiceForModeSwitch() {
         const wasSpeaking = Boolean(window.speechSynthesis && speechSynthesis.speaking);
         voiceAutoResume = Boolean(recognition || wasSpeaking);
+        voiceResumePending = voiceAutoResume;
         if (wasSpeaking) speechSynthesis.cancel();
         if (recognition) stopListening('tab-switch');
         else if (voiceAutoResume) setVoiceState('idle', "Voice paused. Come back to Voice to resume.");
     }
     function resumeVoiceAfterModeSwitch() {
-        if (!voiceAutoResume) return;
+        if (!voiceAutoResume && !voiceResumePending) return;
+        if (recognition) {
+            voiceResumePending = true;
+            setVoiceState('idle', "Resuming voice...");
+            return;
+        }
         voiceAutoResume = false;
+        voiceResumePending = false;
         setVoiceState('idle', "Voice resumed. Start speaking...");
         startListening();
     }
