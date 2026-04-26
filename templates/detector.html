@@ -362,7 +362,6 @@
             <button class="mode-tab" id="tab-bulk-btn" onclick="setMode('bulk')">Bulk</button>
             <button class="mode-tab" id="tab-compare-btn" onclick="setMode('compare')">Compare</button>
             <button class="mode-tab" id="tab-clickbait-btn" onclick="setMode('clickbait')">Clickbait</button>
-            <button class="mode-tab" id="tab-map-btn" onclick="setMode('map'); loadStateMap();">Map</button>
             <button class="mode-tab" id="tab-image-btn" onclick="setMode('image')">🖼️ Image</button>
             <button class="mode-tab" id="tab-video-btn" onclick="setMode('video')">🎥 Video</button>
             <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="return activateVoiceMode(event)">🎙️ Voice</button>
@@ -506,17 +505,6 @@
             <div class="loading-wrap" id="clickbait-loading"><div class="spinner"></div><p>Checking headline signals...</p></div>
             <div class="result-card" id="clickbait-result">
                 <div class="tool-grid" id="clickbait-grid"></div>
-            </div>
-        </div>
-
-        <!-- MAP TAB -->
-        <div class="tab-content" id="tab-map">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>State-wise Map</span>
-                    <span>Misinformation risk snapshot</span>
-                </div>
-                <div class="state-bars" id="state-bars"></div>
             </div>
         </div>
 
@@ -684,7 +672,7 @@
     // ── MODE SWITCHING ────────────────────────────────────────────────────────
     function setMode(mode) {
         if (mode !== 'voice') pauseVoiceForModeSwitch();
-        ['text','bulk','compare','clickbait','map','image','video','voice'].forEach(m => {
+        ['text','bulk','compare','clickbait','image','video','voice'].forEach(m => {
             document.getElementById('tab-'+m).classList.remove('active');
             const btn = document.getElementById('tab-'+m+'-btn');
             if(btn) btn.classList.remove('active');
@@ -983,22 +971,6 @@
             alert('Clickbait check failed.');
         } finally {
             document.getElementById('clickbait-loading').classList.remove('show');
-        }
-    }
-
-    async function loadStateMap() {
-        const box = document.getElementById('state-bars');
-        if (box.dataset.loaded) return;
-        try {
-            const res = await fetch('/api/state-map');
-            const data = await res.json();
-            box.innerHTML = '';
-            data.states.forEach(s => {
-                box.innerHTML += `<div class="state-bar"><strong>${s.state}</strong><div><div class="state-track"><div class="state-fill" style="width:${s.risk}%"></div></div><div class="tool-row-meta">${s.volume} volume · ${s.topics.join(', ')}</div></div><span>${s.risk}</span></div>`;
-            });
-            box.dataset.loaded = '1';
-        } catch(e) {
-            box.innerHTML = '<div class="tool-card"><p>Could not load state data.</p></div>';
         }
     }
 
