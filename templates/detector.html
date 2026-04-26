@@ -1123,9 +1123,23 @@
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) { document.getElementById('voice-status').textContent = "Please use Chrome for voice input."; return null; }
         const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-        r.onstart  = () => { finalText = ""; voiceStopReason = null; setVoiceState('listening', "Listening... Click again to stop."); };
-        r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
+        r.onstart  = () => {
+            if (recognition !== r) return;
+            finalText = "";
+            voiceStopReason = null;
+            setVoiceState('listening', "Listening... Click again to stop.");
+        };
+        r.onresult = (e) => {
+            if (recognition !== r) return;
+            let interim = "";
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
+                else interim += e.results[i][0].transcript;
+            }
+            document.getElementById('voice-transcript').textContent = finalText || interim;
+        };
         r.onend    = () => {
+            if (recognition !== r) return;
             const stopReason = voiceStopReason;
             recognition = null;
             voiceStopReason = null;
@@ -1151,6 +1165,7 @@
             setVoiceState('idle', stopReason === 'toggle-off' ? "Voice stopped." : "Nothing was heard. Please try again.");
         };
         r.onerror  = (e) => {
+            if (recognition !== r) return;
             if (e.error === 'aborted' && (voiceStopReason === 'toggle-off' || voiceStopReason === 'tab-switch')) return;
             recognition = null;
             voiceStopReason = null;
@@ -1174,6 +1189,14 @@
             return;
         }
         voiceStopReason = reason;
+        if (reason === 'tab-switch') {
+            finalText = "";
+            const activeRecognition = recognition;
+            recognition = null;
+            try { activeRecognition.abort(); }
+            catch {}
+            return;
+        }
         recognition.stop();
     }
     function toggleVoiceListening() {
@@ -1197,11 +1220,6 @@
     }
     function resumeVoiceAfterModeSwitch() {
         if (!voiceAutoResume && !voiceResumePending) return;
-        if (recognition) {
-            voiceResumePending = true;
-            setVoiceState('idle', "Resuming voice...");
-            return;
-        }
         voiceAutoResume = false;
         voiceResumePending = false;
         setVoiceState('idle', "Voice resumed. Start speaking...");
