@@ -157,7 +157,7 @@
         .voice-transcript { font-size: 0.78rem; color: var(--text-muted); min-height: 20px; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
         .voice-response { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; font-size: 0.88rem; color: var(--text); line-height: 1.7; min-height: 60px; margin-bottom: 20px; text-align: left; }
         .voice-hold-btn { padding: 13px 36px; background: rgba(20,184,166,0.12); border: 2px solid rgba(20,184,166,0.4); border-radius: 100px; color: #2dd4bf; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.3s; font-family: inherit; }
-        .voice-hold-btn:active { background: rgba(20,184,166,0.25); color: white; box-shadow: 0 0 24px rgba(20,184,166,0.4); }
+        .voice-hold-btn:hover, .voice-hold-btn.active { background: rgba(20,184,166,0.25); color: white; box-shadow: 0 0 24px rgba(20,184,166,0.4); }
         .voice-tip { font-size: 0.7rem; color: var(--text-dim); margin-top: 12px; font-family: 'DM Mono', monospace; }
 
         /* RESULTS */
@@ -617,15 +617,13 @@
                 </div>
                 <div class="voice-container">
                     <div class="voice-orb" id="voice-orb">🎙️</div>
-                    <div class="voice-status" id="voice-status">Hold the button and speak the news</div>
+                    <div class="voice-status" id="voice-status">Tap once to start voice detection</div>
                     <div class="voice-transcript" id="voice-transcript"></div>
                     <div class="voice-response" id="voice-response">Your result will appear here...</div>
-                    <button class="voice-hold-btn" id="voice-hold-btn"
-                        ontouchstart="startListening()" ontouchend="stopListening()"
-                        onmousedown="startListening()" onmouseup="stopListening()">
-                        🎙️ Hold to speak
+                    <button class="voice-hold-btn" id="voice-hold-btn" onclick="toggleVoiceListening()">
+                        🎙️ Start listening
                     </button>
-                    <div class="voice-tip">Works best in Chrome · English and supported Indian languages</div>
+                    <div class="voice-tip">Works best in Chrome · Hindi (`hi-IN`) speech input</div>
                 </div>
             </div>
         </div>
@@ -685,6 +683,7 @@
 
     // ── MODE SWITCHING ────────────────────────────────────────────────────────
     function setMode(mode) {
+        if (mode !== 'voice') pauseVoiceForModeSwitch();
         ['text','bulk','compare','clickbait','map','image','video','voice'].forEach(m => {
             document.getElementById('tab-'+m).classList.remove('active');
             const btn = document.getElementById('tab-'+m+'-btn');
@@ -697,6 +696,7 @@
         if(btn) btn.classList.add('active');
         const si = document.querySelector(`.sidebar-item[onclick*="'${mode}'"]`);
         if(si) si.classList.add('active');
+        if (mode === 'voice') resumeVoiceAfterModeSwitch();
     }
 
     // ── TEXT DETECTION ────────────────────────────────────────────────────────
@@ -1091,19 +1091,104 @@
     }
 
     // ── VOICE ─────────────────────────────────────────────────────────────────
-    let recognition; let finalText = "";
+    let recognition;
+    let finalText = "";
+    let voiceAutoResume = false;
+    let voiceStopReason = null;
+
+    function setVoiceState(state, statusText) {
+        const orb = document.getElementById('voice-orb');
+        const btn = document.getElementById('voice-hold-btn');
+        const status = document.getElementById('voice-status');
+
+        if (orb) {
+            orb.className = 'voice-orb';
+            if (state === 'listening') orb.classList.add('listening');
+            if (state === 'speaking') orb.classList.add('speaking');
+        }
+
+        if (btn) {
+            const listening = state === 'listening';
+            btn.classList.toggle('active', listening);
+            btn.textContent = listening ? 'Stop listening' : 'Start listening';
+        }
+
+        if (statusText !== undefined && status) status.textContent = statusText;
+    }
+
     function setupRecognition() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) { document.getElementById('voice-status').textContent = "Please use Chrome for voice input."; return null; }
         const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-        r.onstart  = () => { document.getElementById('voice-orb').className = 'voice-orb listening'; document.getElementById('voice-status').textContent = "Listening..."; finalText = ""; };
+        r.onstart  = () => { finalText = ""; voiceStopReason = null; setVoiceState('listening', "Listening... Click again to stop."); };
         r.onresult = (e) => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } document.getElementById('voice-transcript').textContent = finalText || interim; };
-        r.onend    = () => { document.getElementById('voice-orb').className = 'voice-orb'; if (finalText.trim()) sendVoiceToAI(finalText.trim()); else document.getElementById('voice-status').textContent = "Nothing was heard. Please try again."; };
-        r.onerror  = (e) => { document.getElementById('voice-status').textContent = "Error: " + e.error; document.getElementById('voice-orb').className = 'voice-orb'; };
+        r.onend    = () => {
+            const stopReason = voiceStopReason;
+            recognition = null;
+            voiceStopReason = null;
+
+            if (stopReason === 'tab-switch') {
+                setVoiceState('idle', "Voice paused. Come back to Voice to resume.");
+                return;
+            }
+
+            if (finalText.trim()) {
+                setVoiceState('idle', "Analyzing...");
+                sendVoiceToAI(finalText.trim());
+                return;
+            }
+
+            setVoiceState('idle', stopReason === 'toggle-off' ? "Voice stopped." : "Nothing was heard. Please try again.");
+        };
+        r.onerror  = (e) => {
+            if (e.error === 'aborted' && (voiceStopReason === 'toggle-off' || voiceStopReason === 'tab-switch')) return;
+            recognition = null;
+            voiceStopReason = null;
+            setVoiceState('idle', "Error: " + e.error);
+        };
         return r;
     }
-    function startListening() { recognition = setupRecognition(); if (recognition) recognition.start(); }
-    function stopListening()  { if (recognition) recognition.stop(); }
+    function startListening() {
+        if (recognition) return;
+        recognition = setupRecognition();
+        if (!recognition) return;
+        try { recognition.start(); }
+        catch {
+            recognition = null;
+            setVoiceState('idle', "Could not start voice input. Please try again.");
+        }
+    }
+    function stopListening(reason = 'toggle-off')  {
+        if (!recognition) {
+            setVoiceState('idle', reason === 'tab-switch' ? "Voice paused. Come back to Voice to resume." : "Voice stopped.");
+            return;
+        }
+        voiceStopReason = reason;
+        recognition.stop();
+    }
+    function toggleVoiceListening() {
+        voiceAutoResume = false;
+        if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
+        if (recognition) {
+            stopListening('toggle-off');
+            return;
+        }
+        document.getElementById('voice-transcript').textContent = "";
+        startListening();
+    }
+    function pauseVoiceForModeSwitch() {
+        const wasSpeaking = Boolean(window.speechSynthesis && speechSynthesis.speaking);
+        voiceAutoResume = Boolean(recognition || wasSpeaking);
+        if (wasSpeaking) speechSynthesis.cancel();
+        if (recognition) stopListening('tab-switch');
+        else if (voiceAutoResume) setVoiceState('idle', "Voice paused. Come back to Voice to resume.");
+    }
+    function resumeVoiceAfterModeSwitch() {
+        if (!voiceAutoResume) return;
+        voiceAutoResume = false;
+        setVoiceState('idle', "Voice resumed. Start speaking...");
+        startListening();
+    }
     async function sendVoiceToAI(text) {
         document.getElementById('voice-status').textContent   = "Analyzing...";
         document.getElementById('voice-response').textContent = "...";
@@ -1117,12 +1202,15 @@
         } catch { document.getElementById('voice-status').textContent = "Error — could not connect to the server."; }
     }
     function speak(text) {
-        document.getElementById('voice-orb').className = 'voice-orb speaking';
-        document.getElementById('voice-status').textContent = "Speaking...";
+        setVoiceState('speaking', "Speaking...");
         const utter = new SpeechSynthesisUtterance(text); utter.lang = 'hi-IN'; utter.rate = 1.0;
-        utter.onend = () => { document.getElementById('voice-orb').className = 'voice-orb'; document.getElementById('voice-status').textContent = "Hold the button to speak again"; };
+        utter.onend = () => { setVoiceState('idle', "Tap once to start voice detection"); };
+        if (window.speechSynthesis) speechSynthesis.cancel();
         speechSynthesis.speak(utter);
     }
+
+    document.getElementById('voice-orb').addEventListener('click', toggleVoiceListening);
+    setVoiceState('idle', "Tap once to start voice detection");
 
     // Drag-drop
     ['img-upload','vid-upload'].forEach(id => {
