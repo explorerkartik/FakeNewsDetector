@@ -702,14 +702,7 @@
 
     function activateVoiceMode(event) {
         if (event) event.preventDefault();
-        const shouldResume = voiceAutoResume || voiceResumePending;
         setMode('voice');
-        if (shouldResume) {
-            voiceAutoResume = false;
-            voiceResumePending = false;
-            setVoiceState('idle', "Voice resumed. Start speaking...");
-            startListening();
-        }
         return false;
     }
 
@@ -1126,7 +1119,7 @@
         if (btn) {
             const listening = state === 'listening';
             btn.classList.toggle('active', listening);
-            btn.textContent = listening ? 'Stop listening' : 'Start listening';
+            btn.textContent = listening ? 'Stop listening' : (voiceResumePending ? 'Resume listening' : 'Start listening');
         }
 
         if (statusText !== undefined && status) status.textContent = statusText;
@@ -1158,14 +1151,7 @@
             voiceStopReason = null;
 
             if (stopReason === 'tab-switch') {
-                if (currentMode === 'voice' && (voiceAutoResume || voiceResumePending)) {
-                    voiceAutoResume = false;
-                    voiceResumePending = false;
-                    setVoiceState('idle', "Voice resumed. Start speaking...");
-                    startListening();
-                    return;
-                }
-                setVoiceState('idle', "Voice paused. Come back to Voice to resume.");
+                setVoiceState('idle', "Voice paused. Tap Resume listening.");
                 return;
             }
 
@@ -1214,13 +1200,15 @@
     }
     function toggleVoiceListening() {
         voiceAutoResume = false;
-        voiceResumePending = false;
         if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
         if (recognition) {
+            voiceResumePending = false;
             stopListening('toggle-off');
             return;
         }
-        document.getElementById('voice-transcript').textContent = "";
+        const resumingFromPause = voiceResumePending;
+        voiceResumePending = false;
+        if (!resumingFromPause) document.getElementById('voice-transcript').textContent = "";
         startListening();
     }
     function pauseVoiceForModeSwitch() {
@@ -1229,11 +1217,11 @@
         voiceResumePending = voiceAutoResume;
         if (wasSpeaking) speechSynthesis.cancel();
         if (recognition) stopListening('tab-switch');
-        else if (voiceAutoResume) setVoiceState('idle', "Voice paused. Come back to Voice to resume.");
+        else if (voiceAutoResume) setVoiceState('idle', "Voice paused. Tap Resume listening.");
     }
     function resumeVoiceAfterModeSwitch() {
         if (!voiceAutoResume && !voiceResumePending) return;
-        setVoiceState('idle', "Voice ready to resume.");
+        setVoiceState('idle', "Voice paused. Tap Resume listening.");
     }
     async function sendVoiceToAI(text) {
         document.getElementById('voice-status').textContent   = "Analyzing...";
