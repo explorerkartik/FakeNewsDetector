@@ -305,16 +305,16 @@
 <div class="sidebar">
     <div class="sidebar-logo">🛡️</div>
     <div class="sidebar-divider"></div>
-    <a class="sidebar-item active" onclick="setMode('text')" href="#">
+    <a class="sidebar-item active" data-mode="text" onclick="setMode('text')" href="#">
         <span class="s-icon">📝</span><span class="s-label">Text</span>
     </a>
-    <a class="sidebar-item" onclick="setMode('image')" href="#">
+    <a class="sidebar-item" data-mode="image" onclick="setMode('image')" href="#">
         <span class="s-icon">🖼️</span><span class="s-label">Image</span>
     </a>
-    <a class="sidebar-item" onclick="setMode('video')" href="#">
+    <a class="sidebar-item" data-mode="video" onclick="setMode('video')" href="#">
         <span class="s-icon">🎥</span><span class="s-label">Video</span>
     </a>
-    <a class="sidebar-item" onclick="setMode('voice')" href="#">
+    <a class="sidebar-item" data-mode="voice" onclick="return activateVoiceMode(event)" href="#">
         <span class="s-icon">🎙️</span><span class="s-label">Voice</span>
     </a>
     <div class="sidebar-divider"></div>
@@ -343,7 +343,7 @@
     </div>
     <div class="topbar-right">
         <a href="/chatbot" class="topbar-btn btn-chatbot">🤖 FakeBot</a>
-        <a href="#" class="topbar-btn btn-voice-top" onclick="setMode('voice'); return false;">🎙️ Voice</a>
+        <a href="#" class="topbar-btn btn-voice-top" onclick="return activateVoiceMode(event)">🎙️ Voice</a>
         <a href="/history" class="topbar-btn btn-history">📋 History</a>
         <a href="/logout" class="topbar-btn btn-logout">Logout</a>
     </div>
@@ -365,7 +365,7 @@
             <button class="mode-tab" id="tab-map-btn" onclick="setMode('map'); loadStateMap();">Map</button>
             <button class="mode-tab" id="tab-image-btn" onclick="setMode('image')">🖼️ Image</button>
             <button class="mode-tab" id="tab-video-btn" onclick="setMode('video')">🎥 Video</button>
-            <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="setMode('voice')">🎙️ Voice</button>
+            <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="return activateVoiceMode(event)">🎙️ Voice</button>
         </div>
 
         <!-- TEXT TAB -->
@@ -688,16 +688,29 @@
             document.getElementById('tab-'+m).classList.remove('active');
             const btn = document.getElementById('tab-'+m+'-btn');
             if(btn) btn.classList.remove('active');
-            const si = document.querySelector(`.sidebar-item[onclick*="'${m}'"]`);
+            const si = document.querySelector(`.sidebar-item[data-mode="${m}"]`);
             if(si) si.classList.remove('active');
         });
         document.getElementById('tab-'+mode).classList.add('active');
         const btn = document.getElementById('tab-'+mode+'-btn');
         if(btn) btn.classList.add('active');
-        const si = document.querySelector(`.sidebar-item[onclick*="'${mode}'"]`);
+        const si = document.querySelector(`.sidebar-item[data-mode="${mode}"]`);
         if(si) si.classList.add('active');
         currentMode = mode;
         if (mode === 'voice') resumeVoiceAfterModeSwitch();
+    }
+
+    function activateVoiceMode(event) {
+        if (event) event.preventDefault();
+        const shouldResume = voiceAutoResume || voiceResumePending;
+        setMode('voice');
+        if (shouldResume) {
+            voiceAutoResume = false;
+            voiceResumePending = false;
+            setVoiceState('idle', "Voice resumed. Start speaking...");
+            startListening();
+        }
+        return false;
     }
 
     // ── TEXT DETECTION ────────────────────────────────────────────────────────
@@ -1220,10 +1233,7 @@
     }
     function resumeVoiceAfterModeSwitch() {
         if (!voiceAutoResume && !voiceResumePending) return;
-        voiceAutoResume = false;
-        voiceResumePending = false;
-        setVoiceState('idle', "Voice resumed. Start speaking...");
-        startListening();
+        setVoiceState('idle', "Voice ready to resume.");
     }
     async function sendVoiceToAI(text) {
         document.getElementById('voice-status').textContent   = "Analyzing...";
