@@ -321,7 +321,7 @@ def analyze_video_sightengine(video_file):
 #  LANGUAGE
 # ─────────────────────────────────────────────────────────────────────────────
 LANGUAGE_DISPLAY_NAMES = {
-    'en':'English','hi':'Indian Language','ta':'Tamil','te':'Telugu',
+    'en':'English','hi':'Hindi','ta':'Tamil','te':'Telugu',
     'mr':'Marathi','gu':'Gujarati','pa':'Punjabi','bn':'Bengali',
     'ml':'Malayalam','kn':'Kannada','ur':'Urdu','or':'Odia',
 }
@@ -386,163 +386,6 @@ def check_source_reputation(url):
         return {'found': False}
     except:
         return {'found': False}
-
-CLICKBAIT_PATTERNS = [
-    ('sensational_words', ['shocking', 'unbelievable', 'secret', 'exposed', 'viral', 'miracle', 'banned', 'breaking']),
-    ('urgency', ['must read', 'share now', 'before it is deleted', 'last chance', 'do not ignore']),
-    ('bait_phrases', ['you will not believe', 'what happened next', 'doctors hate', 'truth about', 'media will not show']),
-    ('free_giveaway', ['free recharge', 'free iphone', 'claim now', 'limited offer', 'register now']),
-]
-
-STATE_RISK_DATA = [
-    {'state': 'Maharashtra', 'risk': 72, 'topics': ['politics', 'finance', 'health'], 'volume': 'High'},
-    {'state': 'Uttar Pradesh', 'risk': 69, 'topics': ['elections', 'communal rumors', 'jobs'], 'volume': 'High'},
-    {'state': 'Delhi', 'risk': 66, 'topics': ['policy', 'crime', 'pollution'], 'volume': 'High'},
-    {'state': 'West Bengal', 'risk': 63, 'topics': ['politics', 'border rumors', 'schemes'], 'volume': 'Medium'},
-    {'state': 'Tamil Nadu', 'risk': 58, 'topics': ['weather', 'cinema', 'policy'], 'volume': 'Medium'},
-    {'state': 'Karnataka', 'risk': 57, 'topics': ['technology', 'jobs', 'politics'], 'volume': 'Medium'},
-    {'state': 'Telangana', 'risk': 55, 'topics': ['schemes', 'jobs', 'health'], 'volume': 'Medium'},
-    {'state': 'Rajasthan', 'risk': 53, 'topics': ['weather', 'exams', 'local politics'], 'volume': 'Medium'},
-    {'state': 'Gujarat', 'risk': 51, 'topics': ['business', 'schemes', 'weather'], 'volume': 'Medium'},
-    {'state': 'Kerala', 'risk': 44, 'topics': ['health', 'weather', 'migration'], 'volume': 'Low'},
-]
-
-def extract_text_from_url(url):
-    response = requests.get(url, timeout=10)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    return ' '.join([p.get_text() for p in soup.find_all('p')])
-
-def detect_clickbait_signals(text, url=''):
-    content = (text or '').strip()
-    lowered = content.lower()
-    score = 0
-    signals = []
-
-    if content.count('!') >= 2:
-        score += 14
-        signals.append('Repeated exclamation marks')
-    if sum(1 for c in content if c.isupper()) >= 12 and len(content) >= 30:
-        score += 12
-        signals.append('Heavy uppercase emphasis')
-    if '?' in content and any(phrase in lowered for phrase in ['why', 'how', 'what', 'which']):
-        score += 8
-        signals.append('Question-style curiosity hook')
-    if any(char.isdigit() for char in content):
-        score += 6
-        signals.append('Number-led headline pattern')
-
-    for label, phrases in CLICKBAIT_PATTERNS:
-        hits = [phrase for phrase in phrases if phrase in lowered]
-        if hits:
-            score += min(28, 10 + len(hits) * 6)
-            signals.append(label.replace('_', ' ').title() + ': ' + ', '.join(hits[:3]))
-
-    reputation = check_source_reputation(url) if url else {'found': False}
-    if reputation.get('tier') == 3:
-        score += 18
-        signals.append('Source has misinformation reputation warning')
-    elif reputation.get('tier') == 1:
-        score -= 10
-        signals.append('Known credible source reduces clickbait risk')
-
-    score = max(0, min(100, score))
-    if score >= 70:
-        label = 'High Clickbait Risk'
-    elif score >= 40:
-        label = 'Moderate Clickbait Risk'
-    else:
-        label = 'Low Clickbait Risk'
-
-    return {
-        'score': score,
-        'label': label,
-        'signals': signals or ['No strong clickbait signals found'],
-        'reputation': reputation,
-    }
-
-def analyze_claim_text(text, url='', save_result=True):
-    if url:
-        text = extract_text_from_url(url)
-
-    if not text.strip():
-        return {'error': 'Please enter some text!'}
-
-    english_text, detected_lang = translate_to_english(text)
-    groq_result = analyze_with_groq(english_text)
-
-    if groq_result:
-        prediction        = groq_result['verdict']
-        credibility_score = groq_result['credibility_score']
-        confidence        = groq_result['confidence']
-        gemini_reason     = groq_result['reason']
-        gemini_facts      = groq_result['gemini_facts']
-        indian_facts_matched = check_indian_facts(english_text)
-    else:
-        prediction        = model.predict([english_text])[0]
-        confidence        = max(model.predict_proba([english_text])[0]) * 100
-        credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
-        gemini_reason     = ''
-        gemini_facts      = []
-        indian_facts_matched = check_indian_facts(english_text)
-
-    facts_boost = get_credibility_boost(english_text)
-    if facts_boost >= 40:
-        credibility_score = min(100, 70 + (facts_boost - 40))
-        prediction = 'REAL'
-    elif facts_boost >= 20:
-        credibility_score = min(100, credibility_score + facts_boost)
-        if credibility_score >= 45:
-            prediction = 'REAL'
-    else:
-        credibility_score = min(100, credibility_score + facts_boost)
-
-    reputation = {}
-    if url:
-        reputation = check_source_reputation(url)
-        if reputation.get('tier') == 3:
-            credibility_score = max(0, credibility_score - 20)
-
-    fact_results   = check_facts(english_text)
-    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
-    clickbait      = detect_clickbait_signals(text, url)
-
-    share_id = None
-    if save_result:
-        try:
-            db  = get_db()
-            cur = dict_cursor(db)
-            if current_user.is_authenticated:
-                cur.execute(
-                    "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s,%s,%s,%s)",
-                    (current_user.id, text[:500], prediction, credibility_score)
-                )
-            cur.execute(
-                """INSERT INTO shared_results (input_text, verdict, credibility_score, reason)
-                   VALUES (%s,%s,%s,%s) RETURNING share_id""",
-                (text[:500], prediction, credibility_score, gemini_reason)
-            )
-            share_id = str(cur.fetchone()['share_id'])
-            db.commit()
-            db.close()
-        except:
-            pass
-
-    return {
-        'verdict':           prediction,
-        'credibility_score': credibility_score,
-        'confidence':        round(confidence, 2),
-        'detected_lang':     detected_lang,
-        'reputation':        reputation,
-        'fact_results':      fact_results,
-        'indian_facts':      indian_facts_matched,
-        'gemini_reason':     gemini_reason,
-        'gemini_facts':      gemini_facts,
-        'cricket_scores':    cricket_scores,
-        'clickbait':         clickbait,
-        'share_id':          share_id,
-        'share_url':         f"/result/{share_id}" if share_id else None,
-        'input_text':        text[:300]
-    }
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  DATABASE
@@ -906,66 +749,90 @@ def detect():
     text = request.form.get('news_text', '')
     url  = request.form.get('news_url', '')
 
-    try:
-        result = analyze_claim_text(text, url, save_result=True)
-    except:
-        return jsonify({'error': 'Could not fetch content from URL!'})
-    return jsonify(result)
-
-@app.route('/bulk-detect', methods=['POST'])
-def bulk_detect():
-    data = request.get_json(silent=True) or {}
-    raw_items = data.get('items') or request.form.get('bulk_text', '').splitlines()
-    items = [item.strip() for item in raw_items if item and item.strip()][:10]
-    if not items:
-        return jsonify({'error': 'Add at least one claim to analyze.'}), 400
-
-    results = []
-    for index, item in enumerate(items, start=1):
+    if url:
         try:
-            result = analyze_claim_text(item, save_result=False)
-            result['index'] = index
-            results.append(result)
-        except Exception as e:
-            results.append({'index': index, 'input_text': item[:300], 'error': str(e)})
-    return jsonify({'count': len(results), 'results': results})
-
-@app.route('/compare-detect', methods=['POST'])
-def compare_detect():
-    data = request.get_json(silent=True) or {}
-    claim_a = (data.get('claim_a') or request.form.get('claim_a', '')).strip()
-    claim_b = (data.get('claim_b') or request.form.get('claim_b', '')).strip()
-    if not claim_a or not claim_b:
-        return jsonify({'error': 'Enter both claims to compare.'}), 400
-
-    first = analyze_claim_text(claim_a, save_result=False)
-    second = analyze_claim_text(claim_b, save_result=False)
-    delta = abs(first.get('credibility_score', 0) - second.get('credibility_score', 0))
-    if first.get('credibility_score', 0) > second.get('credibility_score', 0):
-        summary = 'Claim A is more credible based on the current analysis.'
-    elif second.get('credibility_score', 0) > first.get('credibility_score', 0):
-        summary = 'Claim B is more credible based on the current analysis.'
-    else:
-        summary = 'Both claims have the same credibility score.'
-    return jsonify({'claim_a': first, 'claim_b': second, 'delta': delta, 'summary': summary})
-
-@app.route('/clickbait-detect', methods=['POST'])
-def clickbait_detect():
-    data = request.get_json(silent=True) or {}
-    headline = (data.get('headline') or request.form.get('headline', '')).strip()
-    url = (data.get('url') or request.form.get('url', '')).strip()
-    if not headline and not url:
-        return jsonify({'error': 'Enter a headline or URL.'}), 400
-    if url and not headline:
-        try:
-            headline = extract_text_from_url(url)[:300]
+            response = requests.get(url, timeout=10)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            text = ' '.join([p.get_text() for p in soup.find_all('p')])
         except:
-            return jsonify({'error': 'Could not fetch content from URL!'}), 400
-    return jsonify(detect_clickbait_signals(headline, url))
+            return jsonify({'error': 'Could not fetch content from URL!'})
 
-@app.route('/api/state-map')
-def state_map():
-    return jsonify({'updated_at': datetime.now().isoformat(), 'states': STATE_RISK_DATA})
+    if not text.strip():
+        return jsonify({'error': 'Please enter some text!'})
+
+    english_text, detected_lang = translate_to_english(text)
+    groq_result = analyze_with_groq(english_text)
+
+    if groq_result:
+        prediction        = groq_result['verdict']
+        credibility_score = groq_result['credibility_score']
+        confidence        = groq_result['confidence']
+        gemini_reason     = groq_result['reason']
+        gemini_facts      = groq_result['gemini_facts']
+        indian_facts_matched = check_indian_facts(english_text)
+    else:
+        prediction        = model.predict([english_text])[0]
+        confidence        = max(model.predict_proba([english_text])[0]) * 100
+        credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
+        gemini_reason     = ''
+        gemini_facts      = []
+        indian_facts_matched = check_indian_facts(english_text)
+
+    facts_boost = get_credibility_boost(english_text)
+    if facts_boost >= 40:
+        credibility_score = min(100, 70 + (facts_boost - 40))
+        prediction = 'REAL'
+    elif facts_boost >= 20:
+        credibility_score = min(100, credibility_score + facts_boost)
+        if credibility_score >= 45:
+            prediction = 'REAL'
+    else:
+        credibility_score = min(100, credibility_score + facts_boost)
+
+    reputation = {}
+    if url:
+        reputation = check_source_reputation(url)
+        if reputation.get('tier') == 3:
+            credibility_score = max(0, credibility_score - 20)
+
+    fact_results   = check_facts(english_text)
+    cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
+
+    share_id = None
+    try:
+        db  = get_db()
+        cur = dict_cursor(db)
+        if current_user.is_authenticated:
+            cur.execute(
+                "INSERT INTO analysis_history (user_id, input_text, verdict, credibility_score) VALUES (%s,%s,%s,%s)",
+                (current_user.id, text[:500], prediction, credibility_score)
+            )
+        cur.execute(
+            """INSERT INTO shared_results (input_text, verdict, credibility_score, reason)
+               VALUES (%s,%s,%s,%s) RETURNING share_id""",
+            (text[:500], prediction, credibility_score, gemini_reason)
+        )
+        share_id = str(cur.fetchone()['share_id'])
+        db.commit()
+        db.close()
+    except:
+        pass
+
+    return jsonify({
+        'verdict':           prediction,
+        'credibility_score': credibility_score,
+        'confidence':        round(confidence, 2),
+        'detected_lang':     detected_lang,
+        'reputation':        reputation,
+        'fact_results':      fact_results,
+        'indian_facts':      indian_facts_matched,
+        'gemini_reason':     gemini_reason,
+        'gemini_facts':      gemini_facts,
+        'cricket_scores':    cricket_scores,
+        'share_id':          share_id,
+        'share_url':         f"/result/{share_id}" if share_id else None,
+        'input_text':        text[:300]
+    })
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  SHAREABLE RESULT PAGE
@@ -1250,7 +1117,7 @@ def chatbot_api():
     history = data.get('history', [])
 
     if not message:
-        return jsonify({'reply': 'Please type a message. 😊'})
+        return jsonify({'reply': 'Kuch toh likhiye! 😊'})
 
     system_prompt = """You are FakeBot — the friendly AI assistant of FakeNews Detector.
 You help users:
@@ -1260,7 +1127,7 @@ You help users:
 4. Understand AI/deepfake concepts
 
 Rules:
-- Reply in English.
+- Reply in the same language the user writes (Hindi or English)
 - Keep replies short and helpful (2-4 sentences max unless asked for detail)
 - Be friendly and use emojis occasionally
 - If asked to check specific news, give a brief analysis
@@ -1280,7 +1147,7 @@ Rules:
         )
         reply = response.choices[0].message.content
     except Exception as e:
-        reply = "Sorry, the server is busy right now. Please try again in a moment. 🙏"
+        reply = "Sorry, abhi server busy hai. Thodi der baad try karein. 🙏"
         print(f"Chatbot error: {e}")
 
     if current_user.is_authenticated:
@@ -1358,11 +1225,11 @@ def voice_assistant():
     data         = request.get_json()
     user_message = data.get('message', '')
     if not user_message:
-        return jsonify({"reply": "I could not hear anything. Please try again."})
+        return jsonify({"reply": "Kuch suna nahi, dobara boliye"})
     response = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": "You are a Fake News Detector assistant. Analyze the news or claim the user speaks and explain whether it seems fake or real. Reply briefly and clearly in English."},
+            {"role": "system", "content": "Tum ek Fake News Detector assistant ho. User jo bhi news bolega, tum analyze karke batao ki wo fake hai ya real. Chhota aur clear jawab do Hindi mein."},
             {"role": "user", "content": user_message}
         ],
         max_tokens=150
@@ -1375,17 +1242,17 @@ def voice_page():
     return render_template('voice.html')
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  UI language preference API
+#  HINDI UI – language preference API
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/set-language', methods=['POST'])
 def set_language():
-    lang = 'en'
+    lang = request.get_json().get('lang', 'en')
     session['ui_lang'] = lang
     return jsonify({'status': 'ok', 'lang': lang})
 
 @app.route('/get-translations')
 def get_translations():
-    lang = 'en'
+    lang = request.args.get('lang', session.get('ui_lang', 'en'))
     translations = {
         'en': {
             'title': 'FakeNews Detector',
@@ -1402,18 +1269,18 @@ def get_translations():
             'chatbot': 'Ask FakeBot',
         },
         'hi': {
-            'title': 'FakeNews Detector',
-            'detect_btn': 'Detect Now',
-            'paste_placeholder': 'Paste news text here…',
-            'url_placeholder': 'Or paste URL here…',
-            'verdict_real': 'REAL NEWS',
-            'verdict_fake': 'FAKE NEWS',
-            'credibility': 'Credibility Score',
-            'download_pdf': 'Download PDF Report',
-            'share': 'Share Result',
-            'history': 'My History',
-            'logout': 'Logout',
-            'chatbot': 'Ask FakeBot',
+            'title': 'फेक न्यूज़ डिटेक्टर',
+            'detect_btn': 'अभी जांचें',
+            'paste_placeholder': 'यहाँ खबर का टेक्स्ट पेस्ट करें…',
+            'url_placeholder': 'या यहाँ URL पेस्ट करें…',
+            'verdict_real': 'सच्ची खबर ✅',
+            'verdict_fake': 'झूठी खबर ❌',
+            'credibility': 'विश्वसनीयता स्कोर',
+            'download_pdf': 'PDF रिपोर्ट डाउनलोड करें',
+            'share': 'परिणाम शेयर करें',
+            'history': 'मेरा इतिहास',
+            'logout': 'लॉग आउट',
+            'chatbot': 'फेकबॉट से पूछें',
         }
     }
     return jsonify(translations.get(lang, translations['en']))
@@ -1439,34 +1306,102 @@ def extension_manifest():
     }
     return jsonify(manifest)
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  STARTUP — runs on both gunicorn and direct python
-# ─────────────────────────────────────────────────────────────────────────────
-with app.app_context():
-    init_db_extras()
 
-# ── QUIZ MODE ─────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+#  QUIZ ROUTES
+# ─────────────────────────────────────────────────────────────────────────────
 @app.route('/quiz')
-def quiz():
+@login_required
+def quiz_page():
     return render_template('quiz.html')
 
-@app.route('/quiz/save-score', methods=['POST'])
-def quiz_save_score():
+@app.route('/api/quiz/generate', methods=['POST'])
+@login_required
+def quiz_generate():
+    """Generate fresh quiz questions using Groq AI — unlimited, never repeat."""
     data       = request.get_json()
-    score      = data.get('score', 0)
-    accuracy   = data.get('accuracy', 0)
-    streak     = data.get('streak', 0)
-    difficulty = data.get('difficulty', 'easy')
-    user_id    = current_user.id if current_user.is_authenticated else None
-    username   = current_user.username if current_user.is_authenticated else 'Guest'
+    difficulty = data.get('difficulty', 'medium')
+    count      = min(int(data.get('count', 10)), 15)
+    category   = data.get('category', 'mixed')
+
+    difficulty_map = {
+        'easy':   'straightforward, well-known Indian and global facts',
+        'medium': 'moderately tricky, mix of recent events and common misconceptions',
+        'hard':   'very tricky, subtle misinformation, expert-level facts'
+    }
+
+    prompt = f"""You are a quiz generator for a Fake News Detector app.
+Generate {count} unique quiz questions. Difficulty: {difficulty} ({difficulty_map.get(difficulty, '')}).
+Topic: {category} (if 'mixed', cover: Politics, Sports, Science, Health, Economy, Viral Forwards, Defence, Law, Geography, Technology).
+
+Rules:
+1. Each question is a NEWS STATEMENT — user must judge REAL or FAKE
+2. REAL = factually correct and verifiable
+3. FAKE = false, misleading, or common misinformation/viral forward
+4. Mix roughly 50% REAL and 50% FAKE
+5. Focus on India-related news and global events from 2020-2025
+6. Explanation must be 1-2 sentences, factual
+7. Return ONLY valid JSON array, no markdown, no extra text
+
+JSON format:
+[
+  {{
+    "text": "The news statement here",
+    "answer": "REAL",
+    "category": "Politics",
+    "explanation": "Brief factual explanation why this is real or fake."
+  }}
+]
+
+Generate {count} questions now:"""
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=2500,
+            temperature=0.8
+        )
+        text = response.choices[0].message.content.strip()
+
+        # Extract JSON
+        if '```json' in text:
+            text = text.split('```json')[1].split('```')[0].strip()
+        elif '```' in text:
+            text = text.split('```')[1].split('```')[0].strip()
+        s = text.find('[')
+        e = text.rfind(']') + 1
+        if s == -1 or e <= s:
+            return jsonify({'error': 'AI returned invalid format'}), 500
+
+        questions = json.loads(text[s:e])
+
+        # Validate & clean
+        clean = []
+        for q in questions:
+            if q.get('text') and q.get('answer') in ('REAL', 'FAKE') and q.get('explanation'):
+                clean.append({
+                    'text':        q['text'],
+                    'answer':      q['answer'],
+                    'category':    q.get('category', 'General'),
+                    'explanation': q['explanation']
+                })
+        return jsonify({'questions': clean, 'count': len(clean)})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/quiz/save-score', methods=['POST'])
+@login_required
+def quiz_save_score():
+    data = request.get_json()
     try:
         db  = get_db()
         cur = dict_cursor(db)
         cur.execute("""
             CREATE TABLE IF NOT EXISTS quiz_scores (
                 id         SERIAL PRIMARY KEY,
-                user_id    INT,
-                username   VARCHAR(100),
+                user_id    INT REFERENCES users(id) ON DELETE CASCADE,
                 score      INT,
                 accuracy   INT,
                 streak     INT,
@@ -1474,45 +1409,45 @@ def quiz_save_score():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
-        cur.execute("""
-            INSERT INTO quiz_scores (user_id, username, score, accuracy, streak, difficulty)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (user_id, username, score, accuracy, streak, difficulty))
+        cur.execute(
+            "INSERT INTO quiz_scores (user_id, score, accuracy, streak, difficulty) VALUES (%s,%s,%s,%s,%s)",
+            (current_user.id, data.get('score',0), data.get('accuracy',0),
+             data.get('streak',0), data.get('difficulty','easy'))
+        )
         db.commit()
         db.close()
         return jsonify({'status': 'ok'})
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/leaderboard')
+@login_required
 def leaderboard():
     try:
         db  = get_db()
         cur = dict_cursor(db)
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS quiz_scores (
-                id SERIAL PRIMARY KEY,
-                user_id INT, username VARCHAR(100),
-                score INT, accuracy INT, streak INT,
-                difficulty VARCHAR(10),
-                created_at TIMESTAMP DEFAULT NOW()
-            )
-        """)
-        cur.execute("""
-            SELECT username, MAX(score) as best_score,
-                   ROUND(AVG(accuracy)) as avg_accuracy,
-                   MAX(streak) as best_streak,
-                   COUNT(*) as games_played
-            FROM quiz_scores
-            GROUP BY username
+            SELECT u.username, MAX(qs.score) as best_score,
+                   MAX(qs.accuracy) as best_accuracy,
+                   COUNT(*) as games_played,
+                   MAX(qs.streak) as best_streak
+            FROM quiz_scores qs
+            JOIN users u ON qs.user_id = u.id
+            GROUP BY u.username
             ORDER BY best_score DESC
             LIMIT 20
         """)
-        scores = cur.fetchall()
+        leaders = cur.fetchall()
         db.close()
-    except:
-        scores = []
-    return render_template('leaderboard.html', scores=scores)
+        return render_template('leaderboard.html', leaders=leaders)
+    except Exception as e:
+        return render_template('leaderboard.html', leaders=[], error=str(e))
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  STARTUP — runs on both gunicorn and direct python
+# ─────────────────────────────────────────────────────────────────────────────
+with app.app_context():
+    init_db_extras()
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=10000)
