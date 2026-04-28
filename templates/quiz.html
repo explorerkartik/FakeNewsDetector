@@ -130,7 +130,7 @@
     <div class="nav">
         <div class="nav-logo">🔍 Fake<span>News</span>Detector</div>
         <div class="nav-links">
-            <a href="/detector">🔍 Detector</a>
+            <a href="{{ '/detector' if current_user.is_authenticated else '/free' }}">🔍 Detector</a>
             <a href="/history">📋 History</a>
             <a href="/leaderboard">🏆 Leaderboard</a>
             <a href="/logout">🚪 Logout</a>
