@@ -1311,7 +1311,6 @@ def extension_manifest():
 #  QUIZ ROUTES
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/quiz')
-@login_required
 def quiz_page():
     return render_template('quiz.html')
 
@@ -1421,7 +1420,6 @@ def quiz_save_score():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/leaderboard')
-@login_required
 def leaderboard():
     try:
         db  = get_db()
@@ -1432,7 +1430,7 @@ def leaderboard():
                    COUNT(*) as games_played,
                    MAX(qs.streak) as best_streak
             FROM quiz_scores qs
-            JOIN users u ON qs.user_id = u.id
+            LEFT JOIN users u ON qs.user_id = u.id
             GROUP BY u.username
             ORDER BY best_score DESC
             LIMIT 20
