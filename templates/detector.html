@@ -7,331 +7,194 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
 {%- raw -%}
-        :root {
-            --p1: #7c3aed; --p2: #2563eb; --p3: #a78bfa; --p4: #60a5fa;
-            --bg: #06030f; --bg2: #0d0620;
-            --sidebar-w: 72px;
-            --topbar-h: 60px;
-            --glass: rgba(255,255,255,0.04);
-            --glass-border: rgba(255,255,255,0.09);
-            --glass-hover: rgba(255,255,255,0.07);
-            --text: #f1f5f9;
-            --text-muted: rgba(241,245,249,0.45);
-            --text-dim: rgba(241,245,249,0.22);
-            --green: #10b981; --red: #ef4444;
-        }
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        button, a { cursor: pointer; }
-
-        body {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            background: var(--bg); color: var(--text);
-            display: flex; min-height: 100vh; overflow-x: hidden;
-        }
-
-        /* BG SCENE */
-        .bg-scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; }
-        .orb1 { width: 600px; height: 600px; background: radial-gradient(circle,#7c3aed,transparent 70%); top: -150px; right: -100px; }
-        .orb2 { width: 500px; height: 500px; background: radial-gradient(circle,#2563eb,transparent 70%); bottom: 0; left: -120px; }
-        .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(167,139,250,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.025) 1px, transparent 1px); background-size: 60px 60px; }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-w); background: rgba(6,3,15,0.9);
-            border-right: 1px solid var(--glass-border);
-            display: flex; flex-direction: column; align-items: center;
-            padding: 14px 0; position: fixed; top: 0; left: 0;
-            height: 100vh; z-index: 200; backdrop-filter: blur(24px);
-        }
-        .sidebar-logo {
-            width: 42px; height: 42px;
-            background: linear-gradient(135deg, var(--p1), var(--p2));
-            border-radius: 12px; display: flex; align-items: center;
-            justify-content: center; font-size: 1.2rem; margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(124,58,237,0.4);
-        }
-        .sidebar-divider { width: 36px; height: 1px; background: var(--glass-border); margin: 6px 0; }
-        .sidebar-item {
-            width: 56px; padding: 9px 6px; border-radius: 12px;
-            cursor: pointer; transition: all 0.2s; text-align: center;
-            margin-bottom: 3px; text-decoration: none; color: var(--text-muted);
-            border: 1px solid transparent;
-        }
-        .sidebar-item:hover { background: var(--glass-hover); color: var(--text); border-color: var(--glass-border); }
-        .sidebar-item.active { background: rgba(124,58,237,0.2); color: white; border-color: rgba(124,58,237,0.3); }
-        .sidebar-item .s-icon { font-size: 1.3rem; display: block; margin-bottom: 3px; }
-        .sidebar-item .s-label { font-size: 0.58rem; display: block; line-height: 1.2; font-weight: 600; font-family: 'DM Mono', monospace; }
-        .sidebar-bottom { margin-top: auto; }
-
-        /* TOPBAR */
-        .topbar {
-            position: fixed; top: 0; left: var(--sidebar-w); right: 0;
-            height: var(--topbar-h);
-            background: rgba(6,3,15,0.88); backdrop-filter: blur(24px);
-            border-bottom: 1px solid var(--glass-border);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 28px; z-index: 150;
-        }
-        .topbar-left { display: flex; align-items: center; gap: 12px; }
-        .topbar-title { font-size: 0.95rem; font-weight: 800; color: white; }
-        .topbar-title span { color: var(--p3); }
-        .topbar-subtitle { font-size: 0.72rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-        .topbar-right { display: flex; align-items: center; gap: 10px; }
-        .topbar-btn { padding: 7px 16px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; font-family: inherit; }
-        .btn-history { background: var(--glass); color: var(--text-muted); border: 1px solid var(--glass-border); }
-        .btn-history:hover { color: white; border-color: var(--p3); }
-        .btn-chatbot { background: rgba(124,58,237,0.15); color: var(--p3); border: 1px solid rgba(124,58,237,0.25); }
-        .btn-chatbot:hover { background: rgba(124,58,237,0.25); }
-        .btn-voice-top { background: rgba(20,184,166,0.12); color: #2dd4bf; border: 1px solid rgba(20,184,166,0.25); }
-        .btn-voice-top:hover { background: rgba(20,184,166,0.22); }
-        .btn-logout { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-        .btn-logout:hover { background: rgba(239,68,68,0.2); }
-
-        /* MAIN */
-        .main { margin-left: var(--sidebar-w); margin-top: var(--topbar-h); flex: 1; display: flex; min-height: calc(100vh - var(--topbar-h)); position: relative; z-index: 1; }
-        .center-panel { flex: 1; padding: 24px; max-width: calc(100% - 300px); }
-        .page-header { margin-bottom: 20px; }
-        .page-header h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
-        .page-header h1 span { background: linear-gradient(135deg,var(--p3),var(--p4)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .page-header p { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
-
-        /* MODE TABS */
-        .mode-tabs {
-            display: flex; gap: 6px; margin-bottom: 18px;
-            background: var(--glass); border: 1px solid var(--glass-border);
-            border-radius: 14px; padding: 5px; backdrop-filter: blur(20px);
-        }
-        .mode-tab {
-            flex: 1; padding: 10px 10px; border-radius: 10px; border: none;
-            background: transparent; color: var(--text-muted);
-            font-size: 0.82rem; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; display: flex; align-items: center;
-            justify-content: center; gap: 6px; font-family: inherit;
-        }
-        .mode-tab.active { background: linear-gradient(135deg,var(--p1),var(--p2)); color: white; box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
-        .mode-tab:hover:not(.active) { background: var(--glass-hover); color: white; }
-        .mode-tab.voice-tab.active { background: linear-gradient(135deg,#0f6e56,#1d9e75); box-shadow: 0 4px 16px rgba(20,184,166,0.4); }
-
-        /* INPUT CARD */
-        .input-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; overflow: hidden; margin-bottom: 16px; backdrop-filter: blur(24px); }
-        .input-card-header { padding: 14px 18px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
-        .input-card-header span { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-family: 'DM Mono', monospace; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        textarea.main-input { width: 100%; min-height: 160px; padding: 18px; background: transparent; border: none; color: var(--text); font-size: 0.92rem; font-family: inherit; resize: none; outline: none; line-height: 1.7; }
-        textarea.main-input::placeholder { color: var(--text-dim); }
-        .url-input-wrap { padding: 12px 18px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; align-items: center; }
-        .url-input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text); font-size: 0.85rem; outline: none; font-family: inherit; transition: border-color 0.2s; }
-        .url-input:focus { border-color: var(--p3); background: rgba(167,139,250,0.06); }
-        .url-input::placeholder { color: var(--text-dim); }
-
-        /* UPLOAD AREA */
-        .upload-area { margin: 18px; border: 2px dashed rgba(124,58,237,0.25); border-radius: 14px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.25s; position: relative; }
-        .upload-area:hover { border-color: var(--p3); background: rgba(124,58,237,0.05); }
-        .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-icon { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.6; }
-        .upload-area h3 { color: white; font-size: 0.95rem; margin-bottom: 6px; }
-        .upload-area p { color: var(--text-muted); font-size: 0.78rem; }
-        .preview-wrap { margin: 0 18px 18px; display: none; }
-        .preview-wrap img, .preview-wrap video { width: 100%; max-height: 200px; object-fit: contain; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); }
-        .preview-name { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; text-align: center; font-family: 'DM Mono', monospace; }
-
-        /* ACTION BAR */
-        .action-bar { padding: 12px 18px; border-top: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
-        .action-bar-left { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-chip { padding: 5px 12px; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.15); border-radius: 100px; font-size: 0.72rem; color: var(--p3); font-family: 'DM Mono', monospace; }
-        .analyze-btn { padding: 11px 26px; background: linear-gradient(135deg,var(--p1),var(--p2)); border: none; border-radius: 100px; color: white; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-family: inherit; box-shadow: 0 4px 20px rgba(124,58,237,0.35); }
-        .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.5); }
-        .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        /* VOICE */
-        .voice-container { padding: 36px 24px; text-align: center; }
-        .voice-orb { width: 130px; height: 130px; border-radius: 50%; background: rgba(13,13,74,0.6); border: 3px solid rgba(124,58,237,0.5); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; cursor: pointer; transition: all 0.3s; margin: 0 auto 20px; box-shadow: 0 0 30px rgba(124,58,237,0.2); position: relative; }
-        .voice-orb::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px dashed rgba(167,139,250,0.2); animation: rotateSlow 20s linear infinite; }
-        @keyframes rotateSlow { to { transform: rotate(360deg); } }
-        .voice-orb.listening { background: rgba(13,13,74,0.8); border-color: #00aaff; box-shadow: 0 0 50px #00aaff60; transform: scale(1.08); }
-        .voice-orb.speaking { background: rgba(26,13,46,0.8); border-color: var(--p1); box-shadow: 0 0 50px rgba(124,58,237,0.5); }
-        .voice-status { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 6px; }
-        .voice-transcript { font-size: 0.78rem; color: var(--text-muted); min-height: 20px; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
-        .voice-response { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; font-size: 0.88rem; color: var(--text); line-height: 1.7; min-height: 60px; margin-bottom: 20px; text-align: left; }
-        .voice-hold-btn { padding: 13px 36px; background: rgba(20,184,166,0.12); border: 2px solid rgba(20,184,166,0.4); border-radius: 100px; color: #2dd4bf; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.3s; font-family: inherit; }
-        .voice-hold-btn:hover, .voice-hold-btn.active { background: rgba(20,184,166,0.25); color: white; box-shadow: 0 0 24px rgba(20,184,166,0.4); }
-        .voice-tip { font-size: 0.7rem; color: var(--text-dim); margin-top: 12px; font-family: 'DM Mono', monospace; }
-
-        /* RESULTS */
-        .result-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px; padding: 20px; margin-bottom: 14px; display: none; animation: fadeIn 0.4s ease; backdrop-filter: blur(20px); }
-        .result-card.show { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-        .verdict-banner { border-radius: 14px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-        .verdict-banner.real { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); }
-        .verdict-banner.fake { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); }
-        .verdict-emoji { font-size: 2.4rem; }
-        .verdict-text h2 { font-size: 1.4rem; font-weight: 800; }
-        .verdict-text p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
-        .gauge-wrap { text-align: center; margin: 16px 0; }
-        .gauge-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
-        .gauge-bar-bg { background: rgba(255,255,255,0.06); border-radius: 10px; height: 10px; overflow: hidden; }
-        .gauge-bar { height: 100%; border-radius: 10px; transition: width 1s ease; width: 0%; }
-        .gauge-score { font-size: 2rem; font-weight: 900; margin-top: 8px; }
-        .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .info-box { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px; }
-        .info-box h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
-        .info-box p { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
-        .fact-item { padding: 7px 0; border-bottom: 1px solid var(--glass-border); font-size: 0.82rem; color: var(--text-muted); }
-        .fact-item:last-child { border-bottom: none; }
-        .fact-item::before { content: '✦ '; color: var(--p3); }
-        .cricket-match { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.15); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
-        .cricket-match h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
-        .cricket-score { display: flex; gap: 8px; flex-wrap: wrap; }
-        .cricket-score span { background: rgba(16,185,129,0.12); color: #34d399; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-family: 'DM Mono', monospace; }
-        .cricket-status { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
-        .lang-badge { display: inline-block; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.25); color: var(--p3); padding: 3px 10px; border-radius: 8px; font-size: 0.78rem; }
-        .source-badge { padding: 4px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; display: inline-block; }
-        .source-green { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
-        .source-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
-        .source-red { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-
-        /* ★ FEEDBACK BAR */
-        .feedback-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 18px; margin-top: 16px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px; flex-wrap: wrap; gap: 10px;
-        }
-        .feedback-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
-        .feedback-btns { display: flex; gap: 8px; align-items: center; }
-        .fb-btn {
-            padding: 8px 20px; border-radius: 100px; font-size: 0.82rem;
-            font-weight: 700; cursor: pointer; transition: all 0.2s;
-            font-family: inherit; border: 1px solid;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .fb-btn-up {
-            background: rgba(16,185,129,0.1); color: #34d399;
-            border-color: rgba(16,185,129,0.3);
-        }
-        .fb-btn-up:hover, .fb-btn-up.active {
-            background: rgba(16,185,129,0.25); box-shadow: 0 0 16px rgba(16,185,129,0.2);
-        }
-        .fb-btn-down {
-            background: rgba(239,68,68,0.1); color: #f87171;
-            border-color: rgba(239,68,68,0.3);
-        }
-        .fb-btn-down:hover, .fb-btn-down.active {
-            background: rgba(239,68,68,0.25); box-shadow: 0 0 16px rgba(239,68,68,0.2);
-        }
-        .fb-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .feedback-msg { font-size: 0.75rem; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-
-        .tool-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 18px; }
-        .tool-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; }
-        .tool-card h4 { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
-        .tool-card strong { display: block; font-size: 1.05rem; color: white; margin-bottom: 4px; }
-        .tool-card p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
-        .tool-list { display: flex; flex-direction: column; gap: 10px; padding: 18px; }
-        .tool-row { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
-        .tool-row-title { font-size: 0.86rem; color: var(--text); line-height: 1.45; }
-        .tool-row-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
-        .risk-pill { padding: 5px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 800; font-family: 'DM Mono', monospace; }
-        .risk-real { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
-        .risk-fake { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
-        .risk-mid { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
-        .state-bars { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
-        .state-bar { display: grid; grid-template-columns: 120px 1fr 48px; gap: 10px; align-items: center; font-size: 0.78rem; color: var(--text-muted); }
-        .state-track { height: 8px; border-radius: 20px; background: rgba(255,255,255,0.06); overflow: hidden; }
-        .state-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg,#f59e0b,#ef4444); }
-
-        /* SHARE + PDF ROW */
-        .result-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-        .result-action-btn {
-            padding: 9px 20px; border-radius: 100px; font-size: 0.8rem; font-weight: 700;
-            cursor: pointer; transition: all 0.2s; font-family: inherit;
-            border: 1px solid; display: flex; align-items: center; gap: 6px; text-decoration: none;
-        }
-        .btn-share { background: rgba(124,58,237,0.12); color: var(--p3); border-color: rgba(124,58,237,0.3); }
-        .btn-share:hover { background: rgba(124,58,237,0.25); }
-        .btn-pdf { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.25); }
-        .btn-pdf:hover { background: rgba(239,68,68,0.2); }
-
-        /* RIGHT PANEL */
-        .right-panel { width: 290px; min-width: 290px; background: rgba(6,3,15,0.7); border-left: 1px solid var(--glass-border); padding: 18px 14px; position: fixed; right: 0; top: var(--topbar-h); height: calc(100vh - var(--topbar-h)); overflow-y: auto; backdrop-filter: blur(20px); }
-        .right-panel h3 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
-        .compare-card { border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-        .compare-card.real-c { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); }
-        .compare-card.fake-c { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); }
-        .compare-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .compare-title.real-t { color: #34d399; }
-        .compare-title.fake-t { color: #f87171; }
-        .compare-item { font-size: 0.74rem; color: rgba(255,255,255,0.55); padding: 3px 0; display: flex; gap: 6px; align-items: flex-start; line-height: 1.4; }
-        .compare-item .ci { flex-shrink: 0; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-        .stat-box { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px 8px; text-align: center; }
-        .stat-box .stat-n { font-size: 1.25rem; font-weight: 800; background: linear-gradient(135deg,var(--p3),var(--p4)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .stat-box .stat-l { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; line-height: 1.3; font-family: 'DM Mono', monospace; }
-        .tip-card { background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.18); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .tip-card h4 { font-size: 0.72rem; color: var(--p3); font-weight: 700; margin-bottom: 5px; }
-        .tip-card p { font-size: 0.72rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
-        .right-divider { height: 1px; background: var(--glass-border); margin: 12px 0; }
-
-        /* LOADING */
-        .loading-wrap { text-align: center; padding: 30px; display: none; }
-        .loading-wrap.show { display: block; }
-        .spinner { width: 40px; height: 40px; border: 3px solid var(--glass-border); border-top-color: var(--p3); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-wrap p { color: var(--text-muted); font-size: 0.85rem; font-family: 'DM Mono', monospace; }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 3px; }
-
-        @media (max-width: 900px) { .right-panel { display: none; } .center-panel { max-width: 100%; } }
-        @media (max-width: 600px) { .sidebar { width: 56px; } .main { margin-left: 56px; } .topbar { left: 56px; } .topbar-subtitle { display: none; } }
+        :root { --p1:#7c3aed;--p2:#2563eb;--p3:#a78bfa;--p4:#60a5fa;--bg:#06030f;--bg2:#0d0620;--sidebar-w:72px;--topbar-h:60px;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.09);--glass-hover:rgba(255,255,255,0.07);--text:#f1f5f9;--text-muted:rgba(241,245,249,0.45);--text-dim:rgba(241,245,249,0.22);--green:#10b981;--red:#ef4444; }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}button,a{cursor:pointer;}
+        body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+        .bg-scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+        .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.2;}
+        .orb1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;right:-100px;}
+        .orb2{width:500px;height:500px;background:radial-gradient(circle,#2563eb,transparent 70%);bottom:0;left:-120px;}
+        .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.025) 1px,transparent 1px);background-size:60px 60px;}
+        .sidebar{width:var(--sidebar-w);background:rgba(6,3,15,0.9);border-right:1px solid var(--glass-border);display:flex;flex-direction:column;align-items:center;padding:14px 0;position:fixed;top:0;left:0;height:100vh;z-index:200;backdrop-filter:blur(24px);}
+        .sidebar-logo{width:42px;height:42px;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:20px;box-shadow:0 4px 20px rgba(124,58,237,0.4);}
+        .sidebar-divider{width:36px;height:1px;background:var(--glass-border);margin:6px 0;}
+        .sidebar-item{width:56px;padding:9px 6px;border-radius:12px;cursor:pointer;transition:all 0.2s;text-align:center;margin-bottom:3px;text-decoration:none;color:var(--text-muted);border:1px solid transparent;}
+        .sidebar-item:hover{background:var(--glass-hover);color:var(--text);border-color:var(--glass-border);}
+        .sidebar-item.active{background:rgba(124,58,237,0.2);color:white;border-color:rgba(124,58,237,0.3);}
+        .sidebar-item .s-icon{font-size:1.3rem;display:block;margin-bottom:3px;}
+        .sidebar-item .s-label{font-size:0.58rem;display:block;line-height:1.2;font-weight:600;font-family:'DM Mono',monospace;}
+        .sidebar-bottom{margin-top:auto;}
+        .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:rgba(6,3,15,0.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:150;}
+        .topbar-left{display:flex;align-items:center;gap:12px;}
+        .topbar-title{font-size:0.95rem;font-weight:800;color:white;}
+        .topbar-title span{color:var(--p3);}
+        .topbar-subtitle{font-size:0.72rem;color:var(--text-muted);font-family:'DM Mono',monospace;}
+        .topbar-right{display:flex;align-items:center;gap:10px;}
+        .topbar-btn{padding:7px 16px;border-radius:100px;font-size:0.75rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s;font-family:inherit;}
+        .btn-history{background:var(--glass);color:var(--text-muted);border:1px solid var(--glass-border);}
+        .btn-history:hover{color:white;border-color:var(--p3);}
+        .btn-chatbot{background:rgba(124,58,237,0.15);color:var(--p3);border:1px solid rgba(124,58,237,0.25);}
+        .btn-chatbot:hover{background:rgba(124,58,237,0.25);}
+        .btn-voice-top{background:rgba(20,184,166,0.12);color:#2dd4bf;border:1px solid rgba(20,184,166,0.25);}
+        .btn-voice-top:hover{background:rgba(20,184,166,0.22);}
+        .btn-logout{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
+        .btn-logout:hover{background:rgba(239,68,68,0.2);}
+        .main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);flex:1;display:flex;min-height:calc(100vh - var(--topbar-h));position:relative;z-index:1;}
+        .center-panel{flex:1;padding:24px;max-width:calc(100% - 300px);}
+        .page-header{margin-bottom:20px;}
+        .page-header h1{font-size:1.7rem;font-weight:800;letter-spacing:-0.5px;}
+        .page-header h1 span{background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .page-header p{color:var(--text-muted);font-size:0.85rem;margin-top:4px;}
+        .mode-tabs{display:flex;gap:6px;margin-bottom:18px;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:5px;backdrop-filter:blur(20px);}
+        .mode-tab{flex:1;padding:10px 10px;border-radius:10px;border:none;background:transparent;color:var(--text-muted);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;}
+        .mode-tab.active{background:linear-gradient(135deg,var(--p1),var(--p2));color:white;box-shadow:0 4px 16px rgba(124,58,237,0.4);}
+        .mode-tab:hover:not(.active){background:var(--glass-hover);color:white;}
+        .mode-tab.voice-tab.active{background:linear-gradient(135deg,#0f6e56,#1d9e75);box-shadow:0 4px 16px rgba(20,184,166,0.4);}
+        .input-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;overflow:hidden;margin-bottom:16px;backdrop-filter:blur(24px);}
+        .input-card-header{padding:14px 18px;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;}
+        .input-card-header span{font-size:0.8rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace;}
+        .tab-content{display:none;}.tab-content.active{display:block;}
+        textarea.main-input{width:100%;min-height:160px;padding:18px;background:transparent;border:none;color:var(--text);font-size:0.92rem;font-family:inherit;resize:none;outline:none;line-height:1.7;}
+        textarea.main-input::placeholder{color:var(--text-dim);}
+        .url-input-wrap{padding:12px 18px;border-top:1px solid var(--glass-border);display:flex;gap:10px;align-items:center;}
+        .url-input{flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:10px;color:var(--text);font-size:0.85rem;outline:none;font-family:inherit;transition:border-color 0.2s;}
+        .url-input:focus{border-color:var(--p3);background:rgba(167,139,250,0.06);}
+        .url-input::placeholder{color:var(--text-dim);}
+        .upload-area{margin:18px;border:2px dashed rgba(124,58,237,0.25);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;}
+        .upload-area:hover{border-color:var(--p3);background:rgba(124,58,237,0.05);}
+        .upload-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+        .upload-icon{font-size:2.5rem;margin-bottom:10px;opacity:0.6;}
+        .upload-area h3{color:white;font-size:0.95rem;margin-bottom:6px;}
+        .upload-area p{color:var(--text-muted);font-size:0.78rem;}
+        .preview-wrap{margin:0 18px 18px;display:none;}
+        .preview-wrap img,.preview-wrap video{width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.3);}
+        .preview-name{font-size:0.75rem;color:var(--text-muted);margin-top:6px;text-align:center;font-family:'DM Mono',monospace;}
+        .action-bar{padding:12px 18px;border-top:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;}
+        .action-bar-left{display:flex;gap:8px;flex-wrap:wrap;}
+        .action-chip{padding:5px 12px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:100px;font-size:0.72rem;color:var(--p3);font-family:'DM Mono',monospace;}
+        .analyze-btn{padding:11px 26px;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;border-radius:100px;color:white;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px;font-family:inherit;box-shadow:0 4px 20px rgba(124,58,237,0.35);}
+        .analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,58,237,0.5);}
+        .analyze-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
+        .voice-container{padding:36px 24px;text-align:center;}
+        .voice-orb{width:130px;height:130px;border-radius:50%;background:rgba(13,13,74,0.6);border:3px solid rgba(124,58,237,0.5);display:flex;align-items:center;justify-content:center;font-size:2.8rem;cursor:pointer;transition:all 0.3s;margin:0 auto 20px;box-shadow:0 0 30px rgba(124,58,237,0.2);position:relative;}
+        .voice-orb::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px dashed rgba(167,139,250,0.2);animation:rotateSlow 20s linear infinite;}
+        @keyframes rotateSlow{to{transform:rotate(360deg);}}
+        .voice-orb.listening{background:rgba(13,13,74,0.8);border-color:#00aaff;box-shadow:0 0 50px #00aaff60;transform:scale(1.08);}
+        .voice-orb.speaking{background:rgba(26,13,46,0.8);border-color:var(--p1);box-shadow:0 0 50px rgba(124,58,237,0.5);}
+        .voice-status{font-size:0.88rem;color:var(--text-muted);margin-bottom:6px;}
+        .voice-transcript{font-size:0.78rem;color:var(--text-muted);min-height:20px;margin-bottom:14px;font-family:'DM Mono',monospace;}
+        .voice-response{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:14px;padding:16px;font-size:0.88rem;color:var(--text);line-height:1.7;min-height:60px;margin-bottom:20px;text-align:left;}
+        .voice-hold-btn{padding:13px 36px;background:rgba(20,184,166,0.12);border:2px solid rgba(20,184,166,0.4);border-radius:100px;color:#2dd4bf;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.3s;font-family:inherit;}
+        .voice-hold-btn:hover,.voice-hold-btn.active{background:rgba(20,184,166,0.25);color:white;box-shadow:0 0 24px rgba(20,184,166,0.4);}
+        .voice-tip{font-size:0.7rem;color:var(--text-dim);margin-top:12px;font-family:'DM Mono',monospace;}
+        .result-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:20px;margin-bottom:14px;display:none;animation:fadeIn 0.4s ease;backdrop-filter:blur(20px);}
+        .result-card.show{display:block;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        .verdict-banner{border-radius:14px;padding:20px 22px;display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+        .verdict-banner.real{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);}
+        .verdict-banner.fake{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);}
+        .verdict-emoji{font-size:2.4rem;}.verdict-text h2{font-size:1.4rem;font-weight:800;}
+        .verdict-text p{color:var(--text-muted);font-size:0.85rem;margin-top:2px;}
+        .gauge-wrap{text-align:center;margin:16px 0;}
+        .gauge-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:'DM Mono',monospace;}
+        .gauge-bar-bg{background:rgba(255,255,255,0.06);border-radius:10px;height:10px;overflow:hidden;}
+        .gauge-bar{height:100%;border-radius:10px;transition:width 1s ease;width:0%;}
+        .gauge-score{font-size:2rem;font-weight:900;margin-top:8px;}
+        .info-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+        .info-box{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:12px;padding:14px;}
+        .info-box h4{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:'DM Mono',monospace;}
+        .info-box p{font-size:0.85rem;color:var(--text);line-height:1.5;}
+        .fact-item{padding:7px 0;border-bottom:1px solid var(--glass-border);font-size:0.82rem;color:var(--text-muted);}
+        .fact-item:last-child{border-bottom:none;}.fact-item::before{content:'✦ ';color:var(--p3);}
+        .cricket-match{background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:12px;margin-bottom:8px;}
+        .cricket-match h4{font-size:0.85rem;font-weight:700;margin-bottom:6px;}
+        .cricket-score{display:flex;gap:8px;flex-wrap:wrap;}
+        .cricket-score span{background:rgba(16,185,129,0.12);color:#34d399;padding:2px 10px;border-radius:6px;font-size:0.75rem;font-family:'DM Mono',monospace;}
+        .cricket-status{font-size:0.72rem;color:var(--text-muted);margin-top:4px;}
+        .lang-badge{display:inline-block;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.25);color:var(--p3);padding:3px 10px;border-radius:8px;font-size:0.78rem;}
+        .source-badge{padding:4px 12px;border-radius:8px;font-size:0.78rem;font-weight:600;display:inline-block;}
+        .source-green{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.2);}
+        .source-yellow{background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.2);}
+        .source-red{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
+        .feedback-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;margin-top:16px;background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:14px;flex-wrap:wrap;gap:10px;}
+        .feedback-label{font-size:0.8rem;color:var(--text-muted);font-weight:600;}
+        .feedback-btns{display:flex;gap:8px;align-items:center;}
+        .fb-btn{padding:8px 20px;border-radius:100px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;border:1px solid;display:flex;align-items:center;gap:6px;}
+        .fb-btn-up{background:rgba(16,185,129,0.1);color:#34d399;border-color:rgba(16,185,129,0.3);}
+        .fb-btn-up:hover,.fb-btn-up.active{background:rgba(16,185,129,0.25);box-shadow:0 0 16px rgba(16,185,129,0.2);}
+        .fb-btn-down{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.3);}
+        .fb-btn-down:hover,.fb-btn-down.active{background:rgba(239,68,68,0.25);box-shadow:0 0 16px rgba(239,68,68,0.2);}
+        .fb-btn:disabled{opacity:0.5;cursor:not-allowed;}
+        .feedback-msg{font-size:0.75rem;color:var(--text-muted);font-family:'DM Mono',monospace;}
+        .tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:18px;}
+        .tool-card{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:14px;padding:14px;}
+        .tool-card h4{font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:'DM Mono',monospace;}
+        .tool-card strong{display:block;font-size:1.05rem;color:white;margin-bottom:4px;}
+        .tool-card p{font-size:0.78rem;color:var(--text-muted);line-height:1.5;}
+        .tool-list{display:flex;flex-direction:column;gap:10px;padding:18px;}
+        .tool-row{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
+        .tool-row-title{font-size:0.86rem;color:var(--text);line-height:1.45;}
+        .tool-row-meta{font-size:0.72rem;color:var(--text-muted);margin-top:4px;font-family:'DM Mono',monospace;}
+        .risk-pill{padding:5px 10px;border-radius:100px;font-size:0.72rem;font-weight:800;font-family:'DM Mono',monospace;}
+        .risk-real{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);}
+        .risk-fake{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25);}
+        .risk-mid{background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);}
+        .state-bars{padding:18px;display:flex;flex-direction:column;gap:10px;}
+        .state-bar{display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center;font-size:0.78rem;color:var(--text-muted);}
+        .state-track{height:8px;border-radius:20px;background:rgba(255,255,255,0.06);overflow:hidden;}
+        .state-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#f59e0b,#ef4444);}
+        .result-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+        .result-action-btn{padding:9px 20px;border-radius:100px;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;border:1px solid;display:flex;align-items:center;gap:6px;text-decoration:none;}
+        .btn-share{background:rgba(124,58,237,0.12);color:var(--p3);border-color:rgba(124,58,237,0.3);}
+        .btn-share:hover{background:rgba(124,58,237,0.25);}
+        .btn-pdf{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.25);}
+        .btn-pdf:hover{background:rgba(239,68,68,0.2);}
+        .right-panel{width:290px;min-width:290px;background:rgba(6,3,15,0.7);border-left:1px solid var(--glass-border);padding:18px 14px;position:fixed;right:0;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;backdrop-filter:blur(20px);}
+        .right-panel h3{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;font-family:'DM Mono',monospace;}
+        .compare-card{border-radius:12px;padding:12px;margin-bottom:12px;}
+        .compare-card.real-c{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);}
+        .compare-card.fake-c{background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);}
+        .compare-title{font-size:0.78rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+        .compare-title.real-t{color:#34d399;}.compare-title.fake-t{color:#f87171;}
+        .compare-item{font-size:0.74rem;color:rgba(255,255,255,0.55);padding:3px 0;display:flex;gap:6px;align-items:flex-start;line-height:1.4;}
+        .compare-item .ci{flex-shrink:0;}
+        .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+        .stat-box{background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:12px 8px;text-align:center;}
+        .stat-box .stat-n{font-size:1.25rem;font-weight:800;background:linear-gradient(135deg,var(--p3),var(--p4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .stat-box .stat-l{font-size:0.62rem;color:var(--text-muted);margin-top:2px;line-height:1.3;font-family:'DM Mono',monospace;}
+        .tip-card{background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.18);border-radius:10px;padding:12px;margin-bottom:10px;}
+        .tip-card h4{font-size:0.72rem;color:var(--p3);font-weight:700;margin-bottom:5px;}
+        .tip-card p{font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.5;}
+        .right-divider{height:1px;background:var(--glass-border);margin:12px 0;}
+        .loading-wrap{text-align:center;padding:30px;display:none;}
+        .loading-wrap.show{display:block;}
+        .spinner{width:40px;height:40px;border:3px solid var(--glass-border);border-top-color:var(--p3);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        .loading-wrap p{color:var(--text-muted);font-size:0.85rem;font-family:'DM Mono',monospace;}
+        ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(167,139,250,0.2);border-radius:3px;}
+        @media(max-width:900px){.right-panel{display:none;}.center-panel{max-width:100%;}}
+        @media(max-width:600px){.sidebar{width:56px;}.main{margin-left:56px;}.topbar{left:56px;}.topbar-subtitle{display:none;}}
 {%- endraw -%}
     </style>
 </head>
 <body>
-
-<div class="bg-scene">
-    <div class="orb orb1"></div>
-    <div class="orb orb2"></div>
-    <div class="grid-bg"></div>
-</div>
+<div class="bg-scene"><div class="orb orb1"></div><div class="orb orb2"></div><div class="grid-bg"></div></div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-logo">🛡️</div>
     <div class="sidebar-divider"></div>
-    <a class="sidebar-item active" data-mode="text" onclick="setMode('text')" href="#">
-        <span class="s-icon">📝</span><span class="s-label">Text</span>
-    </a>
-    <a class="sidebar-item" data-mode="image" onclick="setMode('image')" href="#">
-        <span class="s-icon">🖼️</span><span class="s-label">Image</span>
-    </a>
-    <a class="sidebar-item" data-mode="video" onclick="setMode('video')" href="#">
-        <span class="s-icon">🎥</span><span class="s-label">Video</span>
-    </a>
-    <a class="sidebar-item" data-mode="voice" onclick="return activateVoiceMode(event)" href="#">
-        <span class="s-icon">🎙️</span><span class="s-label">Voice</span>
-    </a>
+    <a class="sidebar-item active" data-mode="text" onclick="setMode('text')" href="#"><span class="s-icon">📝</span><span class="s-label">Text</span></a>
+    <a class="sidebar-item" data-mode="image" onclick="setMode('image')" href="#"><span class="s-icon">🖼️</span><span class="s-label">Image</span></a>
+    <a class="sidebar-item" data-mode="video" onclick="setMode('video')" href="#"><span class="s-icon">🎥</span><span class="s-label">Video</span></a>
+    <a class="sidebar-item" data-mode="voice" onclick="return activateVoiceMode(event)" href="#"><span class="s-icon">🎙️</span><span class="s-label">Voice</span></a>
     <div class="sidebar-divider"></div>
-    <a class="sidebar-item" href="/chatbot">
-        <span class="s-icon">🤖</span><span class="s-label">FakeBot</span>
-    </a>
-    <a class="sidebar-item" href="/quiz">
-       <span class="s-icon">🎮</span><span class="s-label">Quiz</span>
-    </a>    
-    <a class="sidebar-item" href="/history">
-       <span class="s-icon">📋</span><span class="s-label">History</span>
-    </a>
+    <a class="sidebar-item" href="/chatbot"><span class="s-icon">🤖</span><span class="s-label">FakeBot</span></a>
+    <a class="sidebar-item" href="/quiz"><span class="s-icon">🎮</span><span class="s-label">Quiz</span></a>
+    <a class="sidebar-item" href="/history"><span class="s-icon">📋</span><span class="s-label">History</span></a>
     <div class="sidebar-bottom">
         <div class="sidebar-divider"></div>
-        <a class="sidebar-item" href="/logout">
-            <span class="s-icon">🚪</span><span class="s-label">Logout</span>
-        </a>
+        <a class="sidebar-item" href="/logout"><span class="s-icon">🚪</span><span class="s-label">Logout</span></a>
     </div>
 </div>
 
@@ -353,325 +216,201 @@
 
 <!-- MAIN -->
 <div class="main">
-    <div class="center-panel">
-        <div class="page-header">
-            <h1>AI <span>Fact Checker</span></h1>
-            <p>Detect fake news in text, images, videos, and voice — powered by Groq LLaMA AI</p>
-        </div>
+  <div class="center-panel">
+    <div class="page-header">
+        <h1>AI <span>Fact Checker</span></h1>
+        <p>Detect fake news in text, images, videos, and voice — powered by Groq LLaMA AI</p>
+    </div>
+    <div class="mode-tabs">
+        <button class="mode-tab active" id="tab-text-btn" onclick="setMode('text')">📝 Text / URL</button>
+        <button class="mode-tab" id="tab-bulk-btn" onclick="setMode('bulk')">Bulk</button>
+        <button class="mode-tab" id="tab-compare-btn" onclick="setMode('compare')">Compare</button>
+        <button class="mode-tab" id="tab-clickbait-btn" onclick="setMode('clickbait')">Clickbait</button>
+        <button class="mode-tab" id="tab-image-btn" onclick="setMode('image')">🖼️ Image</button>
+        <button class="mode-tab" id="tab-video-btn" onclick="setMode('video')">🎥 Video</button>
+        <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="return activateVoiceMode(event)">🎙️ Voice</button>
+    </div>
 
-        <div class="mode-tabs">
-            <button class="mode-tab active" id="tab-text-btn" onclick="setMode('text')">📝 Text / URL</button>
-            <button class="mode-tab" id="tab-bulk-btn" onclick="setMode('bulk')">Bulk</button>
-            <button class="mode-tab" id="tab-compare-btn" onclick="setMode('compare')">Compare</button>
-            <button class="mode-tab" id="tab-clickbait-btn" onclick="setMode('clickbait')">Clickbait</button>
-            <button class="mode-tab" id="tab-image-btn" onclick="setMode('image')">🖼️ Image</button>
-            <button class="mode-tab" id="tab-video-btn" onclick="setMode('video')">🎥 Video</button>
-            <button class="mode-tab voice-tab" id="tab-voice-btn" onclick="return activateVoiceMode(event)">🎙️ Voice</button>
-        </div>
-
-        <!-- TEXT TAB -->
-        <div class="tab-content active" id="tab-text">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>📝 Enter News Text</span>
-                    <span>Supports 12+ Indian Languages</span>
-                </div>
-                <textarea class="main-input" id="news_text" placeholder="Paste news article, WhatsApp forward, or any claim here...&#10;&#10;Example: 'RCB won IPL 2025' or any political/sports/science news"></textarea>
-                <div class="url-input-wrap">
-                    <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">🔗 Or URL:</span>
-                    <input class="url-input" type="text" id="news_url" placeholder="https://example.com/news-article">
-                </div>
-                <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">🤖 Groq AI</span>
-                        <span class="action-chip">✅ Fact Check</span>
-                        <span class="action-chip">🏏 Cricket</span>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <a href="/chatbot" style="padding:11px 20px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:100px;color:#a78bfa;font-size:0.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;">🤖 FakeBot</a>
-                        <button class="analyze-btn" onclick="detectText()">🔍 Analyze Now</button>
-                    </div>
-                </div>
+    <!-- TEXT TAB -->
+    <div class="tab-content active" id="tab-text">
+        <div class="input-card">
+            <div class="input-card-header"><span>📝 Enter News Text</span><span>Supports 12+ Indian Languages</span></div>
+            <textarea class="main-input" id="news_text" placeholder="Paste news article, WhatsApp forward, or any claim here...&#10;&#10;Example: 'RCB won IPL 2025' or any political/sports/science news"></textarea>
+            <div class="url-input-wrap">
+                <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">🔗 Or URL:</span>
+                <input class="url-input" type="text" id="news_url" placeholder="https://example.com/news-article">
             </div>
-
-            <div class="loading-wrap" id="text-loading"><div class="spinner"></div><p>Analyzing with Groq AI...</p></div>
-
-            <div class="result-card" id="text-result">
-                <!-- VERDICT BANNER -->
-                <div class="verdict-banner" id="verdict-banner">
-                    <div class="verdict-emoji" id="verdict-emoji"></div>
-                    <div class="verdict-text"><h2 id="verdict-text"></h2><p id="verdict-sub"></p></div>
-                </div>
-
-                <!-- GAUGE -->
-                <div class="gauge-wrap">
-                    <div class="gauge-label">Credibility Score</div>
-                    <div class="gauge-bar-bg"><div class="gauge-bar" id="gauge-bar" style="width:0%"></div></div>
-                    <div class="gauge-score" id="gauge-score"></div>
-                </div>
-
-                <!-- INFO BOXES -->
-                <div class="info-row">
-                    <div class="info-box" id="ai-box" style="display:none;"><h4>🤖 AI Analysis</h4><p id="ai-reason"></p><div id="ai-facts" style="margin-top:8px;"></div></div>
-                    <div class="info-box" id="lang-box" style="display:none;"><h4>🌐 Language</h4><p>Detected: <span class="lang-badge" id="lang-name"></span></p><p style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);">Auto-translated to English</p></div>
-                    <div class="info-box" id="source-box" style="display:none;"><h4>🏛️ Source Reputation</h4><span class="source-badge" id="source-label"></span><p id="source-desc" style="margin-top:6px;font-size:0.78rem;"></p></div>
-                    <div class="info-box" id="india-box" style="display:none;"><h4>🇮🇳 Indian Facts</h4><div id="india-facts"></div></div>
-                </div>
-
-                <div class="info-box" id="factcheck-box" style="display:none;margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
-                <div class="info-box" id="cricket-box" style="display:none;margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
-
-                <!-- ★ ACTION BUTTONS: Share + PDF -->
-                <div class="result-actions" id="result-actions" style="display:none;">
-                    <button class="result-action-btn btn-share" onclick="shareResult()">🔗 Share Result</button>
-                    <button class="result-action-btn btn-pdf" onclick="downloadPDF()">📄 Download PDF</button>
-                </div>
-
-                <!-- ★ FEEDBACK BAR -->
-                <div class="feedback-bar" id="feedback-bar" style="display:none;">
-                    <div>
-                        <div class="feedback-label">Was this analysis helpful?</div>
-                        <div class="feedback-msg" id="feedback-msg"></div>
-                    </div>
-                    <div class="feedback-btns">
-                        <button class="fb-btn fb-btn-up" id="fb-up" onclick="submitFeedback('helpful')">👍 Helpful</button>
-                        <button class="fb-btn fb-btn-down" id="fb-down" onclick="submitFeedback('not_helpful')">👎 Not Helpful</button>
-                    </div>
+            <div class="action-bar">
+                <div class="action-bar-left"><span class="action-chip">🤖 Groq AI</span><span class="action-chip">✅ Fact Check</span><span class="action-chip">🏏 Cricket</span></div>
+                <div style="display:flex;gap:8px;">
+                    <a href="/chatbot" style="padding:11px 20px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:100px;color:#a78bfa;font-size:0.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;">🤖 FakeBot</a>
+                    <button class="analyze-btn" onclick="detectText()">🔍 Analyze Now</button>
                 </div>
             </div>
         </div>
-
-        <!-- BULK TAB -->
-        <div class="tab-content" id="tab-bulk">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>Bulk Analysis</span>
-                    <span>Up to 10 claims</span>
-                </div>
-                <textarea class="main-input" id="bulk_text" placeholder="Paste one claim per line..."></textarea>
-                <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">Batch Scan</span>
-                        <span class="action-chip">Same AI Pipeline</span>
-                    </div>
-                    <button class="analyze-btn" onclick="detectBulk()">Analyze Batch</button>
-                </div>
+        <div class="loading-wrap" id="text-loading"><div class="spinner"></div><p>Analyzing with Groq AI...</p></div>
+        <div class="result-card" id="text-result">
+            <div class="verdict-banner" id="verdict-banner"><div class="verdict-emoji" id="verdict-emoji"></div><div class="verdict-text"><h2 id="verdict-text"></h2><p id="verdict-sub"></p></div></div>
+            <div class="gauge-wrap"><div class="gauge-label">Credibility Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="gauge-bar" style="width:0%"></div></div><div class="gauge-score" id="gauge-score"></div></div>
+            <div class="info-row">
+                <div class="info-box" id="ai-box" style="display:none;"><h4>🤖 AI Analysis</h4><p id="ai-reason"></p><div id="ai-facts" style="margin-top:8px;"></div></div>
+                <div class="info-box" id="lang-box" style="display:none;"><h4>🌐 Language</h4><p>Detected: <span class="lang-badge" id="lang-name"></span></p><p style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);">Auto-translated to English</p></div>
+                <div class="info-box" id="source-box" style="display:none;"><h4>🏛️ Source Reputation</h4><span class="source-badge" id="source-label"></span><p id="source-desc" style="margin-top:6px;font-size:0.78rem;"></p></div>
+                <div class="info-box" id="india-box" style="display:none;"><h4>🇮🇳 Indian Facts</h4><div id="india-facts"></div></div>
             </div>
-            <div class="loading-wrap" id="bulk-loading"><div class="spinner"></div><p>Analyzing batch...</p></div>
-            <div class="result-card" id="bulk-result"><div class="tool-list" id="bulk-list"></div></div>
-        </div>
-
-        <!-- COMPARE TAB -->
-        <div class="tab-content" id="tab-compare">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>Comparison Tool</span>
-                    <span>Claim A vs Claim B</span>
-                </div>
-                <textarea class="main-input" id="claim_a" placeholder="Claim A"></textarea>
-                <textarea class="main-input" id="claim_b" placeholder="Claim B" style="border-top:1px solid var(--glass-border);"></textarea>
-                <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">Credibility Delta</span>
-                        <span class="action-chip">Side-by-side Verdict</span>
-                    </div>
-                    <button class="analyze-btn" onclick="compareClaims()">Compare Claims</button>
-                </div>
+            <div class="info-box" id="factcheck-box" style="display:none;margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
+            <div class="info-box" id="cricket-box" style="display:none;margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
+            <div class="result-actions" id="result-actions" style="display:none;">
+                <button class="result-action-btn btn-share" onclick="shareResult()">🔗 Share Result</button>
+                <button class="result-action-btn btn-pdf" onclick="downloadPDF()">📄 Download PDF</button>
             </div>
-            <div class="loading-wrap" id="compare-loading"><div class="spinner"></div><p>Comparing claims...</p></div>
-            <div class="result-card" id="compare-result">
-                <div class="tool-grid" id="compare-grid"></div>
-            </div>
-        </div>
-
-        <!-- CLICKBAIT TAB -->
-        <div class="tab-content" id="tab-clickbait">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>Clickbait Detector</span>
-                    <span>Headline + URL signals</span>
-                </div>
-                <textarea class="main-input" id="clickbait_headline" placeholder="Paste a headline, WhatsApp forward title, or short post..."></textarea>
-                <div class="url-input-wrap">
-                    <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">Optional URL:</span>
-                    <input class="url-input" type="text" id="clickbait_url" placeholder="https://example.com/article">
-                </div>
-                <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">Sensational Tone</span>
-                        <span class="action-chip">Urgency Phrases</span>
-                    </div>
-                    <button class="analyze-btn" onclick="detectClickbait()">Score Headline</button>
-                </div>
-            </div>
-            <div class="loading-wrap" id="clickbait-loading"><div class="spinner"></div><p>Checking headline signals...</p></div>
-            <div class="result-card" id="clickbait-result">
-                <div class="tool-grid" id="clickbait-grid"></div>
-            </div>
-        </div>
-
-        <!-- IMAGE TAB -->
-        <div class="tab-content" id="tab-image">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>🖼️ Upload Image</span>
-                    <span>Max 10MB · JPG/PNG/WEBP</span>
-                </div>
-                <label class="upload-area" id="img-upload">
-                    <input type="file" id="img-input" accept="image/*" onchange="handleImg(event)">
-                    <div class="upload-icon">🖼️</div>
-                    <h3>Drop image here or click to browse</h3>
-                    <p>Deepfake & AI-generated image detection via Sightengine</p>
-                </label>
-                <div class="preview-wrap" id="img-preview-wrap">
-                    <img id="img-preview" src="" alt="Preview">
-                    <div class="preview-name" id="img-name"></div>
-                </div>
-                <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">🤖 Sightengine</span>
-                        <span class="action-chip">👤 Face Analysis</span>
-                        <span class="action-chip">🎭 Deepfake</span>
-                    </div>
-                    <button class="analyze-btn" id="img-btn" onclick="detectImage()" disabled>🔍 Analyze Image</button>
-                </div>
-            </div>
-            <div class="loading-wrap" id="img-loading"><div class="spinner"></div><p>Scanning image for deepfakes...</p></div>
-            <div class="result-card" id="img-result">
-                <div class="verdict-banner" id="img-verdict-banner">
-                    <div class="verdict-emoji" id="img-verdict-emoji"></div>
-                    <div class="verdict-text"><h2 id="img-verdict-text"></h2><p id="img-verdict-sub"></p></div>
-                </div>
-                <div class="gauge-wrap">
-                    <div class="gauge-label">AI Score</div>
-                    <div class="gauge-bar-bg"><div class="gauge-bar" id="img-gauge" style="width:0%"></div></div>
-                    <div class="gauge-score" id="img-score"></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-box"><h4>🔍 Sightengine Verdict</h4><p id="img-se-verdict"></p><p id="img-se-score" style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);font-family:'DM Mono',monospace;"></p></div>
-                    <div class="info-box"><h4>ℹ️ About Deepfake Detection</h4><p style="font-size:0.82rem;color:var(--text-muted);">Frame-by-frame analysis using AI to detect manipulated faces and AI-generated content.</p></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VIDEO TAB -->
-        <div class="tab-content" id="tab-video">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>🎥 Upload Video</span>
-                    <span>Max 50MB · MP4/MOV/AVI</span>
-                </div>
-                <label class="upload-area" id="vid-upload">
-                    <input type="file" id="vid-input" accept="video/*" onchange="handleVid(event)">
-                    <div class="upload-icon">🎥</div>
-                    <h3>Drop video here or click to browse</h3>
-                    <p>Frame-by-frame deepfake & face-swap detection</p>
-                </label>
-                <div class="preview-wrap" id="vid-preview-wrap">
-                    <video id="vid-preview" controls></video>
-                    <div class="preview-name" id="vid-name"></div>
-                </div>
-                <div class="action-bar">
-                    <div class="action-bar-left">
-                        <span class="action-chip">🎞️ Frame Analysis</span>
-                        <span class="action-chip">🎭 Face-Swap</span>
-                        <span class="action-chip">📁 50MB Max</span>
-                    </div>
-                    <button class="analyze-btn" id="vid-btn" onclick="detectVideo()" disabled>🔍 Analyze Video</button>
-                </div>
-            </div>
-            <div class="loading-wrap" id="vid-loading"><div class="spinner"></div><p>Processing video frames (30-60s)...</p></div>
-            <div class="result-card" id="vid-result">
-                <div class="verdict-banner" id="vid-verdict-banner">
-                    <div class="verdict-emoji" id="vid-verdict-emoji"></div>
-                    <div class="verdict-text"><h2 id="vid-verdict-text"></h2><p id="vid-verdict-sub"></p></div>
-                </div>
-                <div class="gauge-wrap">
-                    <div class="gauge-label">Deepfake Score</div>
-                    <div class="gauge-bar-bg"><div class="gauge-bar" id="vid-gauge" style="width:0%"></div></div>
-                    <div class="gauge-score" id="vid-score"></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-box"><h4>🎞️ Frames Analyzed</h4><p><span id="vid-frames" style="font-size:1.3rem;font-weight:800;"></span></p></div>
-                    <div class="info-box"><h4>⚠️ Max Deepfake Score</h4><p><span id="vid-max" style="font-size:1.3rem;font-weight:800;"></span></p></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VOICE TAB -->
-        <div class="tab-content" id="tab-voice">
-            <div class="input-card">
-                <div class="input-card-header">
-                    <span>🎙️ Voice News Check</span>
-                    <span>English + supported Indian languages</span>
-                </div>
-                <div class="voice-container">
-                    <div class="voice-orb" id="voice-orb">🎙️</div>
-                    <div class="voice-status" id="voice-status">Tap once to start voice detection</div>
-                    <div class="voice-transcript" id="voice-transcript"></div>
-                    <div class="voice-response" id="voice-response">Your result will appear here...</div>
-                    <button class="voice-hold-btn" id="voice-hold-btn" onclick="toggleVoiceListening()">
-                        🎙️ Start listening
-                    </button>
-                    <div class="voice-tip">Works best in Chrome · Hindi (`hi-IN`) speech input</div>
+            <div class="feedback-bar" id="feedback-bar" style="display:none;">
+                <div><div class="feedback-label">Was this analysis helpful?</div><div class="feedback-msg" id="feedback-msg"></div></div>
+                <div class="feedback-btns">
+                    <button class="fb-btn fb-btn-up" id="fb-up" onclick="submitFeedback('helpful')">👍 Helpful</button>
+                    <button class="fb-btn fb-btn-down" id="fb-down" onclick="submitFeedback('not_helpful')">👎 Not Helpful</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- RIGHT PANEL -->
-    <div class="right-panel">
-        <h3>📊 Quick Stats</h3>
-        <div class="stat-grid">
-            <div class="stat-box"><div class="stat-n">44K+</div><div class="stat-l">Articles Trained</div></div>
-            <div class="stat-box"><div class="stat-n">95%</div><div class="stat-l">Accuracy</div></div>
-            <div class="stat-box"><div class="stat-n">12+</div><div class="stat-l">Languages</div></div>
-            <div class="stat-box"><div class="stat-n">3-in-1</div><div class="stat-l">Detection Modes</div></div>
+    <!-- BULK TAB -->
+    <div class="tab-content" id="tab-bulk">
+        <div class="input-card">
+            <div class="input-card-header"><span>Bulk Analysis</span><span>Up to 10 claims</span></div>
+            <textarea class="main-input" id="bulk_text" placeholder="Paste one claim per line..."></textarea>
+            <div class="action-bar"><div class="action-bar-left"><span class="action-chip">Batch Scan</span><span class="action-chip">Same AI Pipeline</span></div><button class="analyze-btn" onclick="detectBulk()">Analyze Batch</button></div>
         </div>
-
-        <div class="right-divider"></div>
-        <h3>🔍 Real vs Fake</h3>
-        <div class="compare-card real-c">
-            <div class="compare-title real-t">✅ Real News Signs</div>
-            <div class="compare-item"><span class="ci">✓</span> Verified sources (NDTV, BBC)</div>
-            <div class="compare-item"><span class="ci">✓</span> Consistent across outlets</div>
-            <div class="compare-item"><span class="ci">✓</span> Natural, calm language</div>
-            <div class="compare-item"><span class="ci">✓</span> Author & date mentioned</div>
-        </div>
-        <div class="compare-card fake-c">
-            <div class="compare-title fake-t">❌ Fake News Signs</div>
-            <div class="compare-item"><span class="ci">✗</span> Unknown/sketchy sources</div>
-            <div class="compare-item"><span class="ci">✗</span> Sensational, clickbait tone</div>
-            <div class="compare-item"><span class="ci">✗</span> No author or date</div>
-            <div class="compare-item"><span class="ci">✗</span> Old images out of context</div>
-        </div>
-
-        <div class="right-divider"></div>
-        <h3>💡 Tips</h3>
-        <div class="tip-card">
-            <h4>🔗 URL Check</h4>
-            <p>Paste a news URL to auto-extract and analyze the article content.</p>
-        </div>
-        <div class="tip-card">
-            <h4>🌐 Multi-language</h4>
-            <p>English and supported Indian languages are auto-detected and translated for analysis.</p>
-        </div>
-        <div class="tip-card">
-            <h4>👍 Feedback</h4>
-            <p>After analysis, rate the result to help improve accuracy.</p>
-        </div>
-
-        <div class="right-divider"></div>
-        <a href="/chatbot" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:var(--p3);border-radius:12px;padding:12px;text-decoration:none;font-size:0.82rem;font-weight:700;transition:all 0.2s;margin-bottom:8px;">🤖 Open FakeBot Chat</a>
-        <a href="/voice" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);color:#2dd4bf;border-radius:12px;padding:12px;text-decoration:none;font-size:0.82rem;font-weight:700;transition:all 0.2s;">🎙️ Voice Mode (Full Page)</a>
+        <div class="loading-wrap" id="bulk-loading"><div class="spinner"></div><p>Analyzing batch...</p></div>
+        <div class="result-card" id="bulk-result"><div class="tool-list" id="bulk-list"></div></div>
     </div>
+
+    <!-- COMPARE TAB -->
+    <div class="tab-content" id="tab-compare">
+        <div class="input-card">
+            <div class="input-card-header"><span>Comparison Tool</span><span>Claim A vs Claim B</span></div>
+            <textarea class="main-input" id="claim_a" placeholder="Claim A"></textarea>
+            <textarea class="main-input" id="claim_b" placeholder="Claim B" style="border-top:1px solid var(--glass-border);"></textarea>
+            <div class="action-bar"><div class="action-bar-left"><span class="action-chip">Credibility Delta</span><span class="action-chip">Side-by-side Verdict</span></div><button class="analyze-btn" onclick="compareClaims()">Compare Claims</button></div>
+        </div>
+        <div class="loading-wrap" id="compare-loading"><div class="spinner"></div><p>Comparing claims...</p></div>
+        <div class="result-card" id="compare-result"><div class="tool-grid" id="compare-grid"></div></div>
+    </div>
+
+    <!-- CLICKBAIT TAB -->
+    <div class="tab-content" id="tab-clickbait">
+        <div class="input-card">
+            <div class="input-card-header"><span>Clickbait Detector</span><span>Headline + URL signals</span></div>
+            <textarea class="main-input" id="clickbait_headline" placeholder="Paste a headline, WhatsApp forward title, or short post..."></textarea>
+            <div class="url-input-wrap"><span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">Optional URL:</span><input class="url-input" type="text" id="clickbait_url" placeholder="https://example.com/article"></div>
+            <div class="action-bar"><div class="action-bar-left"><span class="action-chip">Sensational Tone</span><span class="action-chip">Urgency Phrases</span></div><button class="analyze-btn" onclick="detectClickbait()">Score Headline</button></div>
+        </div>
+        <div class="loading-wrap" id="clickbait-loading"><div class="spinner"></div><p>Checking headline signals...</p></div>
+        <div class="result-card" id="clickbait-result"><div class="tool-grid" id="clickbait-grid"></div></div>
+    </div>
+
+    <!-- IMAGE TAB -->
+    <div class="tab-content" id="tab-image">
+        <div class="input-card">
+            <div class="input-card-header"><span>🖼️ Upload Image</span><span>Max 10MB · JPG/PNG/WEBP</span></div>
+            <label class="upload-area" id="img-upload">
+                <input type="file" id="img-input" accept="image/*" onchange="handleImg(event)">
+                <div class="upload-icon">🖼️</div><h3>Drop image here or click to browse</h3>
+                <p>Deepfake & AI-generated image detection via Sightengine</p>
+            </label>
+            <div class="preview-wrap" id="img-preview-wrap"><img id="img-preview" src="" alt="Preview"><div class="preview-name" id="img-name"></div></div>
+            <div class="action-bar"><div class="action-bar-left"><span class="action-chip">🤖 Sightengine</span><span class="action-chip">👤 Face Analysis</span><span class="action-chip">🎭 Deepfake</span></div><button class="analyze-btn" id="img-btn" onclick="detectImage()" disabled>🔍 Analyze Image</button></div>
+        </div>
+        <div class="loading-wrap" id="img-loading"><div class="spinner"></div><p>Scanning image for deepfakes...</p></div>
+        <div class="result-card" id="img-result">
+            <div class="verdict-banner" id="img-verdict-banner"><div class="verdict-emoji" id="img-verdict-emoji"></div><div class="verdict-text"><h2 id="img-verdict-text"></h2><p id="img-verdict-sub"></p></div></div>
+            <div class="gauge-wrap"><div class="gauge-label">AI Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="img-gauge" style="width:0%"></div></div><div class="gauge-score" id="img-score"></div></div>
+            <div class="info-row">
+                <div class="info-box"><h4>🔍 Sightengine Verdict</h4><p id="img-se-verdict"></p><p id="img-se-score" style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);font-family:'DM Mono',monospace;"></p></div>
+                <div class="info-box"><h4>ℹ️ About Deepfake Detection</h4><p style="font-size:0.82rem;color:var(--text-muted);">Frame-by-frame analysis using AI to detect manipulated faces and AI-generated content.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIDEO TAB -->
+    <div class="tab-content" id="tab-video">
+        <div class="input-card">
+            <div class="input-card-header"><span>🎥 Upload Video</span><span>Max 50MB · MP4/MOV/AVI</span></div>
+            <label class="upload-area" id="vid-upload">
+                <input type="file" id="vid-input" accept="video/*" onchange="handleVid(event)">
+                <div class="upload-icon">🎥</div><h3>Drop video here or click to browse</h3>
+                <p>Frame-by-frame deepfake & face-swap detection</p>
+            </label>
+            <div class="preview-wrap" id="vid-preview-wrap"><video id="vid-preview" controls></video><div class="preview-name" id="vid-name"></div></div>
+            <div class="action-bar"><div class="action-bar-left"><span class="action-chip">🎞️ Frame Analysis</span><span class="action-chip">🎭 Face-Swap</span><span class="action-chip">📁 50MB Max</span></div><button class="analyze-btn" id="vid-btn" onclick="detectVideo()" disabled>🔍 Analyze Video</button></div>
+        </div>
+        <div class="loading-wrap" id="vid-loading"><div class="spinner"></div><p>Processing video frames (30-60s)...</p></div>
+        <div class="result-card" id="vid-result">
+            <div class="verdict-banner" id="vid-verdict-banner"><div class="verdict-emoji" id="vid-verdict-emoji"></div><div class="verdict-text"><h2 id="vid-verdict-text"></h2><p id="vid-verdict-sub"></p></div></div>
+            <div class="gauge-wrap"><div class="gauge-label">Deepfake Score</div><div class="gauge-bar-bg"><div class="gauge-bar" id="vid-gauge" style="width:0%"></div></div><div class="gauge-score" id="vid-score"></div></div>
+            <div class="info-row">
+                <div class="info-box"><h4>🎞️ Frames Analyzed</h4><p><span id="vid-frames" style="font-size:1.3rem;font-weight:800;"></span></p></div>
+                <div class="info-box"><h4>⚠️ Max Deepfake Score</h4><p><span id="vid-max" style="font-size:1.3rem;font-weight:800;"></span></p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VOICE TAB -->
+    <div class="tab-content" id="tab-voice">
+        <div class="input-card">
+            <div class="input-card-header"><span>🎙️ Voice News Check</span><span>English + supported Indian languages</span></div>
+            <div class="voice-container">
+                <div class="voice-orb" id="voice-orb">🎙️</div>
+                <div class="voice-status" id="voice-status">Tap once to start voice detection</div>
+                <div class="voice-transcript" id="voice-transcript"></div>
+                <div class="voice-response" id="voice-response">Your result will appear here...</div>
+                <button class="voice-hold-btn" id="voice-hold-btn" onclick="toggleVoiceListening()">🎙️ Start listening</button>
+                <div class="voice-tip">Works best in Chrome · Click orb or button to toggle · Auto-resumes on tab switch</div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <h3>📊 Quick Stats</h3>
+    <div class="stat-grid">
+        <div class="stat-box"><div class="stat-n">44K+</div><div class="stat-l">Articles Trained</div></div>
+        <div class="stat-box"><div class="stat-n">95%</div><div class="stat-l">Accuracy</div></div>
+        <div class="stat-box"><div class="stat-n">12+</div><div class="stat-l">Languages</div></div>
+        <div class="stat-box"><div class="stat-n">3-in-1</div><div class="stat-l">Detection Modes</div></div>
+    </div>
+    <div class="right-divider"></div>
+    <h3>🔍 Real vs Fake</h3>
+    <div class="compare-card real-c">
+        <div class="compare-title real-t">✅ Real News Signs</div>
+        <div class="compare-item"><span class="ci">✓</span> Verified sources (NDTV, BBC)</div>
+        <div class="compare-item"><span class="ci">✓</span> Consistent across outlets</div>
+        <div class="compare-item"><span class="ci">✓</span> Natural, calm language</div>
+        <div class="compare-item"><span class="ci">✓</span> Author & date mentioned</div>
+    </div>
+    <div class="compare-card fake-c">
+        <div class="compare-title fake-t">❌ Fake News Signs</div>
+        <div class="compare-item"><span class="ci">✗</span> Unknown/sketchy sources</div>
+        <div class="compare-item"><span class="ci">✗</span> Sensational, clickbait tone</div>
+        <div class="compare-item"><span class="ci">✗</span> No author or date</div>
+        <div class="compare-item"><span class="ci">✗</span> Old images out of context</div>
+    </div>
+    <div class="right-divider"></div>
+    <h3>💡 Tips</h3>
+    <div class="tip-card"><h4>🔗 URL Check</h4><p>Paste a news URL to auto-extract and analyze the article content.</p></div>
+    <div class="tip-card"><h4>🌐 Multi-language</h4><p>English and supported Indian languages are auto-detected and translated for analysis.</p></div>
+    <div class="tip-card"><h4>👍 Feedback</h4><p>After analysis, rate the result to help improve accuracy.</p></div>
+    <div class="right-divider"></div>
+    <a href="/chatbot" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:var(--p3);border-radius:12px;padding:12px;text-decoration:none;font-size:0.82rem;font-weight:700;transition:all 0.2s;margin-bottom:8px;">🤖 Open FakeBot Chat</a>
+    <a href="/voice" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);color:#2dd4bf;border-radius:12px;padding:12px;text-decoration:none;font-size:0.82rem;font-weight:700;transition:all 0.2s;">🎙️ Voice Mode (Full Page)</a>
+  </div>
 </div>
 
 <script>
-    // ── GLOBAL STATE ──────────────────────────────────────────────────────────
-    let _lastResult = {};   // stores last detection result for feedback & PDF
+    let _lastResult = {};
 
-    // ── MODE SWITCHING ────────────────────────────────────────────────────────
+    // ── MODE SWITCHING ─────────────────────────────────────────────────────────
     function setMode(mode) {
         if (mode !== 'voice') pauseVoiceForModeSwitch();
         ['text','bulk','compare','clickbait','image','video','voice'].forEach(m => {
@@ -695,18 +434,15 @@
         return false;
     }
 
-    // ── TEXT DETECTION ────────────────────────────────────────────────────────
+    // ── TEXT DETECTION ─────────────────────────────────────────────────────────
     function detectText() {
         const text = document.getElementById('news_text').value.trim();
         const url  = document.getElementById('news_url').value.trim();
         if (!text && !url) { alert('Please enter news text or URL!'); return; }
-
         const btn = document.querySelector('#tab-text .analyze-btn');
         btn.disabled = true; btn.textContent = '⏳ Analyzing...';
         document.getElementById('text-loading').classList.add('show');
         document.getElementById('text-result').classList.remove('show');
-
-        // Reset feedback bar
         document.getElementById('feedback-bar').style.display = 'none';
         document.getElementById('result-actions').style.display = 'none';
         document.getElementById('feedback-msg').textContent = '';
@@ -714,402 +450,142 @@
         document.getElementById('fb-down').classList.remove('active');
         document.getElementById('fb-up').disabled = false;
         document.getElementById('fb-down').disabled = false;
-
         const fd = new FormData();
-        fd.append('news_text', text);
-        fd.append('news_url', url);
-
+        fd.append('news_text', text); fd.append('news_url', url);
         fetch('/detect', { method: 'POST', body: fd })
           .then(r => r.json())
           .then(data => {
             btn.disabled = false; btn.textContent = '🔍 Analyze Now';
             document.getElementById('text-loading').classList.remove('show');
             if (data.error) { alert(data.error); return; }
-
-            // Store result for feedback & PDF
-            _lastResult = {
-                verdict:          data.verdict,
-                credibility_score: data.credibility_score,
-                confidence:        data.confidence,
-                share_id:          data.share_id,
-                input_text:        data.input_text,
-                reason:            data.gemini_reason,
-                facts:             data.gemini_facts,
-                detected_lang:     data.detected_lang,
-                fact_results:      data.fact_results,
-                source_label:      data.reputation?.label || 'N/A',
-                share_url:         data.share_url,
-            };
-
+            _lastResult = { verdict: data.verdict, credibility_score: data.credibility_score, confidence: data.confidence, share_id: data.share_id, input_text: data.input_text, reason: data.gemini_reason, facts: data.gemini_facts, detected_lang: data.detected_lang, fact_results: data.fact_results, source_label: data.reputation?.label || 'N/A', share_url: data.share_url };
             const isReal = data.verdict === 'REAL';
-            const banner = document.getElementById('verdict-banner');
-            banner.className = 'verdict-banner ' + (isReal ? 'real' : 'fake');
+            document.getElementById('verdict-banner').className = 'verdict-banner ' + (isReal ? 'real' : 'fake');
             document.getElementById('verdict-emoji').textContent = isReal ? '✅' : '❌';
             document.getElementById('verdict-text').textContent  = isReal ? 'REAL NEWS' : 'FAKE NEWS';
             document.getElementById('verdict-sub').textContent   = 'Confidence: ' + data.confidence + '%';
-
             const score = data.credibility_score;
-            const bar   = document.getElementById('gauge-bar');
-            bar.style.background = isReal
-                ? 'linear-gradient(90deg,#10b981,#34d399)'
-                : 'linear-gradient(90deg,#ef4444,#f87171)';
+            const bar = document.getElementById('gauge-bar');
+            bar.style.background = isReal ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#ef4444,#f87171)';
             setTimeout(() => { bar.style.width = score + '%'; }, 100);
             const scoreEl = document.getElementById('gauge-score');
-            scoreEl.textContent = score + '/100';
-            scoreEl.style.color = isReal ? '#34d399' : '#f87171';
-
-            // AI reason
-            if (data.gemini_reason) {
-                document.getElementById('ai-reason').textContent = data.gemini_reason;
-                const fe = document.getElementById('ai-facts');
-                fe.innerHTML = '';
-                (data.gemini_facts||[]).forEach(f => { fe.innerHTML += `<div class="fact-item">${f}</div>`; });
-                document.getElementById('ai-box').style.display = 'block';
-            }
-            // Language
-            if (data.detected_lang && data.detected_lang !== 'English') {
-                document.getElementById('lang-name').textContent = data.detected_lang;
-                document.getElementById('lang-box').style.display = 'block';
-            }
-            // Source
-            if (data.reputation && data.reputation.found) {
-                const rep = data.reputation;
-                const sl  = document.getElementById('source-label');
-                sl.textContent = rep.label;
-                sl.className   = 'source-badge ' + (rep.tier===1?'source-green':rep.tier===2?'source-yellow':'source-red');
-                document.getElementById('source-desc').textContent = rep.desc;
-                document.getElementById('source-box').style.display = 'block';
-            }
-            // Indian facts
-            if (data.indian_facts && data.indian_facts.length > 0) {
-                const el = document.getElementById('india-facts');
-                el.innerHTML = '';
-                data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; });
-                document.getElementById('india-box').style.display = 'block';
-            }
-            // Fact check
-            if (data.fact_results && data.fact_results.length > 0) {
-                const el = document.getElementById('factcheck-list');
-                el.innerHTML = '';
-                data.fact_results.forEach(i => { el.innerHTML += `<div class="fact-item">${i.text} <strong>[${i.rating}]</strong></div>`; });
-                document.getElementById('factcheck-box').style.display = 'block';
-            }
-            // Cricket
-            if (data.cricket_scores && data.cricket_scores.length > 0) {
-                const el = document.getElementById('cricket-list');
-                el.innerHTML = '';
-                data.cricket_scores.forEach(m => {
-                    el.innerHTML += `<div class="cricket-match"><h4>🏏 ${m.team1} vs ${m.team2}</h4><div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div><div class="cricket-status">${m.status} • ${m.seriesName}</div></div>`;
-                });
-                document.getElementById('cricket-box').style.display = 'block';
-            }
-
-            // ★ Show action buttons + feedback bar
+            scoreEl.textContent = score + '/100'; scoreEl.style.color = isReal ? '#34d399' : '#f87171';
+            if (data.gemini_reason) { document.getElementById('ai-reason').textContent = data.gemini_reason; const fe = document.getElementById('ai-facts'); fe.innerHTML = ''; (data.gemini_facts||[]).forEach(f => { fe.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('ai-box').style.display = 'block'; }
+            if (data.detected_lang && data.detected_lang !== 'English') { document.getElementById('lang-name').textContent = data.detected_lang; document.getElementById('lang-box').style.display = 'block'; }
+            if (data.reputation && data.reputation.found) { const rep = data.reputation; const sl = document.getElementById('source-label'); sl.textContent = rep.label; sl.className = 'source-badge ' + (rep.tier===1?'source-green':rep.tier===2?'source-yellow':'source-red'); document.getElementById('source-desc').textContent = rep.desc; document.getElementById('source-box').style.display = 'block'; }
+            if (data.indian_facts && data.indian_facts.length > 0) { const el = document.getElementById('india-facts'); el.innerHTML = ''; data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('india-box').style.display = 'block'; }
+            if (data.fact_results && data.fact_results.length > 0) { const el = document.getElementById('factcheck-list'); el.innerHTML = ''; data.fact_results.forEach(i => { el.innerHTML += `<div class="fact-item">${i.text} <strong>[${i.rating}]</strong></div>`; }); document.getElementById('factcheck-box').style.display = 'block'; }
+            if (data.cricket_scores && data.cricket_scores.length > 0) { const el = document.getElementById('cricket-list'); el.innerHTML = ''; data.cricket_scores.forEach(m => { el.innerHTML += `<div class="cricket-match"><h4>🏏 ${m.team1} vs ${m.team2}</h4><div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div><div class="cricket-status">${m.status} • ${m.seriesName}</div></div>`; }); document.getElementById('cricket-box').style.display = 'block'; }
             document.getElementById('result-actions').style.display = 'flex';
             document.getElementById('feedback-bar').style.display = 'flex';
-
             document.getElementById('text-result').classList.add('show');
-        })
-        .catch(() => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Now';
-            document.getElementById('text-loading').classList.remove('show');
-            alert('Error connecting to server!');
-        });
+        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Now'; document.getElementById('text-loading').classList.remove('show'); alert('Error connecting to server!'); });
     }
 
-    // ── ★ FEEDBACK ────────────────────────────────────────────────────────────
     async function submitFeedback(type) {
-        const upBtn   = document.getElementById('fb-up');
-        const downBtn = document.getElementById('fb-down');
-        const msg     = document.getElementById('feedback-msg');
-
-        upBtn.disabled   = true;
-        downBtn.disabled = true;
-
-        if (type === 'helpful') upBtn.classList.add('active');
-        else downBtn.classList.add('active');
-
-        try {
-            const res  = await fetch('/feedback', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    feedback:          type,
-                    share_id:          _lastResult.share_id,
-                    verdict:           _lastResult.verdict,
-                    credibility_score: _lastResult.credibility_score,
-                    input_text:        _lastResult.input_text,
-                })
-            });
-            const data = await res.json();
-            msg.textContent = data.message || 'Feedback recorded! ✓';
-        } catch(e) {
-            msg.textContent = 'Could not save feedback.';
-        }
+        const upBtn = document.getElementById('fb-up'), downBtn = document.getElementById('fb-down'), msg = document.getElementById('feedback-msg');
+        upBtn.disabled = downBtn.disabled = true;
+        if (type === 'helpful') upBtn.classList.add('active'); else downBtn.classList.add('active');
+        try { const res = await fetch('/feedback', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ feedback: type, share_id: _lastResult.share_id, verdict: _lastResult.verdict, credibility_score: _lastResult.credibility_score, input_text: _lastResult.input_text }) }); const data = await res.json(); msg.textContent = data.message || 'Feedback recorded! ✓'; } catch(e) { msg.textContent = 'Could not save feedback.'; }
     }
 
-    // ── ★ SHARE RESULT ────────────────────────────────────────────────────────
     function shareResult() {
         if (!_lastResult.share_url) { alert('No result to share!'); return; }
         const fullUrl = window.location.origin + _lastResult.share_url;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(fullUrl)
-                .then(() => alert('✅ Share link copied!\n' + fullUrl))
-                .catch(() => prompt('Copy this link:', fullUrl));
-        } else {
-            prompt('Copy this link:', fullUrl);
-        }
+        if (navigator.clipboard) { navigator.clipboard.writeText(fullUrl).then(() => alert('✅ Share link copied!\n' + fullUrl)).catch(() => prompt('Copy this link:', fullUrl)); } else { prompt('Copy this link:', fullUrl); }
     }
 
-    // ── ★ DOWNLOAD PDF ────────────────────────────────────────────────────────
     async function downloadPDF() {
         if (!_lastResult.verdict) { alert('Run analysis first!'); return; }
-        try {
-            const res = await fetch('/download-pdf', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(_lastResult)
-            });
-            const blob = await res.blob();
-            const url  = URL.createObjectURL(blob);
-            const a    = document.createElement('a');
-            a.href     = url;
-            a.download = 'fakenews_report.pdf';
-            a.click();
-            URL.revokeObjectURL(url);
-        } catch(e) {
-            alert('PDF download failed!');
-        }
+        try { const res = await fetch('/download-pdf', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(_lastResult) }); const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'fakenews_report.pdf'; a.click(); URL.revokeObjectURL(url); } catch(e) { alert('PDF download failed!'); }
     }
 
-    // ── IMAGE DETECTION ───────────────────────────────────────────────────────
-    function verdictPill(verdict, score) {
-        const cls = verdict === 'REAL' ? 'risk-real' : 'risk-fake';
-        return `<span class="risk-pill ${cls}">${verdict} ${score}/100</span>`;
-    }
-
-    function htmlSafe(value) {
-        return String(value || '').replace(/[&<>"']/g, ch => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[ch]));
-    }
+    function verdictPill(v, s) { return `<span class="risk-pill ${v==='REAL'?'risk-real':'risk-fake'}">${v} ${s}/100</span>`; }
+    function htmlSafe(v) { return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
     async function detectBulk() {
-        const raw = document.getElementById('bulk_text').value.trim();
-        if (!raw) { alert('Paste one claim per line.'); return; }
-        document.getElementById('bulk-loading').classList.add('show');
-        document.getElementById('bulk-result').classList.remove('show');
-        try {
-            const res = await fetch('/bulk-detect', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ items: raw.split(/\n+/).map(x => x.trim()).filter(Boolean) })
-            });
-            const data = await res.json();
-            const list = document.getElementById('bulk-list');
-            list.innerHTML = '';
-            (data.results || []).forEach(item => {
-                if (item.error) {
-                    list.innerHTML += `<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">${htmlSafe(item.error)}</div></div><span class="risk-pill risk-mid">ERROR</span></div>`;
-                } else {
-                    list.innerHTML += `<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">Confidence ${item.confidence}% · Clickbait ${item.clickbait?.score || 0}/100</div></div>${verdictPill(item.verdict, item.credibility_score)}</div>`;
-                }
-            });
-            document.getElementById('bulk-result').classList.add('show');
-        } catch(e) {
-            alert('Bulk analysis failed.');
-        } finally {
-            document.getElementById('bulk-loading').classList.remove('show');
-        }
+        const raw = document.getElementById('bulk_text').value.trim(); if (!raw) { alert('Paste one claim per line.'); return; }
+        document.getElementById('bulk-loading').classList.add('show'); document.getElementById('bulk-result').classList.remove('show');
+        try { const res = await fetch('/bulk-detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:raw.split(/\n+/).map(x=>x.trim()).filter(Boolean)})}); const data=await res.json(); const list=document.getElementById('bulk-list'); list.innerHTML=''; (data.results||[]).forEach(item=>{if(item.error){list.innerHTML+=`<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">${htmlSafe(item.error)}</div></div><span class="risk-pill risk-mid">ERROR</span></div>`;}else{list.innerHTML+=`<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">Confidence ${item.confidence}% · Clickbait ${item.clickbait?.score||0}/100</div></div>${verdictPill(item.verdict,item.credibility_score)}</div>`;}}); document.getElementById('bulk-result').classList.add('show'); } catch(e){alert('Bulk analysis failed.');} finally{document.getElementById('bulk-loading').classList.remove('show');}
     }
 
     async function compareClaims() {
-        const claimA = document.getElementById('claim_a').value.trim();
-        const claimB = document.getElementById('claim_b').value.trim();
-        if (!claimA || !claimB) { alert('Enter both claims.'); return; }
-        document.getElementById('compare-loading').classList.add('show');
-        document.getElementById('compare-result').classList.remove('show');
-        try {
-            const res = await fetch('/compare-detect', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ claim_a: claimA, claim_b: claimB })
-            });
-            const data = await res.json();
-            if (data.error) { alert(data.error); return; }
-            document.getElementById('compare-grid').innerHTML = `
-                <div class="tool-card"><h4>Claim A</h4><strong>${data.claim_a.verdict} · ${data.claim_a.credibility_score}/100</strong><p>${htmlSafe(data.claim_a.gemini_reason || data.claim_a.input_text)}</p></div>
-                <div class="tool-card"><h4>Claim B</h4><strong>${data.claim_b.verdict} · ${data.claim_b.credibility_score}/100</strong><p>${htmlSafe(data.claim_b.gemini_reason || data.claim_b.input_text)}</p></div>
-                <div class="tool-card"><h4>Credibility Delta</h4><strong>${data.delta} points</strong><p>${data.summary}</p></div>
-                <div class="tool-card"><h4>Clickbait Risk</h4><strong>A ${data.claim_a.clickbait.score}/100 · B ${data.claim_b.clickbait.score}/100</strong><p>Use this with the verdict to spot true-but-sensational framing.</p></div>`;
-            document.getElementById('compare-result').classList.add('show');
-        } catch(e) {
-            alert('Comparison failed.');
-        } finally {
-            document.getElementById('compare-loading').classList.remove('show');
-        }
+        const a=document.getElementById('claim_a').value.trim(),b=document.getElementById('claim_b').value.trim(); if(!a||!b){alert('Enter both claims.');return;}
+        document.getElementById('compare-loading').classList.add('show'); document.getElementById('compare-result').classList.remove('show');
+        try{const res=await fetch('/compare-detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({claim_a:a,claim_b:b})});const data=await res.json();if(data.error){alert(data.error);return;}document.getElementById('compare-grid').innerHTML=`<div class="tool-card"><h4>Claim A</h4><strong>${data.claim_a.verdict} · ${data.claim_a.credibility_score}/100</strong><p>${htmlSafe(data.claim_a.gemini_reason||data.claim_a.input_text)}</p></div><div class="tool-card"><h4>Claim B</h4><strong>${data.claim_b.verdict} · ${data.claim_b.credibility_score}/100</strong><p>${htmlSafe(data.claim_b.gemini_reason||data.claim_b.input_text)}</p></div><div class="tool-card"><h4>Credibility Delta</h4><strong>${data.delta} points</strong><p>${data.summary}</p></div><div class="tool-card"><h4>Clickbait Risk</h4><strong>A ${data.claim_a.clickbait.score}/100 · B ${data.claim_b.clickbait.score}/100</strong><p>Use this with the verdict to spot true-but-sensational framing.</p></div>`;document.getElementById('compare-result').classList.add('show');}catch(e){alert('Comparison failed.');}finally{document.getElementById('compare-loading').classList.remove('show');}
     }
 
     async function detectClickbait() {
-        const headline = document.getElementById('clickbait_headline').value.trim();
-        const url = document.getElementById('clickbait_url').value.trim();
-        if (!headline && !url) { alert('Enter a headline or URL.'); return; }
-        document.getElementById('clickbait-loading').classList.add('show');
-        document.getElementById('clickbait-result').classList.remove('show');
-        try {
-            const res = await fetch('/clickbait-detect', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ headline, url })
-            });
-            const data = await res.json();
-            if (data.error) { alert(data.error); return; }
-            const cls = data.score >= 70 ? 'risk-fake' : data.score >= 40 ? 'risk-mid' : 'risk-real';
-            document.getElementById('clickbait-grid').innerHTML = `
-                <div class="tool-card"><h4>Risk Score</h4><strong><span class="risk-pill ${cls}">${data.score}/100</span></strong><p>${data.label}</p></div>
-                <div class="tool-card"><h4>Signals Found</h4><p>${(data.signals || []).map(htmlSafe).join('<br>')}</p></div>`;
-            document.getElementById('clickbait-result').classList.add('show');
-        } catch(e) {
-            alert('Clickbait check failed.');
-        } finally {
-            document.getElementById('clickbait-loading').classList.remove('show');
-        }
+        const h=document.getElementById('clickbait_headline').value.trim(),u=document.getElementById('clickbait_url').value.trim(); if(!h&&!u){alert('Enter a headline or URL.');return;}
+        document.getElementById('clickbait-loading').classList.add('show'); document.getElementById('clickbait-result').classList.remove('show');
+        try{const res=await fetch('/clickbait-detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({headline:h,url:u})});const data=await res.json();if(data.error){alert(data.error);return;}const cls=data.score>=70?'risk-fake':data.score>=40?'risk-mid':'risk-real';document.getElementById('clickbait-grid').innerHTML=`<div class="tool-card"><h4>Risk Score</h4><strong><span class="risk-pill ${cls}">${data.score}/100</span></strong><p>${data.label}</p></div><div class="tool-card"><h4>Signals Found</h4><p>${(data.signals||[]).map(htmlSafe).join('<br>')}</p></div>`;document.getElementById('clickbait-result').classList.add('show');}catch(e){alert('Clickbait check failed.');}finally{document.getElementById('clickbait-loading').classList.remove('show');}
     }
 
     function handleImg(e) {
-        const file = e.target.files[0]; if (!file) return;
-        if (file.size > 10*1024*1024) { alert('Max 10MB!'); e.target.value=''; return; }
-        const reader = new FileReader();
-        reader.onload = ev => {
-            document.getElementById('img-preview').src = ev.target.result;
-            document.getElementById('img-preview-wrap').style.display = 'block';
-            document.getElementById('img-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
-            document.getElementById('img-btn').disabled = false;
-        };
-        reader.readAsDataURL(file);
-        document.getElementById('img-result').classList.remove('show');
+        const file=e.target.files[0];if(!file)return;if(file.size>10*1024*1024){alert('Max 10MB!');e.target.value='';return;}
+        const reader=new FileReader();reader.onload=ev=>{document.getElementById('img-preview').src=ev.target.result;document.getElementById('img-preview-wrap').style.display='block';document.getElementById('img-name').textContent='📁 '+file.name+' ('+(file.size/1024).toFixed(1)+' KB)';document.getElementById('img-btn').disabled=false;};reader.readAsDataURL(file);document.getElementById('img-result').classList.remove('show');
     }
 
     function detectImage() {
-        const fi = document.getElementById('img-input');
-        if (!fi.files[0]) { alert('Select an image!'); return; }
-        const btn = document.getElementById('img-btn');
-        btn.disabled = true; btn.textContent = '⏳ Analyzing...';
-        document.getElementById('img-loading').classList.add('show');
-        document.getElementById('img-result').classList.remove('show');
-        const fd = new FormData(); fd.append('image', fi.files[0]);
-        fetch('/detect-image', { method: 'POST', body: fd })
-          .then(r => r.json())
-          .then(data => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Image';
-            document.getElementById('img-loading').classList.remove('show');
-            if (data.error) { alert(data.error); return; }
-            const isFake = data.final_verdict.includes('FAKE') || data.final_verdict.includes('AI');
-            document.getElementById('img-verdict-banner').className = 'verdict-banner ' + (isFake ? 'fake' : 'real');
-            document.getElementById('img-verdict-emoji').textContent = isFake ? '⚠️' : '✅';
-            document.getElementById('img-verdict-text').textContent  = data.final_verdict;
-            document.getElementById('img-verdict-sub').textContent   = 'AI Score: ' + data.overall_score + '%';
-            const bar = document.getElementById('img-gauge');
-            bar.style.background = isFake ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
-            setTimeout(() => { bar.style.width = data.overall_score + '%'; }, 100);
-            const sc = document.getElementById('img-score');
-            sc.textContent = data.overall_score + '%'; sc.style.color = isFake ? '#f87171' : '#34d399';
-            if (data.sightengine) {
-                document.getElementById('img-se-verdict').textContent = data.sightengine.verdict;
-                document.getElementById('img-se-verdict').style.color = data.sightengine.is_fake ? '#f87171' : '#34d399';
-                document.getElementById('img-se-score').textContent   = 'AI Generated: ' + data.sightengine.ai_generated_score + '% | Confidence: ' + data.sightengine.confidence + '%';
-            }
-            document.getElementById('img-result').classList.add('show');
-        })
-        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Image'; document.getElementById('img-loading').classList.remove('show'); alert('Error!'); });
+        const fi=document.getElementById('img-input');if(!fi.files[0]){alert('Select an image!');return;}
+        const btn=document.getElementById('img-btn');btn.disabled=true;btn.textContent='⏳ Analyzing...';
+        document.getElementById('img-loading').classList.add('show');document.getElementById('img-result').classList.remove('show');
+        const fd=new FormData();fd.append('image',fi.files[0]);
+        fetch('/detect-image',{method:'POST',body:fd}).then(r=>r.json()).then(data=>{btn.disabled=false;btn.textContent='🔍 Analyze Image';document.getElementById('img-loading').classList.remove('show');if(data.error){alert(data.error);return;}const isFake=data.final_verdict.includes('FAKE')||data.final_verdict.includes('AI');document.getElementById('img-verdict-banner').className='verdict-banner '+(isFake?'fake':'real');document.getElementById('img-verdict-emoji').textContent=isFake?'⚠️':'✅';document.getElementById('img-verdict-text').textContent=data.final_verdict;document.getElementById('img-verdict-sub').textContent='AI Score: '+data.overall_score+'%';const bar=document.getElementById('img-gauge');bar.style.background=isFake?'linear-gradient(90deg,#ef4444,#f87171)':'linear-gradient(90deg,#10b981,#34d399)';setTimeout(()=>{bar.style.width=data.overall_score+'%';},100);const sc=document.getElementById('img-score');sc.textContent=data.overall_score+'%';sc.style.color=isFake?'#f87171':'#34d399';if(data.sightengine){document.getElementById('img-se-verdict').textContent=data.sightengine.verdict;document.getElementById('img-se-verdict').style.color=data.sightengine.is_fake?'#f87171':'#34d399';document.getElementById('img-se-score').textContent='AI Generated: '+data.sightengine.ai_generated_score+'% | Confidence: '+data.sightengine.confidence+'%';}document.getElementById('img-result').classList.add('show');}).catch(()=>{btn.disabled=false;btn.textContent='🔍 Analyze Image';document.getElementById('img-loading').classList.remove('show');alert('Error!');});
     }
 
-    // ── VIDEO DETECTION ───────────────────────────────────────────────────────
     function handleVid(e) {
-        const file = e.target.files[0]; if (!file) return;
-        if (file.size > 50*1024*1024) { alert('Max 50MB!'); e.target.value=''; return; }
-        document.getElementById('vid-preview').src = URL.createObjectURL(file);
-        document.getElementById('vid-preview-wrap').style.display = 'block';
-        document.getElementById('vid-name').textContent = '📁 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)';
-        document.getElementById('vid-btn').disabled = false;
-        document.getElementById('vid-result').classList.remove('show');
+        const file=e.target.files[0];if(!file)return;if(file.size>50*1024*1024){alert('Max 50MB!');e.target.value='';return;}
+        document.getElementById('vid-preview').src=URL.createObjectURL(file);document.getElementById('vid-preview-wrap').style.display='block';document.getElementById('vid-name').textContent='📁 '+file.name+' ('+(file.size/1024/1024).toFixed(1)+' MB)';document.getElementById('vid-btn').disabled=false;document.getElementById('vid-result').classList.remove('show');
     }
 
     function detectVideo() {
-        const fi = document.getElementById('vid-input');
-        if (!fi.files[0]) { alert('Select a video!'); return; }
-        const btn = document.getElementById('vid-btn');
-        btn.disabled = true; btn.textContent = '⏳ Analyzing (30-60s)...';
-        document.getElementById('vid-loading').classList.add('show');
-        document.getElementById('vid-result').classList.remove('show');
-        const fd = new FormData(); fd.append('video', fi.files[0]);
-        fetch('/detect-video', { method: 'POST', body: fd })
-          .then(r => r.json())
-          .then(data => {
-            btn.disabled = false; btn.textContent = '🔍 Analyze Video';
-            document.getElementById('vid-loading').classList.remove('show');
-            if (data.error) { alert(data.error); return; }
-            const isDF = data.final_verdict.includes('DEEPFAKE');
-            document.getElementById('vid-verdict-banner').className = 'verdict-banner ' + (isDF ? 'fake' : 'real');
-            document.getElementById('vid-verdict-emoji').textContent = isDF ? '⚠️' : '✅';
-            document.getElementById('vid-verdict-text').textContent  = data.final_verdict;
-            document.getElementById('vid-verdict-sub').textContent   = 'Deepfake Score: ' + data.overall_score + '%';
-            const bar = document.getElementById('vid-gauge');
-            bar.style.background = isDF ? 'linear-gradient(90deg,#ef4444,#f87171)' : 'linear-gradient(90deg,#10b981,#34d399)';
-            setTimeout(() => { bar.style.width = data.overall_score + '%'; }, 100);
-            const sc = document.getElementById('vid-score');
-            sc.textContent = data.overall_score + '%'; sc.style.color = isDF ? '#f87171' : '#34d399';
-            if (data.sightengine) {
-                document.getElementById('vid-frames').textContent = data.sightengine.frames_analyzed + ' frames';
-                document.getElementById('vid-frames').style.color = '#a78bfa';
-                document.getElementById('vid-max').textContent    = data.sightengine.max_deepfake_score + '%';
-                document.getElementById('vid-max').style.color    = isDF ? '#f87171' : '#34d399';
-            }
-            document.getElementById('vid-result').classList.add('show');
-        })
-        .catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Video'; document.getElementById('vid-loading').classList.remove('show'); alert('Error!'); });
+        const fi=document.getElementById('vid-input');if(!fi.files[0]){alert('Select a video!');return;}
+        const btn=document.getElementById('vid-btn');btn.disabled=true;btn.textContent='⏳ Analyzing (30-60s)...';
+        document.getElementById('vid-loading').classList.add('show');document.getElementById('vid-result').classList.remove('show');
+        const fd=new FormData();fd.append('video',fi.files[0]);
+        fetch('/detect-video',{method:'POST',body:fd}).then(r=>r.json()).then(data=>{btn.disabled=false;btn.textContent='🔍 Analyze Video';document.getElementById('vid-loading').classList.remove('show');if(data.error){alert(data.error);return;}const isDF=data.final_verdict.includes('DEEPFAKE');document.getElementById('vid-verdict-banner').className='verdict-banner '+(isDF?'fake':'real');document.getElementById('vid-verdict-emoji').textContent=isDF?'⚠️':'✅';document.getElementById('vid-verdict-text').textContent=data.final_verdict;document.getElementById('vid-verdict-sub').textContent='Deepfake Score: '+data.overall_score+'%';const bar=document.getElementById('vid-gauge');bar.style.background=isDF?'linear-gradient(90deg,#ef4444,#f87171)':'linear-gradient(90deg,#10b981,#34d399)';setTimeout(()=>{bar.style.width=data.overall_score+'%';},100);const sc=document.getElementById('vid-score');sc.textContent=data.overall_score+'%';sc.style.color=isDF?'#f87171':'#34d399';if(data.sightengine){document.getElementById('vid-frames').textContent=data.sightengine.frames_analyzed+' frames';document.getElementById('vid-frames').style.color='#a78bfa';document.getElementById('vid-max').textContent=data.sightengine.max_deepfake_score+'%';document.getElementById('vid-max').style.color=isDF?'#f87171':'#34d399';}document.getElementById('vid-result').classList.add('show');}).catch(()=>{btn.disabled=false;btn.textContent='🔍 Analyze Video';document.getElementById('vid-loading').classList.remove('show');alert('Error!');});
     }
 
-    // ── VOICE ─────────────────────────────────────────────────────────────────
-    let recognition;
-    let finalText = "";
-    let voiceResumePending = false;
-    let voiceStopReason = null;
+    // ── VOICE — FIXED: auto-resume when switching back to voice tab ────────────
+    let recognition       = null;
+    let finalText         = "";
+    let savedTranscript   = "";   // saves partial transcript during tab switch
+    let voiceResumePending  = false;
+    let voiceStopReason   = null;
     let voiceAwaitingStop = false;
 
     function setVoiceState(state, statusText) {
-        const orb = document.getElementById('voice-orb');
-        const btn = document.getElementById('voice-hold-btn');
+        const orb    = document.getElementById('voice-orb');
+        const btn    = document.getElementById('voice-hold-btn');
         const status = document.getElementById('voice-status');
-
         if (orb) {
             orb.className = 'voice-orb';
             if (state === 'listening') orb.classList.add('listening');
-            if (state === 'speaking') orb.classList.add('speaking');
+            if (state === 'speaking')  orb.classList.add('speaking');
         }
-
         if (btn) {
-            const listening = state === 'listening';
-            btn.classList.toggle('active', listening);
+            btn.classList.toggle('active', state === 'listening');
             btn.disabled = voiceAwaitingStop;
-            btn.textContent = listening
-                ? 'Stop listening'
-                : (voiceAwaitingStop ? 'Preparing mic...' : (voiceResumePending ? 'Resume listening' : 'Start listening'));
+            btn.textContent = state === 'listening' ? '🛑 Stop listening'
+                : voiceAwaitingStop    ? '⏳ Preparing...'
+                : voiceResumePending   ? '▶️ Resume listening'
+                : '🎙️ Start listening';
         }
-
         if (statusText !== undefined && status) status.textContent = statusText;
     }
 
     function setupRecognition() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) { document.getElementById('voice-status').textContent = "Please use Chrome for voice input."; return null; }
-        const r = new SR(); r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
-        r.onstart  = () => {
+        const r = new SR();
+        r.lang = 'hi-IN'; r.continuous = false; r.interimResults = true;
+
+        r.onstart = () => {
             if (recognition !== r) return;
-            finalText = "";
-            voiceAwaitingStop = false;
-            voiceResumePending = false;
-            voiceStopReason = null;
+            finalText = savedTranscript;   // restore saved partial transcript
+            savedTranscript = "";
+            voiceAwaitingStop = false; voiceResumePending = false; voiceStopReason = null;
             setVoiceState('listening', "Listening... Click again to stop.");
         };
         r.onresult = (e) => {
@@ -1121,126 +597,121 @@
             }
             document.getElementById('voice-transcript').textContent = finalText || interim;
         };
-        r.onend    = () => {
+        r.onend = () => {
             if (recognition !== r) return;
-            const stopReason = voiceStopReason;
-            recognition = null;
-            voiceAwaitingStop = false;
-            voiceStopReason = null;
+            const reason = voiceStopReason;
+            recognition = null; voiceAwaitingStop = false; voiceStopReason = null;
 
-            if (stopReason === 'tab-switch') {
+            if (reason === 'tab-switch') {
                 voiceResumePending = true;
-                setVoiceState('idle', "Voice paused. Tap Resume listening.");
+                setVoiceState('idle', "Voice paused — will auto-resume on return.");
                 return;
             }
-
             if (finalText.trim()) {
                 setVoiceState('idle', "Analyzing...");
                 sendVoiceToAI(finalText.trim());
                 return;
             }
-
-            setVoiceState('idle', stopReason === 'toggle-off' ? "Voice stopped." : "Nothing was heard. Please try again.");
+            setVoiceState('idle', reason === 'toggle-off' ? "Voice stopped." : "Nothing heard. Try again.");
         };
-        r.onerror  = (e) => {
+        r.onerror = (e) => {
             if (recognition !== r) return;
             if (e.error === 'aborted' && (voiceStopReason === 'toggle-off' || voiceStopReason === 'tab-switch')) {
-                const abortedByTabSwitch = voiceStopReason === 'tab-switch';
-                recognition = null;
-                voiceAwaitingStop = false;
-                voiceStopReason = null;
-                voiceResumePending = abortedByTabSwitch;
-                setVoiceState('idle', abortedByTabSwitch ? "Voice paused. Tap Resume listening." : "Voice stopped.");
+                const wasTab = voiceStopReason === 'tab-switch';
+                recognition = null; voiceAwaitingStop = false; voiceStopReason = null;
+                voiceResumePending = wasTab;
+                setVoiceState('idle', wasTab ? "Voice paused — will auto-resume on return." : "Voice stopped.");
                 return;
             }
-            recognition = null;
-            voiceAwaitingStop = false;
-            voiceStopReason = null;
+            recognition = null; voiceAwaitingStop = false; voiceStopReason = null;
             setVoiceState('idle', "Error: " + e.error);
         };
         return r;
     }
+
     function startListening() {
         if (recognition) return;
         recognition = setupRecognition();
         if (!recognition) return;
         try { recognition.start(); }
-        catch {
-            recognition = null;
-            setVoiceState('idle', "Could not start voice input. Please try again.");
-        }
+        catch { recognition = null; setVoiceState('idle', "Could not start. Try again."); }
     }
-    function stopListening(reason = 'toggle-off')  {
+
+    function stopListening(reason = 'toggle-off') {
         if (!recognition) {
-            setVoiceState('idle', reason === 'tab-switch' ? "Voice paused. Tap Resume listening." : "Voice stopped.");
+            if (reason === 'tab-switch') voiceResumePending = true;
+            setVoiceState('idle', reason === 'tab-switch' ? "Voice paused." : "Voice stopped.");
             return;
         }
         voiceStopReason = reason;
         if (reason === 'tab-switch') {
+            savedTranscript = finalText;   // save what was heard
             finalText = "";
             voiceAwaitingStop = true;
-            try { recognition.abort(); }
-            catch {}
-            return;
+            try { recognition.abort(); } catch {}
+        } else {
+            recognition.stop();
         }
-        recognition.stop();
     }
+
     function toggleVoiceListening() {
         if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
-        if (recognition) {
-            voiceResumePending = false;
-            stopListening('toggle-off');
-            return;
-        }
-        if (voiceAwaitingStop) {
-            setVoiceState('idle', "Preparing mic...");
-            return;
-        }
-        const resumingFromPause = voiceResumePending;
+        if (recognition) { voiceResumePending = false; stopListening('toggle-off'); return; }
+        if (voiceAwaitingStop) return;
         voiceResumePending = false;
-        if (!resumingFromPause) document.getElementById('voice-transcript').textContent = "";
         startListening();
     }
+
     function pauseVoiceForModeSwitch() {
         const wasSpeaking = Boolean(window.speechSynthesis && speechSynthesis.speaking);
         if (wasSpeaking) speechSynthesis.cancel();
         if (recognition) {
-            voiceResumePending = true;
             stopListening('tab-switch');
-            setVoiceState('idle', "Preparing mic...");
         } else if (wasSpeaking) {
             voiceResumePending = true;
-            setVoiceState('idle', "Voice paused. Tap Resume listening.");
+            setVoiceState('idle', "Voice paused.");
         }
     }
+
+    // ★ KEY FIX: auto-restart mic when user returns to voice tab
     function resumeVoiceAfterModeSwitch() {
         if (voiceAwaitingStop) {
-            setVoiceState('idle', "Preparing mic...");
+            // abort still in progress — wait and retry
+            setTimeout(resumeVoiceAfterModeSwitch, 150);
             return;
         }
-        if (!voiceResumePending) return;
-        setVoiceState('idle', "Voice paused. Tap Resume listening.");
+        if (!voiceResumePending) {
+            setVoiceState('idle', "Tap once to start voice detection");
+            return;
+        }
+        voiceResumePending = false;
+        setVoiceState('idle', "Resuming mic...");
+        setTimeout(() => startListening(), 250);
     }
+
     async function sendVoiceToAI(text) {
-        document.getElementById('voice-status').textContent   = "Analyzing...";
-        document.getElementById('voice-response').textContent = "...";
+        document.getElementById('voice-status').textContent    = "Analyzing...";
+        document.getElementById('voice-response').textContent  = "...";
         document.getElementById('voice-transcript').textContent = "You said: " + text;
         try {
             const res  = await fetch('/api/voice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }) });
             const data = await res.json();
             document.getElementById('voice-response').textContent = data.reply;
-            document.getElementById('voice-status').textContent   = "Analysis complete!";
+            document.getElementById('voice-status').textContent   = "Done! Tap to speak again.";
             speak(data.reply);
-        } catch { document.getElementById('voice-status').textContent = "Error — could not connect to the server."; }
+        } catch { document.getElementById('voice-status').textContent = "Error — could not connect."; }
     }
+
     function speak(text) {
         setVoiceState('speaking', "Speaking...");
-        const utter = new SpeechSynthesisUtterance(text); utter.lang = 'hi-IN'; utter.rate = 1.0;
-        utter.onend = () => { setVoiceState('idle', "Tap once to start voice detection"); };
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'hi-IN'; utter.rate = 1.0;
+        utter.onend = () => { setVoiceState('idle', "Tap to speak again."); };
         if (window.speechSynthesis) speechSynthesis.cancel();
         speechSynthesis.speak(utter);
     }
 
+    // Orb click = toggle
     document.getElementById('voice-orb').addEventListener('click', toggleVoiceListening);
     setVoiceState('idle', "Tap once to start voice detection");
 
