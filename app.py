@@ -1311,6 +1311,7 @@ def extension_manifest():
 #  QUIZ ROUTES
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/quiz')
+@login_required
 def quiz_page():
     return render_template('quiz.html')
 
@@ -1318,7 +1319,7 @@ def quiz_page():
 @login_required
 def quiz_generate():
     """Generate fresh quiz questions using Groq AI — unlimited, never repeat."""
-    data       = request.get_json()
+    data       = request.get_json(silent=True) or {}
     difficulty = data.get('difficulty', 'medium')
     count      = min(int(data.get('count', 10)), 15)
     category   = data.get('category', 'mixed')
@@ -1420,6 +1421,7 @@ def quiz_save_score():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/leaderboard')
+@login_required
 def leaderboard():
     try:
         db  = get_db()
@@ -1430,7 +1432,7 @@ def leaderboard():
                    COUNT(*) as games_played,
                    MAX(qs.streak) as best_streak
             FROM quiz_scores qs
-            LEFT JOIN users u ON qs.user_id = u.id
+            JOIN users u ON qs.user_id = u.id
             GROUP BY u.username
             ORDER BY best_score DESC
             LIMIT 20
