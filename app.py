@@ -1311,12 +1311,10 @@ def extension_manifest():
 #  QUIZ ROUTES
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/quiz')
-@login_required
 def quiz_page():
     return render_template('quiz.html')
 
 @app.route('/api/quiz/generate', methods=['POST'])
-@login_required
 def quiz_generate():
     """Generate fresh quiz questions using Groq AI — unlimited, never repeat."""
     data       = request.get_json(silent=True) or {}
@@ -1392,7 +1390,6 @@ Generate {count} questions now:"""
         return jsonify({'error': str(e)}), 500
 
 @app.route('/quiz/save-score', methods=['POST'])
-@login_required
 def quiz_save_score():
     data = request.get_json()
     try:
@@ -1411,7 +1408,7 @@ def quiz_save_score():
         """)
         cur.execute(
             "INSERT INTO quiz_scores (user_id, score, accuracy, streak, difficulty) VALUES (%s,%s,%s,%s,%s)",
-            (current_user.id, data.get('score',0), data.get('accuracy',0),
+            (current_user.id if current_user.is_authenticated else None, data.get('score',0), data.get('accuracy',0),
              data.get('streak',0), data.get('difficulty','easy'))
         )
         db.commit()
@@ -1421,7 +1418,6 @@ def quiz_save_score():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/leaderboard')
-@login_required
 def leaderboard():
     try:
         db  = get_db()
