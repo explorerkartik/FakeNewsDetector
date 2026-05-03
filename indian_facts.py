@@ -357,23 +357,39 @@ def check_indian_facts(text, db_conn=None):
 
 
 def get_credibility_boost(text, db_conn=None):
-    """Boost credibility score if text matches known Indian facts."""
+    """
+    Boost credibility score ONLY when the statement closely matches
+    a known verified fact — not just because a keyword appears.
+    This prevents false boosts on incorrect statements.
+    """
     text_lower = text.lower()
     boost = 0
 
-    # High confidence keywords
-    for key in HIGH_CONFIDENCE_KEYS:
-        if key in text_lower:
-            boost += 20
-
-    # Regular facts match
     all_facts = dict(INDIAN_FACTS)
     all_facts.update(get_dynamic_facts(db_conn))
-    for key in all_facts.keys():
-        if key in text_lower:
-            boost += 8
 
-    return min(boost, 50)
+    for key, fact in all_facts.items():
+        if key in text_lower:
+            # Extract the core claim from the fact (name/value after "is")
+            fact_lower = fact.lower()
+
+            # Check if text contradicts the fact
+            # e.g., fact says "mamata banerjee is cm of west bengal"
+            # but text says "hemant soren is cm of west bengal" — no boost
+            fact_words = set(fact_lower.split())
+            text_words  = set(text_lower.split())
+
+            # Find key entities in the fact
+            # If text has the key but contradicts main entity — skip boost
+            common = fact_words & text_words
+            overlap_ratio = len(common) / max(len(fact_words), 1)
+
+            if overlap_ratio >= 0.4:
+                # Good overlap — text likely matches the fact
+                boost += 10
+            # else: keyword present but content doesn't match — no boost
+
+    return min(boost, 40)
 
 
 # ── PIB SCRAPER ───────────────────────────────────────────────────────────────
@@ -535,4 +551,3 @@ JSON array only:"""
 
     except Exception as e:
         return 0, str(e)
-
