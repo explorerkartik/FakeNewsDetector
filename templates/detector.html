@@ -241,7 +241,7 @@
                 <input class="url-input" type="text" id="news_url" placeholder="https://example.com/news-article">
             </div>
             <div class="action-bar">
-                <div class="action-bar-left"><span class="action-chip">🤖 Groq AI</span><span class="action-chip">✅ Fact Check</span><span class="action-chip">🏏 Cricket</span></div>
+                <div class="action-bar-left"><span class="action-chip">🤖 Groq AI</span><span class="action-chip">✅ Fact Check</span><span class="action-chip">🏏 Cricket</span><span class="action-chip" id="text-live-chip">Realtime ready</span></div>
                 <div style="display:flex;gap:8px;">
                     <a href="/chatbot" style="padding:11px 20px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:100px;color:#a78bfa;font-size:0.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;">🤖 FakeBot</a>
                     <button class="analyze-btn" onclick="detectText()">🔍 Analyze Now</button>
@@ -409,6 +409,10 @@
 
 <script>
     let _lastResult = {};
+    let textDetectTimer = null;
+    let textDetectController = null;
+    let textDetectRequestId = 0;
+    let textDetectLastCompletedKey = '';
 
     // ── MODE SWITCHING ─────────────────────────────────────────────────────────
     function setMode(mode) {
@@ -435,14 +439,104 @@
     }
 
     // ── TEXT DETECTION ─────────────────────────────────────────────────────────
-    function detectText() {
+    function getTextDetectKey() {
         const text = document.getElementById('news_text').value.trim();
         const url  = document.getElementById('news_url').value.trim();
-        if (!text && !url) { alert('Please enter news text or URL!'); return; }
+        return JSON.stringify({ text, url });
+    }
+
+    function setTextLiveStatus(message) {
+        const chip = document.getElementById('text-live-chip');
+        if (chip) chip.textContent = message;
+    }
+
+    function cancelPendingTextDetection() {
+        if (textDetectTimer) {
+            clearTimeout(textDetectTimer);
+            textDetectTimer = null;
+        }
+        if (textDetectController) {
+            textDetectController.abort();
+            textDetectController = null;
+        }
+    }
+
+    function resetTextDetectionView() {
+        cancelPendingTextDetection();
+        document.getElementById('text-loading').classList.remove('show');
+        document.getElementById('text-result').classList.remove('show');
+        document.getElementById('feedback-bar').style.display = 'none';
+        document.getElementById('result-actions').style.display = 'none';
+        const btn = document.querySelector('#tab-text .analyze-btn');
+        if (btn) btn.disabled = false;
+        setTextLiveStatus('Realtime ready');
+    }
+
+    function scheduleRealtimeTextDetection() {
+        const text = document.getElementById('news_text').value.trim();
+        const url  = document.getElementById('news_url').value.trim();
+        cancelPendingTextDetection();
+        const btn = document.querySelector('#tab-text .analyze-btn');
+        if (btn) btn.disabled = false;
+        document.getElementById('text-loading').classList.remove('show');
+
+        if (!text && !url) {
+            textDetectLastCompletedKey = '';
+            resetTextDetectionView();
+            setTextLiveStatus('Paste text or a URL');
+            return;
+        }
+
+        setTextLiveStatus('Typing...');
+        textDetectTimer = setTimeout(() => {
+            textDetectTimer = null;
+            detectText({ automatic: true });
+        }, url ? 450 : 900);
+    }
+
+    function initRealtimeTextDetection() {
+        const textInput = document.getElementById('news_text');
+        const urlInput = document.getElementById('news_url');
+        [textInput, urlInput].forEach(input => {
+            if (!input) return;
+            input.addEventListener('input', scheduleRealtimeTextDetection);
+            input.addEventListener('paste', scheduleRealtimeTextDetection);
+        });
+        setTextLiveStatus('Paste text or a URL');
+    }
+
+    function detectText(options = {}) {
+        const automatic = Boolean(options.automatic);
+        const force = Boolean(options.force);
+        const text = document.getElementById('news_text').value.trim();
+        const url  = document.getElementById('news_url').value.trim();
+        const requestKey = JSON.stringify({ text, url });
+        const actionBtn = document.querySelector('#tab-text .analyze-btn');
+        if (!text && !url) {
+            resetTextDetectionView();
+            if (!automatic) alert('Please enter news text or URL!');
+            return;
+        }
+        if (automatic && !force && requestKey === textDetectLastCompletedKey) {
+            actionBtn.disabled = false;
+            document.getElementById('text-loading').classList.remove('show');
+            setTextLiveStatus('Updated just now');
+            return;
+        }
+
+        if (textDetectTimer) {
+            clearTimeout(textDetectTimer);
+            textDetectTimer = null;
+        }
+        if (textDetectController) {
+            textDetectController.abort();
+            textDetectController = null;
+        }
         const btn = document.querySelector('#tab-text .analyze-btn');
         btn.disabled = true; btn.textContent = '⏳ Analyzing...';
         document.getElementById('text-loading').classList.add('show');
         document.getElementById('text-result').classList.remove('show');
+        setTextLiveStatus(automatic ? 'Analyzing live...' : 'Analyzing...');
         document.getElementById('feedback-bar').style.display = 'none';
         document.getElementById('result-actions').style.display = 'none';
         document.getElementById('feedback-msg').textContent = '';
@@ -451,13 +545,25 @@
         document.getElementById('fb-up').disabled = false;
         document.getElementById('fb-down').disabled = false;
         const fd = new FormData();
-        fd.append('news_text', text); fd.append('news_url', url);
-        fetch('/detect', { method: 'POST', body: fd })
+        fd.append('news_text', text);
+        fd.append('news_url', url);
+        const controller = new AbortController();
+        const requestId = ++textDetectRequestId;
+        textDetectController = controller;
+        fetch('/detect', { method: 'POST', body: fd, signal: controller.signal })
           .then(r => r.json())
           .then(data => {
+            if (requestId !== textDetectRequestId || requestKey !== getTextDetectKey()) return;
+            textDetectController = null;
             btn.disabled = false; btn.textContent = '🔍 Analyze Now';
             document.getElementById('text-loading').classList.remove('show');
-            if (data.error) { alert(data.error); return; }
+            if (data.error) {
+                setTextLiveStatus('Could not analyze that input');
+                if (!automatic) alert(data.error);
+                return;
+            }
+            textDetectLastCompletedKey = requestKey;
+            setTextLiveStatus('Updated just now');
             _lastResult = { verdict: data.verdict, credibility_score: data.credibility_score, confidence: data.confidence, share_id: data.share_id, input_text: data.input_text, reason: data.gemini_reason, facts: data.gemini_facts, detected_lang: data.detected_lang, fact_results: data.fact_results, source_label: data.reputation?.label || 'N/A', share_url: data.share_url };
             const isReal = data.verdict === 'REAL';
             document.getElementById('verdict-banner').className = 'verdict-banner ' + (isReal ? 'real' : 'fake');
@@ -479,7 +585,16 @@
             document.getElementById('result-actions').style.display = 'flex';
             document.getElementById('feedback-bar').style.display = 'flex';
             document.getElementById('text-result').classList.add('show');
-        }).catch(() => { btn.disabled = false; btn.textContent = '🔍 Analyze Now'; document.getElementById('text-loading').classList.remove('show'); alert('Error connecting to server!'); });
+        }).catch((error) => {
+            if (error.name === 'AbortError') return;
+            if (requestId !== textDetectRequestId) return;
+
+            textDetectController = null;
+            btn.disabled = false; btn.textContent = '🔍 Analyze Now';
+            document.getElementById('text-loading').classList.remove('show');
+            setTextLiveStatus('Connection error');
+            if (!automatic) alert('Error connecting to server!');
+        });
     }
 
     async function submitFeedback(type) {
@@ -714,6 +829,7 @@
     // Orb click = toggle
     document.getElementById('voice-orb').addEventListener('click', toggleVoiceListening);
     setVoiceState('idle', "Tap once to start voice detection");
+    initRealtimeTextDetection();
 
     // Drag-drop
     ['img-upload','vid-upload'].forEach(id => {
