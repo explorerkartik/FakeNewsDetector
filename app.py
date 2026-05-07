@@ -11,7 +11,7 @@ from groq import Groq
 from authlib.integrations.flask_client import OAuth
 import psycopg2
 import psycopg2.extras
-import pickle, os, requests, json, uuid, secrets
+import pickle, os, requests, json, uuid, secrets, re, time
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -116,6 +116,7 @@ groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 RAPIDAPI_KEY       = os.getenv('RAPIDAPI_KEY')
 SIGHTENGINE_USER   = os.getenv('SIGHTENGINE_USER')
 SIGHTENGINE_SECRET = os.getenv('SIGHTENGINE_SECRET')
+GNEWS_API_KEY      = os.getenv('GNEWS_API_KEY')
 
 # ── WHATSAPP (Meta Cloud API – FREE) ─────────────────────────────────────────
 WHATSAPP_TOKEN    = os.getenv('WHATSAPP_TOKEN')
@@ -133,16 +134,124 @@ google = oauth.register(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  LIVE NEWS GROUNDING
+# ─────────────────────────────────────────────────────────────────────────────
+GNEWS_API_URL = "https://gnews.io/api/v4/search"
+GNEWS_CACHE = {}
+GNEWS_CACHE_TTL_SECONDS = 15 * 60
+NEWS_QUERY_STOPWORDS = {
+    'the', 'and', 'for', 'that', 'with', 'this', 'from', 'have', 'has', 'had',
+    'will', 'would', 'could', 'should', 'into', 'about', 'after', 'before',
+    'their', 'they', 'them', 'were', 'been', 'being', 'because', 'while',
+    'where', 'when', 'what', 'which', 'your', 'news', 'claim', 'article',
+    'statement', 'says', 'said', 'over', 'under', 'more', 'than', 'very',
+    'just', 'like', 'also', 'today', 'breaking'
+}
+
+def build_news_search_query(text):
+    words = re.findall(r"[A-Za-z0-9']+", text.lower())
+    filtered = []
+    seen = set()
+    for word in words:
+        if len(word) < 3 or word in NEWS_QUERY_STOPWORDS or word in seen:
+            continue
+        filtered.append(word)
+        seen.add(word)
+        if len(filtered) >= 10:
+            break
+    if filtered:
+        return ' '.join(filtered)
+    fallback_words = [word for word in words if len(word) >= 3][:10]
+    return ' '.join(fallback_words)
+
+def fetch_latest_news(text, max_results=5):
+    if not GNEWS_API_KEY:
+        return []
+
+    query = build_news_search_query(text)
+    if not query:
+        return []
+
+    cache_key = query.lower()
+    cached = GNEWS_CACHE.get(cache_key)
+    if cached and time.time() - cached['ts'] < GNEWS_CACHE_TTL_SECONDS:
+        return cached['results']
+
+    try:
+        response = requests.get(
+            GNEWS_API_URL,
+            params={'q': query, 'lang': 'en', 'max': max_results, 'apikey': GNEWS_API_KEY},
+            timeout=6
+        )
+        response.raise_for_status()
+        data = response.json()
+        articles = []
+        for article in data.get('articles', [])[:max_results]:
+            source = article.get('source') or {}
+            articles.append({
+                'title':        (article.get('title') or '').strip(),
+                'description':  (article.get('description') or '').strip(),
+                'url':          article.get('url', ''),
+                'source':       (source.get('name') or '').strip(),
+                'published_at': (article.get('publishedAt') or '')[:10]
+            })
+        GNEWS_CACHE[cache_key] = {'ts': time.time(), 'results': articles}
+        return articles
+    except Exception as e:
+        print(f"GNews error: {e}")
+        return []
+
+def format_latest_news_context(latest_news):
+    if not latest_news:
+        return "No recent news coverage found."
+    lines = []
+    for idx, item in enumerate(latest_news, start=1):
+        title = item.get('title') or 'Untitled'
+        source = item.get('source') or 'Unknown source'
+        published = item.get('published_at') or 'Unknown date'
+        description = item.get('description') or 'No summary available.'
+        lines.append(f"{idx}. {title} | Source: {source} | Date: {published} | Summary: {description}")
+    return "\n".join(lines)
+
+def format_fact_check_context(fact_results):
+    if not fact_results:
+        return "No fact-check matches found."
+    lines = []
+    for idx, item in enumerate(fact_results, start=1):
+        text = item.get('text') or 'No claim text'
+        rating = item.get('rating') or 'Unknown'
+        source = item.get('source') or 'Unknown source'
+        lines.append(f"{idx}. {text} | Rating: {rating} | Publisher: {source}")
+    return "\n".join(lines)
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  GROQ ANALYSIS
 # ─────────────────────────────────────────────────────────────────────────────
-def analyze_with_groq(text):
+def analyze_with_groq(text, latest_news=None, fact_results=None):
+    latest_news = latest_news or []
+    fact_results = fact_results or []
     try:
-        prompt = f"""You are a highly accurate fact-verification expert with complete knowledge of India and the world up to 2026.
+        prompt = f"""You are a highly accurate fact-verification expert.
+
+Today's date: {datetime.utcnow().strftime('%Y-%m-%d')}
 
 Your job is to verify whether the given statement/news is REAL (factually correct) or FAKE (factually incorrect or misleading).
 
+For recent events, elections, sports results, policy changes, and breaking news:
+- Rely primarily on the supplied latest-news coverage and fact-check results
+- Do NOT rely on stale memory when the supplied evidence is newer
+- If multiple recent reputable reports support the claim, mark it REAL
+- If multiple recent reputable reports contradict the claim, mark it FAKE
+- If the evidence is thin or mixed, keep confidence moderate and explain the uncertainty briefly
+
 STATEMENT TO VERIFY:
 "{text}"
+
+LATEST NEWS COVERAGE:
+{format_latest_news_context(latest_news)}
+
+GOOGLE FACT CHECK RESULTS:
+{format_fact_check_context(fact_results)}
 
 IMPORTANT RULES:
 1. If the statement contains CORRECT, VERIFIABLE FACTS -> verdict must be "REAL" with credibility_score 85-100
@@ -150,14 +259,6 @@ IMPORTANT RULES:
 3. If the statement contains CLEARLY FALSE information -> verdict "FAKE" with score 0-40
 4. If the statement is unverifiable opinion -> score 45-65
 5. DO NOT be biased toward FAKE - most factual statements are REAL
-
-INDIAN KNOWLEDGE BASE:
-- Capitals: Ranchi=Jharkhand, Patna=Bihar, Lucknow=UP, Mumbai=Maharashtra, Delhi=India, Bhopal=MP, Jaipur=Rajasthan, Chennai=TN, Hyderabad=Telangana, Bengaluru=Karnataka
-- PM: Narendra Modi (BJP), President: Droupadi Murmu
-- States: India has 28 states and 8 UTs
-- Operation Sindoor: Indian military operation 2025
-- IPL 2025 Winner: Royal Challengers Bengaluru (RCB)
-- Government schemes: PM Kisan, Ayushman Bharat, Jan Dhan, etc.
 
 Respond ONLY in this exact JSON format (no markdown, no extra text):
 {{
@@ -184,10 +285,15 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
         if start != -1 and end > start:
             response_text = response_text[start:end]
         result = json.loads(response_text)
+        verdict = str(result.get('verdict', 'REAL')).upper().strip()
+        credibility_score = int(result.get('credibility_score', 70))
+        confidence = float(result.get('confidence', 70))
+        if verdict not in {'REAL', 'FAKE'}:
+            verdict = 'REAL' if credibility_score >= 50 else 'FAKE'
         return {
-            'verdict':           result.get('verdict', 'REAL'),
-            'credibility_score': int(result.get('credibility_score', 70)),
-            'confidence':        float(result.get('confidence', 70)),
+            'verdict':           verdict,
+            'credibility_score': max(0, min(100, credibility_score)),
+            'confidence':        max(0, min(100, confidence)),
             'reason':            result.get('reason', ''),
             'gemini_facts':      result.get('facts', [])
         }
@@ -761,7 +867,9 @@ def detect():
         return jsonify({'error': 'Please enter some text!'})
 
     english_text, detected_lang = translate_to_english(text)
-    groq_result = analyze_with_groq(english_text)
+    fact_results = check_facts(english_text)
+    latest_news = fetch_latest_news(english_text)
+    groq_result = analyze_with_groq(english_text, latest_news=latest_news, fact_results=fact_results)
 
     if groq_result:
         prediction        = groq_result['verdict']
@@ -795,7 +903,6 @@ def detect():
         if reputation.get('tier') == 3:
             credibility_score = max(0, credibility_score - 20)
 
-    fact_results   = check_facts(english_text)
     cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
 
     share_id = None
@@ -825,6 +932,7 @@ def detect():
         'detected_lang':     detected_lang,
         'reputation':        reputation,
         'fact_results':      fact_results,
+        'latest_news':       latest_news,
         'indian_facts':      indian_facts_matched,
         'gemini_reason':     gemini_reason,
         'gemini_facts':      gemini_facts,

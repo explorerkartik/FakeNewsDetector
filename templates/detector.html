@@ -259,6 +259,7 @@
                 <div class="info-box" id="india-box" style="display:none;"><h4>🇮🇳 Indian Facts</h4><div id="india-facts"></div></div>
             </div>
             <div class="info-box" id="factcheck-box" style="display:none;margin-top:12px;"><h4>✅ Google Fact Check</h4><div id="factcheck-list"></div></div>
+            <div class="info-box" id="latest-news-box" style="display:none;margin-top:12px;"><h4>📰 Latest News Coverage</h4><div id="latest-news-list"></div></div>
             <div class="info-box" id="cricket-box" style="display:none;margin-top:12px;"><h4>🏏 Live Cricket Scores</h4><div id="cricket-list"></div></div>
             <div class="result-actions" id="result-actions" style="display:none;">
                 <button class="result-action-btn btn-share" onclick="shareResult()">🔗 Share Result</button>
@@ -566,6 +567,10 @@
             setTextLiveStatus('Updated just now');
             _lastResult = { verdict: data.verdict, credibility_score: data.credibility_score, confidence: data.confidence, share_id: data.share_id, input_text: data.input_text, reason: data.gemini_reason, facts: data.gemini_facts, detected_lang: data.detected_lang, fact_results: data.fact_results, source_label: data.reputation?.label || 'N/A', share_url: data.share_url };
             const isReal = data.verdict === 'REAL';
+            ['ai-box','lang-box','source-box','india-box','factcheck-box','latest-news-box','cricket-box'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
             document.getElementById('verdict-banner').className = 'verdict-banner ' + (isReal ? 'real' : 'fake');
             document.getElementById('verdict-emoji').textContent = isReal ? '✅' : '❌';
             document.getElementById('verdict-text').textContent  = isReal ? 'REAL NEWS' : 'FAKE NEWS';
@@ -581,6 +586,7 @@
             if (data.reputation && data.reputation.found) { const rep = data.reputation; const sl = document.getElementById('source-label'); sl.textContent = rep.label; sl.className = 'source-badge ' + (rep.tier===1?'source-green':rep.tier===2?'source-yellow':'source-red'); document.getElementById('source-desc').textContent = rep.desc; document.getElementById('source-box').style.display = 'block'; }
             if (data.indian_facts && data.indian_facts.length > 0) { const el = document.getElementById('india-facts'); el.innerHTML = ''; data.indian_facts.forEach(f => { el.innerHTML += `<div class="fact-item">${f}</div>`; }); document.getElementById('india-box').style.display = 'block'; }
             if (data.fact_results && data.fact_results.length > 0) { const el = document.getElementById('factcheck-list'); el.innerHTML = ''; data.fact_results.forEach(i => { el.innerHTML += `<div class="fact-item">${i.text} <strong>[${i.rating}]</strong></div>`; }); document.getElementById('factcheck-box').style.display = 'block'; }
+            if (data.latest_news && data.latest_news.length > 0) { const el = document.getElementById('latest-news-list'); el.innerHTML = ''; data.latest_news.forEach(item => { const sourceLine = [item.source, item.published_at].filter(Boolean).join(' • '); const summary = item.description ? `<div style="margin-top:6px;">${htmlSafe(item.description)}</div>` : ''; const link = item.url ? `<div style="margin-top:6px;"><a href="${item.url}" target="_blank" rel="noopener" style="color:#93c5fd;text-decoration:none;">Open source</a></div>` : ''; el.innerHTML += `<div class="fact-item"><strong>${htmlSafe(item.title || 'Latest coverage')}</strong><div style="margin-top:6px;font-size:0.78rem;color:var(--text-muted);">${htmlSafe(sourceLine)}</div>${summary}${link}</div>`; }); document.getElementById('latest-news-box').style.display = 'block'; }
             if (data.cricket_scores && data.cricket_scores.length > 0) { const el = document.getElementById('cricket-list'); el.innerHTML = ''; data.cricket_scores.forEach(m => { el.innerHTML += `<div class="cricket-match"><h4>🏏 ${m.team1} vs ${m.team2}</h4><div class="cricket-score"><span>${m.team1}: ${m.t1score}</span><span>${m.team2}: ${m.t2score}</span></div><div class="cricket-status">${m.status} • ${m.seriesName}</div></div>`; }); document.getElementById('cricket-box').style.display = 'block'; }
             document.getElementById('result-actions').style.display = 'flex';
             document.getElementById('feedback-bar').style.display = 'flex';
