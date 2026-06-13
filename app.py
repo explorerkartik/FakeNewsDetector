@@ -7,6 +7,9 @@ from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
 from indian_facts import check_indian_facts, get_credibility_boost, fetch_and_store_current_affairs
+from source_credibility import get_source_credibility, FACT_CHECK_SOURCES, suggest_fact_checkers
+from scam_patterns import detect_scam_patterns
+from quiz_data import get_quiz_questions
 from groq import Groq
 from authlib.integrations.flask_client import OAuth
 import psycopg2
