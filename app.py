@@ -871,8 +871,8 @@ def detect():
 
     english_text, detected_lang = translate_to_english(text)
     fact_results = check_facts(english_text)
-    latest_news = fetch_latest_news(english_text)
-    groq_result = analyze_with_groq(english_text, latest_news=latest_news, fact_results=fact_results)
+    latest_news  = fetch_latest_news(english_text)
+    groq_result  = analyze_with_groq(english_text, latest_news=latest_news, fact_results=fact_results)
 
     if groq_result:
         prediction        = groq_result['verdict']
@@ -880,25 +880,15 @@ def detect():
         confidence        = groq_result['confidence']
         gemini_reason     = groq_result['reason']
         gemini_facts      = groq_result['gemini_facts']
-        indian_facts_matched = check_indian_facts(english_text)
     else:
         prediction        = model.predict([english_text])[0]
         confidence        = max(model.predict_proba([english_text])[0]) * 100
         credibility_score = int(confidence) if prediction == 'REAL' else int(100 - confidence)
         gemini_reason     = ''
         gemini_facts      = []
-        indian_facts_matched = check_indian_facts(english_text)
 
-    facts_boost = get_credibility_boost(english_text)
-    if facts_boost >= 40:
-        credibility_score = min(100, 70 + (facts_boost - 40))
-        prediction = 'REAL'
-    elif facts_boost >= 20:
-        credibility_score = min(100, credibility_score + facts_boost)
-        if credibility_score >= 45:
-            prediction = 'REAL'
-    else:
-        credibility_score = min(100, credibility_score + facts_boost)
+    # ── Indian Facts: ab sirf DISPLAY ke liye, verdict/score ko affect nahi karta ──
+    indian_facts_matched = check_indian_facts(english_text)
 
     reputation = {}
     source_credibility = {}
