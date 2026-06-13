@@ -7,6 +7,9 @@ from deep_translator import GoogleTranslator
 from langdetect import detect as detect_language
 from urllib.parse import urlparse
 from indian_facts import check_indian_facts, get_credibility_boost, fetch_and_store_current_affairs
+from source_credibility import get_source_credibility, FACT_CHECK_SOURCES, suggest_fact_checkers
+from scam_patterns import detect_scam_patterns
+from quiz_data import get_quiz_questions
 from groq import Groq
 from authlib.integrations.flask_client import OAuth
 import psycopg2
@@ -898,10 +901,23 @@ def detect():
         credibility_score = min(100, credibility_score + facts_boost)
 
     reputation = {}
+    source_credibility = {}
     if url:
         reputation = check_source_reputation(url)
         if reputation.get('tier') == 3:
             credibility_score = max(0, credibility_score - 20)
+        source_credibility = get_source_credibility(url)
+        if source_credibility.get('label') == 'Trusted':
+            credibility_score = min(100, credibility_score + 5)
+        elif source_credibility.get('label') == 'Unreliable':
+            credibility_score = max(0, credibility_score - 25)
+
+    # ── SCAM / PHISHING PATTERN CHECK ─────────────────────────────────────────
+    scam_result = detect_scam_patterns(f"{text} {english_text}")
+    if scam_result['is_scam']:
+        credibility_score = max(0, credibility_score - scam_result['risk_score'] // 2)
+        if scam_result['risk_score'] >= 60:
+            prediction = 'FAKE'
 
     cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
 
@@ -937,6 +953,9 @@ def detect():
         'gemini_reason':     gemini_reason,
         'gemini_facts':      gemini_facts,
         'cricket_scores':    cricket_scores,
+        'source_credibility': source_credibility,
+        'scam_alert':        scam_result,
+        'fact_checkers':     suggest_fact_checkers(),
         'share_id':          share_id,
         'share_url':         f"/result/{share_id}" if share_id else None,
         'input_text':        text[:300]
@@ -1478,7 +1497,9 @@ Generate {count} questions now:"""
         s = text.find('[')
         e = text.rfind(']') + 1
         if s == -1 or e <= s:
-            return jsonify({'error': 'AI returned invalid format'}), 500
+            # ── Fallback: local quiz bank ──
+            local_qs = get_quiz_questions(count=count, difficulty=difficulty, category=category)
+            return jsonify({'questions': local_qs, 'count': len(local_qs), 'source': 'local'})
 
         questions = json.loads(text[s:e])
 
@@ -1492,10 +1513,14 @@ Generate {count} questions now:"""
                     'category':    q.get('category', 'General'),
                     'explanation': q['explanation']
                 })
+        if not clean:
+            clean = get_quiz_questions(count=count, difficulty=difficulty, category=category)
         return jsonify({'questions': clean, 'count': len(clean)})
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Quiz AI error: {e} — using local quiz bank")
+        local_qs = get_quiz_questions(count=count, difficulty=difficulty, category=category)
+        return jsonify({'questions': local_qs, 'count': len(local_qs), 'source': 'local'})
 
 @app.route('/quiz/save-score', methods=['POST'])
 def quiz_save_score():
