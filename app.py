@@ -1497,7 +1497,9 @@ Generate {count} questions now:"""
         s = text.find('[')
         e = text.rfind(']') + 1
         if s == -1 or e <= s:
-            return jsonify({'error': 'AI returned invalid format'}), 500
+            # ── Fallback: local quiz bank ──
+            local_qs = get_quiz_questions(count=count, difficulty=difficulty, category=category)
+            return jsonify({'questions': local_qs, 'count': len(local_qs), 'source': 'local'})
 
         questions = json.loads(text[s:e])
 
@@ -1511,10 +1513,14 @@ Generate {count} questions now:"""
                     'category':    q.get('category', 'General'),
                     'explanation': q['explanation']
                 })
+        if not clean:
+            clean = get_quiz_questions(count=count, difficulty=difficulty, category=category)
         return jsonify({'questions': clean, 'count': len(clean)})
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Quiz AI error: {e} — using local quiz bank")
+        local_qs = get_quiz_questions(count=count, difficulty=difficulty, category=category)
+        return jsonify({'questions': local_qs, 'count': len(local_qs), 'source': 'local'})
 
 @app.route('/quiz/save-score', methods=['POST'])
 def quiz_save_score():
