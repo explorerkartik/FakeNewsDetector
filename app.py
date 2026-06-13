@@ -901,10 +901,23 @@ def detect():
         credibility_score = min(100, credibility_score + facts_boost)
 
     reputation = {}
+    source_credibility = {}
     if url:
         reputation = check_source_reputation(url)
         if reputation.get('tier') == 3:
             credibility_score = max(0, credibility_score - 20)
+        source_credibility = get_source_credibility(url)
+        if source_credibility.get('label') == 'Trusted':
+            credibility_score = min(100, credibility_score + 5)
+        elif source_credibility.get('label') == 'Unreliable':
+            credibility_score = max(0, credibility_score - 25)
+
+    # ── SCAM / PHISHING PATTERN CHECK ─────────────────────────────────────────
+    scam_result = detect_scam_patterns(f"{text} {english_text}")
+    if scam_result['is_scam']:
+        credibility_score = max(0, credibility_score - scam_result['risk_score'] // 2)
+        if scam_result['risk_score'] >= 60:
+            prediction = 'FAKE'
 
     cricket_scores = get_cricket_scores() if is_cricket_news(text) else []
 
