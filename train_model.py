@@ -420,9 +420,60 @@ INDIAN_FAKE_EN = [
     "Free iPhone being given by Modi government to all citizens register now",
 ]
 
+# ── SCAM / PHISHING + AWARENESS SAMPLES (English) ────────────────────────────────
+
+SCAM_REAL_EN = [
+    "Banks never ask for OTP PIN or CVV over phone calls or SMS",
+    "India's national cyber crime helpline number is 1930",
+    "RBI advises customers to report fraud transactions immediately to their bank",
+    "There is no legal concept called digital arrest in Indian law",
+    "PIB Fact Check is the official fact checking arm of the Government of India",
+    "Income tax refunds are processed only through the official income tax portal",
+    "KYC updates are done through official bank branches or verified apps",
+    "Cyber fraud complaints can be filed at the cybercrime portal of India",
+    "WHO confirms COVID vaccines are safe and effective after rigorous trials",
+    "Genuine lotteries require purchasing a ticket no real lottery contacts random people",
+    "UPI transactions require a PIN that should never be shared with anyone",
+    "Election Commission of India conducts multiple security checks on EVMs",
+]
+
+SCAM_FAKE_EN = [
+    # Lottery / prize scams
+    "Congratulations you have won 25 lakh rupees in KBC lottery click link to claim",
+    "Amazon is giving free gifts on its anniversary spin the wheel and pay delivery charge",
+    "Free recharge of 239 rupees for all users from Jio share this message to claim",
+    # KYC / bank fraud
+    "Your bank account will be blocked today update KYC immediately through this link",
+    "Your PAN card will be deactivated tomorrow click here to link with Aadhaar",
+    "Share your OTP to receive the refund initiated by the bank",
+    "Your SIM card will be blocked in 24 hours press 9 to talk to TRAI officer",
+    # Electricity scam
+    "Your electricity connection will be disconnected tonight call this officer number urgently",
+    # Digital arrest / courier scam
+    "Your parcel has been seized by customs pay fine immediately or face arrest",
+    "You are under digital arrest by CBI transfer money to verification account now",
+    # Fake jobs
+    "Earn 50000 rupees monthly working from home just 2 hours pay registration fee now",
+    "Selected for online part time job complete telegram tasks and earn 3000 daily",
+    # Fake govt schemes
+    "Government giving 4000 rupees monthly to all unemployed youth register on this link",
+    "Your income tax refund of 15000 is approved share bank details to claim",
+    # Health misinformation
+    "Drinking hot lemon water kills coronavirus within minutes proven remedy",
+    "Cow urine cures cancer completely proven by international research",
+    "Charging phone overnight causes brain cancer doctors warn",
+    # Deepfake / viral
+    "Deepfake video shows minister confessing to selling national secrets",
+    "WhatsApp will start charging users unless this message is forwarded to 10 contacts",
+    # Financial misinformation
+    "Invest 1 lakh in this crypto scheme get 10 lakh guaranteed in 30 days",
+    "Army officer wants to buy your furniture will send advance payment share OTP",
+]
+
 def build_indian_english_dataset():
-    texts  = INDIAN_REAL_EN + INDIAN_FAKE_EN
-    labels = (['REAL'] * len(INDIAN_REAL_EN) + ['FAKE'] * len(INDIAN_FAKE_EN))
+    texts  = INDIAN_REAL_EN + SCAM_REAL_EN + INDIAN_FAKE_EN + SCAM_FAKE_EN
+    labels = (['REAL'] * (len(INDIAN_REAL_EN) + len(SCAM_REAL_EN)) +
+              ['FAKE'] * (len(INDIAN_FAKE_EN) + len(SCAM_FAKE_EN)))
     df = pd.DataFrame({'text': texts, 'label': labels})
     # Augment x3 with slight variations
     aug_frames = [df]
