@@ -953,6 +953,9 @@ def detect():
         'gemini_reason':     gemini_reason,
         'gemini_facts':      gemini_facts,
         'cricket_scores':    cricket_scores,
+        'source_credibility': source_credibility,
+        'scam_alert':        scam_result,
+        'fact_checkers':     suggest_fact_checkers(),
         'share_id':          share_id,
         'share_url':         f"/result/{share_id}" if share_id else None,
         'input_text':        text[:300]
