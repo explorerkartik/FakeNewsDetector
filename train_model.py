@@ -222,11 +222,90 @@ HINGLISH_FAKE = [
     "free recharge 84 din ka milega jio airtel ko sarkaar ka order",
 ]
 
+# ── SCAM / PHISHING + AWARENESS SAMPLES (Hindi/Hinglish) ──────────────────────
+
+SCAM_REAL_HI = [
+    # Verified awareness facts — REAL
+    "kyc update karne ke liye bank kabhi otp nahi mangta hai",
+    "rbi kabhi phone par bank account details nahi mangta",
+    "bank kabhi bhi sms ya call par otp ya pin nahi mangta",
+    "cyber fraud report karne ke liye 1930 helpline number hai india mein",
+    "income tax refund sirf official portal se process hota hai",
+    "upi pin kisi ke saath share nahi karna chahiye",
+    "kyc update hamesha bank branch ya official app se hota hai",
+    "lottery jeetne ke liye pehle ticket kharidna padta hai bina ticket lottery fake hoti hai",
+    "pib fact check sarkari news verify karta hai",
+    "electricity bill official app ya website se check karna chahiye",
+    "digital arrest jaisa koi kanooni concept india mein exist nahi karta",
+    "police kabhi video call par paise nahi mangti",
+    "police complaint cyber crime portal cybercrime gov in par hoti hai",
+    "sarkari yojana ki jankari official website par milti hai",
+    "covid vaccines ne lakhs of lives bachayi hain worldwide",
+    "who ne covid vaccine ko safe bataya hai",
+    "election commission evm ki suraksha ke liye kai jaanch karta hai",
+    "bank fraud hone par 1930 helpline par call karna chahiye",
+    "vaccine se polio india mein khatam hua 2014 mein",
+    "ayushman bharat card official website se banta hai",
+]
+
+SCAM_FAKE_HI = [
+    # Lottery / prize scams
+    "aapne 25 lakh ki lottery jiti hai claim karne ke liye link par click karein",
+    "kbc lottery mein aapka number select hua hai 25 lakh jeete",
+    "congratulations aapne kbc lottery mein 25 lakh jeeta hai whatsapp number par contact karo",
+    "congratulations aapko free scooty mili hai sarkar ki yojana mein form bharo",
+    # KYC / bank fraud
+    "aapka bank account band ho jaega aaj hi kyc update karein is link se",
+    "aapka kyc expire ho gaya hai 24 hours mein update karo warna account freeze",
+    "pan card update nahi kiya to account block ho jaega turant link kholo",
+    "sbi alert aapka account block ho gaya hai pan card link karne ke liye click karein",
+    "bank manager bol raha hoon aapka atm card block ho gaya number batao",
+    "sbi ki taraf se aapko 50000 ka loan approved hai link par click karein",
+    # Electricity scam
+    "bijli ka bill nahi bhara aaj raat connection kat jaega is number par call karo",
+    "aapka electricity connection disconnect ho raha hai turant officer ko call karein",
+    "electricity bill pending hai tonight disconnection hoga is number pe call karo urgent",
+    # OTP fraud
+    "otp batao aapka order cancel karna hai refund milega",
+    "otp share karo apna refund claim karne ke liye amazon se call hai",
+    "army officer hoon paytm se advance payment bhej raha hoon otp batao",
+    "paytm cashback 5000 ka mila hai claim karne ke liye pin dalein",
+    # Fake jobs
+    "ghar baithe roz 5000 kamao bina kisi investment ke abhi join karo",
+    "amazon mein job ke liye selection hua hai registration fee 2000 bharein",
+    "work from home job 50000 monthly sirf 2 ghante kaam telegram pe join karo",
+    "instagram pe paid task karo roz 3000 kamao registration free hai",
+    # Digital arrest / courier scam
+    "aapka parcel customs mein pakda gaya hai fine bharne ke liye otp batao",
+    "aapke aadhaar se illegal sim nikli hai digital arrest hoga paise bharo",
+    "cbi ne aapke naam warrant nikala hai video call par turant aao",
+    "aapka parcel customs ne seize kiya hai drugs mile hain paise bharo warna arrest",
+    # Fake govt schemes
+    "modi yojana mein sabko 4000 mahina milega yahan register karein",
+    "berojgari bhatta 3500 rupye sabko milega form bharo whatsapp par",
+    "tax refund 15000 approved hai claim karne ke liye bank details bhejein",
+    # Health misinformation
+    "garam pani aur nimbu se corona khatam ho jata hai",
+    "gomutra pine se cancer theek hota hai research mein saabit",
+    "raat ko phone charge karne se cancer hota hai doctor ne bataya",
+    "tulsi ke patte se heart blockage khul jata hai 100 percent",
+    # Deepfake / viral
+    "deepfake video mein neta ne desh bechne ki baat kabool ki",
+    "deepfake video viral ho raha hai actor ne secret confession kiya",
+    "whatsapp par yeh message 10 logo ko bhejo warna account band",
+    # Financial misinformation
+    "share market tip 1 din mein paisa double guaranteed scheme join karo",
+    "crypto investment mein 1 lakh ka 10 lakh guaranteed 30 days mein",
+    "free recharge 239 ka sabko mil raha hai jio ki taraf se link share karo",
+    "flipkart anniversary offer free iphone sirf 99 rupye mein link par jao",
+    "aapke phone mein virus hai turant yeh app download karo bank details daalo",
+]
+
 def build_hindi_hinglish_dataset():
     """Combine all Hindi/Hinglish samples into a DataFrame."""
-    texts  = HINDI_REAL + HINGLISH_REAL + HINDI_FAKE + HINGLISH_FAKE
-    labels = (['REAL'] * (len(HINDI_REAL) + len(HINGLISH_REAL)) +
-              ['FAKE'] * (len(HINDI_FAKE) + len(HINGLISH_FAKE)))
+    texts  = HINDI_REAL + HINGLISH_REAL + SCAM_REAL_HI + HINDI_FAKE + HINGLISH_FAKE + SCAM_FAKE_HI
+    labels = (['REAL'] * (len(HINDI_REAL) + len(HINGLISH_REAL) + len(SCAM_REAL_HI)) +
+              ['FAKE'] * (len(HINDI_FAKE) + len(HINGLISH_FAKE) + len(SCAM_FAKE_HI)))
     df = pd.DataFrame({'text': texts, 'label': labels})
     # Augment: duplicate & slightly vary
     aug = df.copy()
