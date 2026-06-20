@@ -230,31 +230,14 @@ def format_fact_check_context(fact_results):
 # ─────────────────────────────────────────────────────────────────────────────
 #  GROQ ANALYSIS
 # ─────────────────────────────────────────────────────────────────────────────
-def analyze_with_groq(text, latest_news=None, fact_results=None):
-    latest_news = latest_news or []
-    fact_results = fact_results or []
+def analyze_with_groq(text):
     try:
-        prompt = f"""You are a highly accurate fact-verification expert.
-
-Today's date: {datetime.utcnow().strftime('%Y-%m-%d')}
+        prompt = f"""You are a highly accurate fact-verification expert with complete knowledge of India and the world up to 2026.
 
 Your job is to verify whether the given statement/news is REAL (factually correct) or FAKE (factually incorrect or misleading).
 
-For recent events, elections, sports results, policy changes, and breaking news:
-- Rely primarily on the supplied latest-news coverage and fact-check results
-- Do NOT rely on stale memory when the supplied evidence is newer
-- If multiple recent reputable reports support the claim, mark it REAL
-- If multiple recent reputable reports contradict the claim, mark it FAKE
-- If the evidence is thin or mixed, keep confidence moderate and explain the uncertainty briefly
-
 STATEMENT TO VERIFY:
 "{text}"
-
-LATEST NEWS COVERAGE:
-{format_latest_news_context(latest_news)}
-
-GOOGLE FACT CHECK RESULTS:
-{format_fact_check_context(fact_results)}
 
 IMPORTANT RULES:
 1. If the statement contains CORRECT, VERIFIABLE FACTS -> verdict must be "REAL" with credibility_score 85-100
@@ -263,13 +246,54 @@ IMPORTANT RULES:
 4. If the statement is unverifiable opinion -> score 45-65
 5. DO NOT be biased toward FAKE - most factual statements are REAL
 
+INDIAN KNOWLEDGE BASE (Updated till June 2026):
+
+NATIONAL:
+- Capitals: Ranchi=Jharkhand, Patna=Bihar, Lucknow=UP, Mumbai=Maharashtra, Delhi=India, Bhopal=MP, Jaipur=Rajasthan, Chennai=TN, Hyderabad=Telangana, Bengaluru=Karnataka
+- PM: Narendra Modi (BJP), President: Droupadi Murmu
+- States: India has 28 states and 8 UTs
+- Operation Sindoor: Indian military operation 2025
+- Kerala renamed to "Keralam": Union Cabinet approved Feb 2026, Kerala (Alteration of Name) Bill 2026
+
+SPORTS (2025-26):
+- T20 World Cup 2026 Winner: INDIA (beat New Zealand by 96 runs in final, 8 March 2026, Narendra Modi Stadium Ahmedabad). India became first team to defend the title and win it 3 times, first host nation to win it. Sanju Samson = Player of Tournament, Jasprit Bumrah = Player of Match in final.
+- T20 World Cup 2024 Winner: India (beat South Africa)
+- IPL 2025 Winner: Royal Challengers Bengaluru (RCB)
+- IPL 2024 Winner: Kolkata Knight Riders (KKR)
+- Paris Olympics 2024: India won 6 medals, Neeraj Chopra won silver in javelin
+
+STATE POLITICS (as of mid-2026, CMs change frequently - verify carefully):
+- Jharkhand CM: Hemant Soren | Bihar CM: Samrat Choudhary (new 2026)
+- Kerala CM: V. D. Satheesan (UDF, new May 2026, replaced Pinarayi Vijayan after LDF lost election)
+- Tamil Nadu CM: Chandrasekaran Joseph Vijay (TVK party, new May 2026)
+- West Bengal CM: Suvendu Adhikari (BJP, first BJP CM of WB, new May 2026)
+- Delhi CM: Rekha Gupta | UP CM: Yogi Adityanath | Maharashtra CM: Devendra Fadnavis
+- Telangana CM: Revanth Reddy | Karnataka CM: Siddaramaiah | Punjab CM: Bhagwant Mann
+
+ENTERTAINMENT (2025-26):
+- Highest grossing Hindi film 2025: Dhurandhar
+- Other major hits: Chhaava, Saiyaara, Border 2 (2026)
+- Mohanlal received Dadasaheb Phalke Award (2025)
+
+ECONOMY/DEFENCE:
+- S&P upgraded India's sovereign credit rating in August 2025
+- Income tax: up to 12 lakh rupees made tax-free in Union Budget
+- Agni Prime missile: successful rail-based launch test in 2025
+- AK-203 rifles: Made-in-India rollout for Indian Army
+
+GOVERNMENT SCHEMES: PM Kisan, Ayushman Bharat, Jan Dhan, MSP for 22 crops via PM-AASHA
+
+IMPORTANT: Your training data may predate some 2026 events listed above (e.g. T20 World Cup 2026 result, Kerala renaming, new state CMs).
+TRUST THE FACTS GIVEN IN THIS KNOWLEDGE BASE over your own internal assumptions about what "hasn't happened yet" -
+these events are confirmed and dated. Do not mark a statement FAKE merely because your own knowledge cutoff predates it.
+
 Respond ONLY in this exact JSON format (no markdown, no extra text):
 {{
-  "verdict": "REAL",
-  "credibility_score": 95,
-  "confidence": 95,
-  "reason": "Brief explanation in 1-2 sentences",
-  "facts": ["fact1", "fact2"]
+    "verdict": "REAL",
+    "credibility_score": 95,
+    "confidence": 95,
+    "reason": "Brief explanation in 1-2 sentences",
+    "facts": ["fact1", "fact2"]
 }}"""
 
         response = groq_client.chat.completions.create(
@@ -278,27 +302,26 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
             max_tokens=500,
             temperature=0.1
         )
+
         response_text = response.choices[0].message.content.strip()
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0].strip()
         elif '```' in response_text:
             response_text = response_text.split('```')[1].split('```')[0].strip()
+
         start = response_text.find('{')
-        end   = response_text.rfind('}') + 1
+        end = response_text.rfind('}') + 1
         if start != -1 and end > start:
             response_text = response_text[start:end]
+
         result = json.loads(response_text)
-        verdict = str(result.get('verdict', 'REAL')).upper().strip()
-        credibility_score = int(result.get('credibility_score', 70))
-        confidence = float(result.get('confidence', 70))
-        if verdict not in {'REAL', 'FAKE'}:
-            verdict = 'REAL' if credibility_score >= 50 else 'FAKE'
+
         return {
-            'verdict':           verdict,
-            'credibility_score': max(0, min(100, credibility_score)),
-            'confidence':        max(0, min(100, confidence)),
-            'reason':            result.get('reason', ''),
-            'gemini_facts':      result.get('facts', [])
+            'verdict': result.get('verdict', 'REAL'),
+            'credibility_score': int(result.get('credibility_score', 70)),
+            'confidence': float(result.get('confidence', 70)),
+            'reason': result.get('reason', ''),
+            'gemini_facts': result.get('facts', [])
         }
     except Exception as e:
         print(f"Groq error: {e}")
