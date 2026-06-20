@@ -235,6 +235,194 @@ HINDI_REAL = [
     "neet exam medical colleges mein admission ke liye hota hai",
     "supreme court of india ki sthapna 1950 mein hui thi",
     "bharat ka high court har rajya mein alag hota hai",
+    # ── 2026 updates ──
+    "india ne t20 world cup 2026 jeeta new zealand ko ahmedabad mein 96 runs se haraya",
+    "sanju samson t20 world cup 2026 mein player of the tournament bane",
+    "jasprit bumrah ko t20 world cup 2026 final mein player of the match mila",
+    "india t20 world cup teesri baar jeetne wali pehli team bani 2026 mein",
+    "india apne ghar mein t20 world cup jeetne wala pehla host desh bana",
+    "kerala ka naam badal kar keralam kar diya gaya cabinet approval ke baad",
+    "kerala alteration of name bill 2026 union cabinet ne pass kiya",
+    "gyanesh kumar bharat ke chief election commissioner hain",
+    "west bengal ka voter list sir process ke through update ho raha hai supreme court ke order se",
+    "icc t20 world cup 2026 february march mein india mein hua",
+]
+
+# ── BROAD CATEGORY COVERAGE (2025-26) — Politics, Sports, Economy, Defence,
+#    Health, Tech, International, State/Jharkhand-specific — Hindi/Hinglish ──
+HINDI_REAL_BROAD = [
+    # Politics & elections
+    "hemant soren jharkhand ke mukhyamantri hain",
+    "jharkhand vidhan sabha chunav 2024 mein jmm gathbandhan ne jeet hasil ki",
+    "jharkhand budget session february 2026 mein ranchi mein shuru hua",
+    "jharkhand ne 2026-27 ke liye naya budget pesh kiya",
+    "maiyan samman yojana mein jharkhand ki mahilao ko 2500 rupye mahina milta hai",
+    "shibu soren jmm party ke supremo hain",
+    "santosh kumar gangwar jharkhand ke governor hain",
+    "rabindra nath mahato jharkhand vidhan sabha ke speaker hain",
+    # Economy / budget
+    "nirmala sitharaman ne budget mein 12 lakh tak income tax free kar diya",
+    "s&p ne india ki credit rating upgrade ki august 2025 mein",
+    "rbi repo rate decide karta hai monetary policy committee ke through",
+    "jharkhand ka budget 1 lakh 45 hazar crore rupye ka tha 2025-26 ke liye",
+    "income tax naya bill parliament mein pass hua",
+    # Defence
+    "agni prime missile ka safal rail based test hua 2025 mein",
+    "made in india ak-203 rifles ka rollout hua indian army ke liye",
+    "def expo 2026 ranchi mein hone wala hai",
+    "india ka defence production 1.51 lakh crore rupye tak pahuncha fy 2024-25 mein",
+    "indian air force ne dubai air show 2025 mein tejas dikhaya",
+    "uttar pradesh aur tamil nadu mein defence industrial corridor bana hai",
+    # Health / govt schemes
+    "jharkhand sarkar ne massy health insurance yojana launch ki",
+    "ayushman bharat aur massy dono se jharkhand ke logo ko health cover milta hai",
+    "jharkhand krishi rin mafi yojana se kisano ka loan maaf hota hai",
+    "ration card list jharkhand sarkar ki website par check ki ja sakti hai",
+    # Tech / space
+    "isro gaganyaan mission ki taiyari kar raha hai human spaceflight ke liye",
+    "amaravati mein quantum reference facility 2026 mein banayi gayi",
+    "india mobile congress har saal delhi mein hota hai",
+    "bengaluru tech summit india ka bada technology event hai",
+    # International relations
+    "modi aur macron ne 2026 mein vivatech event mein startups se baat ki",
+    "india france ke beech strategic partnership badh rahi hai",
+    "trump ne india ke against tariff lagaye the agri products par",
+    "india uk free trade agreement par kaam kar raha hai",
+    # Crime/cyber awareness (Jharkhand specific real stats)
+    "jharkhand mein 2025 mein 1268 log cybercrime ke case mein arrest hue",
+    "cyber crime helpline 1930 ne jharkhand mein 111 crore rupye fraud se bachaye",
+    "jharkhand mein 54 sarkari karamchari corruption ke case mein arrest hue 2025 mein",
+]
+
+# ── ALL-INDIA STATES & UTs — Chief Ministers & Governors (2026) ─────────────
+HINDI_REAL_STATES = [
+    "n chandrababu naidu andhra pradesh ke mukhyamantri hain",
+    "pema khandu arunachal pradesh ke mukhyamantri hain",
+    "himanta biswa sarma assam ke mukhyamantri hain",
+    "samrat choudhary bihar ke naye mukhyamantri bane 2026 mein",
+    "vishnu deo sai chhattisgarh ke mukhyamantri hain",
+    "pramod sawant goa ke mukhyamantri hain",
+    "bhupendra patel gujarat ke mukhyamantri hain",
+    "nayab singh saini haryana ke mukhyamantri hain",
+    "sukhwinder singh sukhu himachal pradesh ke mukhyamantri hain",
+    "hemant soren jharkhand ke mukhyamantri hain",
+    "siddaramaiah karnataka ke mukhyamantri hain",
+    "v d satheesan kerala ke naye mukhyamantri bane may 2026 mein",
+    "udf ne 2026 kerala assembly election jeeta congress ke neta satheesan ke saath",
+    "mohan yadav madhya pradesh ke mukhyamantri hain",
+    "devendra fadnavis maharashtra ke mukhyamantri hain",
+    "yumnam khemchand singh manipur ke naye mukhyamantri bane",
+    "conrad sangma meghalaya ke mukhyamantri hain",
+    "lalduhoma mizoram ke mukhyamantri hain",
+    "neiphiu rio nagaland ke mukhyamantri hain",
+    "mohan charan manjhi odisha ke mukhyamantri hain",
+    "bhagwant mann punjab ke mukhyamantri hain",
+    "bhajan lal sharma rajasthan ke mukhyamantri hain",
+    "prem singh tamang sikkim ke mukhyamantri hain",
+    "chandrasekaran joseph vijay tamil nadu ke naye mukhyamantri bane 2026 mein",
+    "tvk party ne tamil nadu mein 2026 election jeeta vijay ke neta mein",
+    "revanth reddy telangana ke mukhyamantri hain",
+    "manik saha tripura ke mukhyamantri hain",
+    "yogi adityanath uttar pradesh ke mukhyamantri hain",
+    "pushkar singh dhami uttarakhand ke mukhyamantri hain",
+    "suvendu adhikari west bengal ke naye mukhyamantri bane may 2026 mein",
+    "bjp ne 2026 mein west bengal mein pehli baar sarkar banayi",
+    "rekha gupta delhi ki mukhyamantri hain",
+    "omar abdullah jammu kashmir ke mukhyamantri hain",
+    "n rangaswamy puducherry ke mukhyamantri hain",
+    "manoj sinha jammu kashmir ke lieutenant governor hain",
+    "taranjit singh sandhu delhi ke naye lieutenant governor bane 2026 mein",
+]
+
+HINDI_FAKE_STATES = [
+    "n chandrababu naidu ne andhra pradesh CM pad chhod diya secretly",
+    "himanta biswa sarma ne assam CM se resign kar diya pressure mein",
+    "yogi adityanath ne up CM pad chhoda confirm news hai",
+    "bhagwant mann ne punjab CM se istifa diya party ne nikala",
+    "devendra fadnavis ne maharashtra CM pad chhod diya secretly",
+    "tamil nadu mein vijay ko CM banaye jane ke baad violence shuru hua poore state mein",
+    "west bengal mein bjp sarkar ban'ne ke baad sab muslims ko nikal diya gaya",
+    "kerala mein satheesan CM banne ke baad pinarayi vijayan ko arrest kar liya gaya",
+    "rekha gupta ne delhi CM pad se istifa diya kuch hafton mein hi",
+    "omar abdullah ne jammu kashmir CM pad chhoda army pressure mein",
+]
+
+HINGLISH_REAL_STATES = [
+    "samrat choudhary bihar ke naye CM bane 2026 election ke baad",
+    "v d satheesan kerala ke naye CM bane udf ki jeet ke baad",
+    "vijay tamil nadu ke CM bane tvk party se 2026 mein",
+    "suvendu adhikari west bengal ke pehle bjp CM bane 2026 mein",
+    "rekha gupta delhi ki CM hain bjp se",
+    "devendra fadnavis maharashtra ke CM hain",
+    "yogi adityanath UP ke CM hain continuously",
+    "omar abdullah jammu kashmir ke CM hain",
+]
+
+HINGLISH_FAKE_STATES = [
+    "kerala mein satheesan CM banne ke baad LDF supporters ka crackdown shuru hua",
+    "tamil nadu mein vijay CM banne ke baad film industry band ho gayi protest mein",
+    "west bengal mein bjp sarkar ne sabka voter ID cancel kar diya",
+    "bihar mein samrat choudhary CM banne ke baad sabka ration card band ho gaya",
+]
+
+
+HINDI_FAKE_BROAD = [
+    # Politics & elections (fake)
+    "hemant soren ne mukhyamantri pad se istifa de diya secretly",
+    "jharkhand election results fake the EVM hack hui thi",
+    "maiyan samman yojana band ho rahi hai sabko paisa wapas karna hoga",
+    "jharkhand budget mein sabka tax double kar diya gaya",
+    "shibu soren ka nidhan ho gaya khabar dabai ja rahi hai",
+    # Economy / budget (fake)
+    "income tax sabke liye 50 percent kar diya gaya naye budget mein",
+    "s&p ne india ki rating downgrade kar di secretly",
+    "rbi ne repo rate 20 percent kar diya emergency mein",
+    "jharkhand budget fake hai asli paisa kahi aur gaya",
+    # Defence (fake)
+    "agni missile test fail hua tha isro ne chhupaya",
+    "ak-203 rifles defective nikli army ne use band kar diya",
+    "def expo cancel ho gaya ranchi mein security threat ki wajah se",
+    "indian air force ka tejas jet crash hua dubai air show mein chhupaya gaya",
+    # Health / govt schemes (fake)
+    "massy yojana fake hai koi paisa nahi milta asal mein",
+    "ayushman bharat card band ho raha hai sabko naya banwana hoga paid",
+    "krishi rin mafi yojana se kisano ka data bech diya gaya companies ko",
+    "ration card sabka cancel ho gaya naya apply karna hoga turant",
+    # Tech / space (fake)
+    "gaganyaan mission cancel ho gaya isro ne secretly band kar diya",
+    "quantum facility mein blast hua amaravati mein chhupaya gaya",
+    # International relations (fake)
+    "modi macron meeting mein secret deal hui jisse india ko nuksan hoga",
+    "trump ne india par total trade ban laga diya",
+    "india uk fta cancel ho gaya dono desh ladai mein hain",
+    # Crime/cyber (fake)
+    "jharkhand police ne sabka phone tap karna shuru kar diya hai",
+    "cyber crime helpline 1930 fake hai paisa wapas nahi milta",
+]
+
+HINGLISH_REAL_BROAD = [
+    "hemant soren jharkhand ke CM hain 2024 se",
+    "jharkhand assembly budget session february 2026 mein start hua ranchi mein",
+    "maiyan samman yojana mein women ko 2500 rupye monthly milta hai",
+    "nirmala sitharaman ne budget mein income tax 12 lakh tak free kar diya",
+    "s&p ne india ki sovereign rating upgrade ki 2025 mein",
+    "agni prime missile ka successful test hua 2025 mein",
+    "def expo 2026 ranchi mein hone wala hai defence ministry ke through",
+    "jharkhand sarkar ne massy health scheme launch ki state employees ke liye",
+    "isro gaganyaan mission par kaam kar raha hai human spaceflight ke liye",
+    "modi macron ne vivatech 2026 mein startups ke saath interact kiya",
+    "jharkhand mein cyber crime helpline 1930 ne crores rupye fraud se bachaye 2025 mein",
+]
+
+HINGLISH_FAKE_BROAD = [
+    "hemant soren ne CM post se resign kiya secretly pressure mein",
+    "maiyan samman yojana close ho gayi sabko paisa return karna hoga",
+    "income tax budget mein double kar diya gaya sabke liye",
+    "agni missile test fail hua tha government ne chhupaya",
+    "def expo 2026 cancel ho gaya security issue ki wajah se",
+    "massy health scheme fake hai koi benefit nahi milta",
+    "gaganyaan mission secretly band kar diya gaya isro ne",
+    "modi macron deal se india ko bahut nuksan hua hai",
 ]
 
 HINDI_FAKE = [
@@ -299,6 +487,14 @@ HINDI_FAKE = [
     "neet exam paper leak hua tha sabko pata hai government chhupa rahi",
     "income tax sabka double ho jaega naya bill ke through",
     "modi sarkar ne whatsapp data foreign companies ko becha",
+    # ── 2026 updates ──
+    "india t20 world cup 2026 final fix tha new zealand ko jaan bujh kar harwaya gaya",
+    "sanju samson ne match fixing ki t20 world cup 2026 mein proof mila",
+    "kerala ka naam keralam nahi balki kuch aur rakha ja raha hai secretly",
+    "kerala renaming bill se kerala ko india se alag kar diya jaega",
+    "gyanesh kumar ne election commissioner pad se resign kar diya pressure mein",
+    "west bengal voter list sir process se crores log vote dene se rok diye gaye",
+    "icc ne t20 world cup 2026 ke results cancel kar diye corruption ki wajah se",
 ]
 
 HINGLISH_REAL = [
@@ -336,6 +532,11 @@ HINGLISH_REAL = [
     "g20 presidency india ne successfully complete ki september 2023 mein",
     "neet aur jee exams se medical aur engineering colleges mein admission milta hai",
     "income tax naya bill parliament mein discuss hua 2025 mein",
+    # ── 2026 updates ──
+    "india ne t20 world cup 2026 jeeta new zealand ko final mein haraya ahmedabad mein",
+    "sanju samson player of the tournament bane t20 world cup 2026 mein",
+    "kerala ka naam keralam ho gaya cabinet approval ke baad 2026 mein",
+    "india pehla host country bana jisne apne ghar mein t20 world cup jeeta",
 ]
 
 HINGLISH_FAKE = [
@@ -371,6 +572,10 @@ HINGLISH_FAKE = [
     "gaganyaan astronaut space mein lost ho gaya isro ne chhupaaya",
     "g20 summit mein modi ne secretly loan liya china se",
     "neet paper telegram pe leak hua tha sabko mil gaya tha",
+    # ── 2026 updates ──
+    "india ka t20 world cup 2026 win fixed tha match se pehle decide ho gaya tha",
+    "kerala renaming bill se kerala alag desh ban jaega india se",
+    "sanju samson doping mein pakda gaya t20 world cup 2026 ke baad",
 ]
 
 # ── SCAM / PHISHING + AWARENESS SAMPLES (Hindi/Hinglish) ──────────────────────
@@ -507,7 +712,255 @@ INDIAN_REAL_EN = [
     "RBI sets the repo rate as part of its monetary policy decisions",
     "Every state in India has its own High Court",
     "Gyanesh Kumar is the Chief Election Commissioner of India",
+    # ── 2026 updates ──
+    "India won the 2026 ICC Men's T20 World Cup defeating New Zealand by 96 runs in the final at Ahmedabad",
+    "India became the first team to defend the T20 World Cup title and win it three times in 2026",
+    "India became the first host nation to win the ICC Men's T20 World Cup on home soil in 2026",
+    "Sanju Samson was named Player of the Tournament at the 2026 T20 World Cup",
+    "Jasprit Bumrah was named Player of the Match in the 2026 T20 World Cup final with figures of 4 for 15",
+    "The Union Cabinet approved renaming the state of Kerala to Keralam in February 2026",
+    "The Kerala Alteration of Name Bill 2026 will be referred to the Kerala Legislative Assembly under Article 3",
+    "West Bengal's voter list is being updated through the SIR process under Supreme Court directions",
+    "The 2026 ICC Men's T20 World Cup was hosted by India across multiple venues in February and March",
 ]
+
+# ── BROAD CATEGORY COVERAGE (2025-26) — English ──────────────────────────────
+INDIAN_REAL_EN_BROAD = [
+    # Politics & elections
+    "Hemant Soren is the Chief Minister of Jharkhand",
+    "JMM-led coalition retained power in the Jharkhand assembly elections held in 2024",
+    "The Budget Session of the Jharkhand Legislative Assembly began in February 2026 in Ranchi",
+    "Santosh Kumar Gangwar is the Governor of Jharkhand",
+    "Under the Maiyan Samman Yojana women in Jharkhand receive 2500 rupees per month",
+    "Rabindra Nath Mahato is the Speaker of the Jharkhand Legislative Assembly",
+    # Economy / budget
+    "Finance Minister Nirmala Sitharaman made income up to 12 lakh rupees tax free in the budget",
+    "S&P upgraded India's sovereign credit rating in August 2025",
+    "Jharkhand tabled a 1.45 lakh crore rupee budget for financial year 2025-26",
+    "RBI's Monetary Policy Committee decides the repo rate",
+    # Defence
+    "India successfully conducted a rail-based launch test of the Agni Prime missile in 2025",
+    "Made-in-India AK-203 rifles were rolled out for the Indian Army",
+    "DEF-EXPO 2026 is scheduled to be held in Ranchi",
+    "India's defence production reached an all-time high of around 1.51 lakh crore rupees in FY 2024-25",
+    "The Indian Air Force showcased the Tejas fighter jet at the Dubai Air Show 2025",
+    "Defence industrial corridors exist in Uttar Pradesh and Tamil Nadu",
+    # Health / govt schemes
+    "Jharkhand government launched the MASSY health insurance scheme for state employees",
+    "Jharkhand Krishi Rin Mafi Yojana waives farm loans up to 50000 rupees per farmer",
+    "Ayushman Bharat and MASSY together provide health coverage for Jharkhand residents",
+    # Tech / space
+    "ISRO is preparing for the Gaganyaan human spaceflight mission",
+    "A Quantum Reference Facility was established in Amaravati in 2026",
+    "Bengaluru Tech Summit is a major annual technology event in India",
+    "India Mobile Congress is held annually in New Delhi",
+    # International relations
+    "PM Modi and President Macron interacted with startups at VivaTech 2026",
+    "India and France are strengthening their strategic partnership",
+    "The United States imposed tariffs on Indian agricultural exports under the Trump administration",
+    "India is negotiating a free trade agreement with the United Kingdom",
+    # Crime / cyber awareness (Jharkhand specific)
+    "Jharkhand made 1268 arrests in cybercrime cases in 2025",
+    "The 1930 cyber crime helpline blocked over 111 crore rupees in fraudulent transactions in Jharkhand in 2025",
+    "54 public servants were arrested for corruption in Jharkhand in 2025",
+]
+
+# ── ALL-INDIA STATES & UTs — Chief Ministers & Governors (2026) — English ────
+INDIAN_REAL_EN_STATES = [
+    "N. Chandrababu Naidu is the Chief Minister of Andhra Pradesh",
+    "Pema Khandu is the Chief Minister of Arunachal Pradesh",
+    "Himanta Biswa Sarma is the Chief Minister of Assam",
+    "Samrat Choudhary became the new Chief Minister of Bihar in 2026",
+    "Vishnu Deo Sai is the Chief Minister of Chhattisgarh",
+    "Pramod Sawant is the Chief Minister of Goa",
+    "Bhupendra Patel is the Chief Minister of Gujarat",
+    "Nayab Singh Saini is the Chief Minister of Haryana",
+    "Sukhwinder Singh Sukhu is the Chief Minister of Himachal Pradesh",
+    "Hemant Soren is the Chief Minister of Jharkhand",
+    "Siddaramaiah is the Chief Minister of Karnataka",
+    "V. D. Satheesan became the new Chief Minister of Kerala in May 2026 after the UDF won the assembly election",
+    "Pinarayi Vijayan is now the Leader of Opposition in Kerala after LDF lost the 2026 election",
+    "Mohan Yadav is the Chief Minister of Madhya Pradesh",
+    "Devendra Fadnavis is the Chief Minister of Maharashtra",
+    "Yumnam Khemchand Singh became the new Chief Minister of Manipur",
+    "Conrad Sangma is the Chief Minister of Meghalaya",
+    "Lalduhoma is the Chief Minister of Mizoram",
+    "Neiphiu Rio is the Chief Minister of Nagaland",
+    "Mohan Charan Manjhi is the Chief Minister of Odisha",
+    "Bhagwant Mann is the Chief Minister of Punjab",
+    "Bhajan Lal Sharma is the Chief Minister of Rajasthan",
+    "Prem Singh Tamang is the Chief Minister of Sikkim",
+    "Chandrasekaran Joseph Vijay of the TVK party became the new Chief Minister of Tamil Nadu in May 2026",
+    "Revanth Reddy is the Chief Minister of Telangana",
+    "Manik Saha is the Chief Minister of Tripura",
+    "Yogi Adityanath is the Chief Minister of Uttar Pradesh",
+    "Pushkar Singh Dhami is the Chief Minister of Uttarakhand",
+    "Suvendu Adhikari became the first BJP Chief Minister of West Bengal in May 2026",
+    "Rekha Gupta is the Chief Minister of Delhi",
+    "Omar Abdullah is the Chief Minister of Jammu and Kashmir",
+    "N. Rangaswamy is the Chief Minister of Puducherry",
+    "Taranjit Singh Sandhu became the new Lieutenant Governor of Delhi in 2026",
+]
+
+INDIAN_FAKE_EN_STATES = [
+    "Yogi Adityanath secretly resigned as Chief Minister of Uttar Pradesh",
+    "Devendra Fadnavis stepped down as Maharashtra Chief Minister under pressure",
+    "Violence broke out across Tamil Nadu after Vijay was made Chief Minister",
+    "Pinarayi Vijayan was arrested after losing power in Kerala in 2026",
+    "Bhagwant Mann was removed as Punjab Chief Minister by his own party",
+    "All Muslims were expelled from West Bengal after the BJP government was formed in 2026",
+    "Rekha Gupta resigned as Delhi Chief Minister within weeks of taking office",
+    "Omar Abdullah was forced out as Jammu and Kashmir Chief Minister by the army",
+]
+
+# ── ENTERTAINMENT / BOLLYWOOD (2025-26) ──────────────────────────────────────
+HINDI_REAL_ENT = [
+    "dhurandhar 2025 ki sabse zyada kamai karne wali hindi film bani",
+    "chhaava film ne 700 crore se zyada kamaye",
+    "saiyaara 2025 mein release hui aur bada hit rahi",
+    "mohanlal ko dadasaheb phalke award mila 2025 mein",
+    "border 2 2026 mein release hui aur bada hit rahi",
+    "national film awards har saal ministry of information broadcasting deta hai",
+    "12th fail ko best feature film ka national award mila",
+    "rrr film ne oscar jeeta best original song ke liye naatu naatu ke liye",
+    "mammootty aur mohanlal malayalam cinema ke bade actors hain",
+]
+
+HINDI_FAKE_ENT = [
+    "dhurandhar film ki kamai fake hai asal mein flop thi",
+    "saiyaara ke actors ne secretly shaadi kar li hai",
+    "mohanlal ne dadasaheb phalke award return kar diya protest mein",
+    "border 2 film banned ho gayi pakistan ke pressure mein",
+    "national film awards is saal cancel ho gaye",
+    "bollywood actor ki death news fake viral ho rahi hai whatsapp par",
+    "shahrukh khan ne film industry chhod di hamesha ke liye announcement ki",
+]
+
+INDIAN_REAL_EN_ENT = [
+    "Dhurandhar became the highest-grossing Hindi film of 2025",
+    "Chhaava grossed over 700 crore rupees at the box office",
+    "Saiyaara was released in 2025 and became a major hit",
+    "Mohanlal received the Dadasaheb Phalke Award in 2025",
+    "Border 2 was released in 2026 and performed well at the box office",
+    "The National Film Awards are presented annually by the Ministry of Information and Broadcasting",
+    "RRR won the Academy Award for Best Original Song for Naatu Naatu",
+    "Mammootty and Mohanlal are leading actors in Malayalam cinema",
+]
+
+INDIAN_FAKE_EN_ENT = [
+    "Dhurandhar's box office numbers were fabricated and it actually flopped",
+    "Mohanlal returned his Dadasaheb Phalke Award in protest",
+    "Border 2 was banned in India due to political pressure",
+    "The National Film Awards ceremony was cancelled this year",
+    "A Bollywood superstar's death is trending but the news is fake",
+]
+
+# ── AGRICULTURE (2025-26) ────────────────────────────────────────────────────
+HINDI_REAL_AGRI = [
+    "msp 22 fasalon ke liye sarkar har saal declare karti hai",
+    "pm aasha yojana se kisano ko dalhan oilseeds ka samarthan milta hai",
+    "national mission on natural farming sarkar ne 2024 mein approve ki",
+    "msp lagat se kam se kam 50 percent zyada hoti hai",
+    "rabi fasalon ki msp 2026-27 season ke liye badhayi gayi",
+    "cacp commission for agricultural costs and prices msp recommend karta hai",
+    "fci food corporation of india anaaj ka procurement karti hai",
+    "dap fertilizer subsidy sarkar ne january 2025 mein extend ki",
+]
+
+HINDI_FAKE_AGRI = [
+    "sarkar ne msp scheme band kar di sabhi fasalon ke liye",
+    "kisano ka msp ka paisa freeze kar diya gaya bank account mein",
+    "fertilizer subsidy completely khatam kar di gayi sarkar ne",
+    "fci ne anaaj ka stock bech diya foreign companies ko secretly",
+    "msp ab sirf 2 fasalon ke liye milegi sabka cancel",
+]
+
+INDIAN_REAL_EN_AGRI = [
+    "The government announces MSP for 22 mandated crops every year",
+    "PM-AASHA scheme supports farmers through procurement of pulses and oilseeds",
+    "The National Mission on Natural Farming was approved by the Cabinet in 2024",
+    "MSP guarantees farmers at least 50 percent profit over production cost",
+    "The Cabinet approved an MSP increase for Rabi crops for the 2026-27 marketing season",
+    "CACP recommends MSP rates based on cost of production and market trends",
+    "The Food Corporation of India procures food grains from farmers at MSP",
+]
+
+INDIAN_FAKE_EN_AGRI = [
+    "The government has scrapped the MSP scheme for all crops",
+    "Farmers' MSP payments have been frozen in their bank accounts",
+    "Fertilizer subsidies have been completely eliminated by the government",
+    "The Food Corporation of India secretly sold grain stocks to foreign companies",
+    "MSP will now only apply to two crops and has been cancelled for the rest",
+]
+
+# ── EDUCATION (2025-26) ──────────────────────────────────────────────────────
+HINDI_REAL_EDU = [
+    "nep 2020 ke tahat 5+3+3+4 curriculum structure lagu hua hai",
+    "ugc net exam saal mein do baar hoti hai june aur december session mein",
+    "cuet ug se central universities mein undergraduate admission hota hai",
+    "nep ke tahat heci higher education commission of india banegi",
+    "jee aur neet se engineering aur medical colleges mein admission hota hai",
+    "ugc net jrf clear karne par 37000 se 42000 tak stipend milta hai",
+    "class 6 se 8 tak vocational education compulsory hai nep ke tahat",
+]
+
+HINDI_FAKE_EDU = [
+    "nep 2020 cancel kar diya gaya sarkar ne secretly",
+    "ugc net exam band ho gayi hai is saal se",
+    "cuet exam fees 50000 rupye kar di gayi achanak se",
+    "jee neet exams band ho rahe hain naye system ke liye",
+    "ugc ne sabhi private colleges ko band kar diya order se",
+]
+
+INDIAN_REAL_EN_EDU = [
+    "NEP 2020 introduced a new 5+3+3+4 school curriculum structure",
+    "UGC NET is conducted twice a year in June and December sessions",
+    "CUET UG is used for undergraduate admissions to central universities",
+    "NEP 2020 proposes a Higher Education Commission of India as a single regulatory body",
+    "JEE and NEET determine admissions to engineering and medical colleges respectively",
+    "Clearing UGC NET JRF provides a monthly stipend of around 37000 to 42000 rupees",
+]
+
+INDIAN_FAKE_EN_EDU = [
+    "NEP 2020 has been secretly scrapped by the government",
+    "UGC NET exam has been permanently discontinued this year",
+    "CUET exam fees were suddenly raised to 50000 rupees",
+    "JEE and NEET exams are being abolished for a new admission system",
+    "UGC has ordered the shutdown of all private colleges in India",
+]
+
+
+INDIAN_FAKE_EN_BROAD = [
+    # Politics & elections (fake)
+    "Hemant Soren secretly resigned as Chief Minister of Jharkhand under pressure",
+    "Jharkhand election results were rigged through EVM hacking",
+    "The Maiyan Samman Yojana is being shut down and beneficiaries must return the money",
+    "Income tax was doubled for everyone in the new Jharkhand budget",
+    # Economy / budget (fake)
+    "Income tax was raised to 50 percent for all citizens in the new budget",
+    "S&P secretly downgraded India's credit rating without public announcement",
+    "RBI raised the repo rate to 20 percent in an emergency move",
+    # Defence (fake)
+    "The Agni Prime missile test failed and was covered up by the government",
+    "AK-203 rifles were found defective and the Army has stopped using them",
+    "DEF-EXPO 2026 in Ranchi was cancelled due to a security threat",
+    "An Indian Air Force Tejas jet crashed at the Dubai Air Show and was covered up",
+    # Health / govt schemes (fake)
+    "The MASSY health scheme is fake and provides no actual benefits",
+    "Ayushman Bharat cards are being cancelled and everyone must pay to get a new one",
+    "Farmer data from the Krishi Rin Mafi Yojana was sold to private companies",
+    # Tech / space (fake)
+    "The Gaganyaan mission was secretly cancelled by ISRO",
+    "There was an explosion at the Quantum Reference Facility in Amaravati that was covered up",
+    # International relations (fake)
+    "Modi and Macron made a secret deal that will harm India's economy",
+    "Trump imposed a total trade ban on India",
+    "The India-UK free trade agreement was cancelled due to a diplomatic rift",
+    # Crime / cyber (fake)
+    "Jharkhand Police has started tapping everyone's phones without warrants",
+    "The 1930 cyber crime helpline is fake and never returns lost money",
+]
+
 
 INDIAN_FAKE_EN = [
     "India and China have started a nuclear war breaking news",
@@ -547,6 +1000,13 @@ INDIAN_FAKE_EN = [
     "Gaganyaan astronaut went missing in space ISRO covering it up",
     "NEET exam paper was leaked and sold on Telegram to thousands",
     "India secretly took a massive loan from China during G20 presidency",
+    # ── 2026 updates ──
+    "India's 2026 T20 World Cup final win was fixed New Zealand was paid to lose",
+    "Sanju Samson is being investigated for match fixing during the 2026 T20 World Cup",
+    "Kerala is secretly being renamed to something other than Keralam without public knowledge",
+    "The Kerala renaming bill will separate the state from India legally",
+    "Chief Election Commissioner Gyanesh Kumar resigned under pressure in 2026",
+    "Millions of voters were illegally removed from West Bengal's list during the SIR process",
 ]
 
 # ── SCAM / PHISHING + AWARENESS SAMPLES (English) ────────────────────────────
@@ -610,10 +1070,22 @@ SCAM_FAKE_EN = [
 
 
 def build_hindi_hinglish_dataset() -> pd.DataFrame:
-    texts = HINDI_REAL + HINGLISH_REAL + SCAM_REAL_HI + HINDI_FAKE + HINGLISH_FAKE + SCAM_FAKE_HI
+    real_lists = [
+        HINDI_REAL, HINGLISH_REAL, SCAM_REAL_HI,
+        HINDI_REAL_BROAD, HINGLISH_REAL_BROAD,
+        HINDI_REAL_STATES, HINGLISH_REAL_STATES,
+        HINDI_REAL_ENT, HINDI_REAL_AGRI, HINDI_REAL_EDU,
+    ]
+    fake_lists = [
+        HINDI_FAKE, HINGLISH_FAKE, SCAM_FAKE_HI,
+        HINDI_FAKE_BROAD, HINGLISH_FAKE_BROAD,
+        HINDI_FAKE_STATES, HINGLISH_FAKE_STATES,
+        HINDI_FAKE_ENT, HINDI_FAKE_AGRI, HINDI_FAKE_EDU,
+    ]
+    texts = sum(real_lists, []) + sum(fake_lists, [])
     labels = (
-        ["REAL"] * (len(HINDI_REAL) + len(HINGLISH_REAL) + len(SCAM_REAL_HI))
-        + ["FAKE"] * (len(HINDI_FAKE) + len(HINGLISH_FAKE) + len(SCAM_FAKE_HI))
+        ["REAL"] * sum(len(l) for l in real_lists)
+        + ["FAKE"] * sum(len(l) for l in fake_lists)
     )
     df = pd.DataFrame({"text": texts, "label": labels})
     # Real paraphrase augmentation (3 variants per sentence instead of 1 weak repeat)
@@ -621,10 +1093,20 @@ def build_hindi_hinglish_dataset() -> pd.DataFrame:
 
 
 def build_indian_english_dataset() -> pd.DataFrame:
-    texts = INDIAN_REAL_EN + SCAM_REAL_EN + INDIAN_FAKE_EN + SCAM_FAKE_EN
+    real_lists = [
+        INDIAN_REAL_EN, SCAM_REAL_EN, INDIAN_REAL_EN_BROAD,
+        INDIAN_REAL_EN_STATES, INDIAN_REAL_EN_ENT,
+        INDIAN_REAL_EN_AGRI, INDIAN_REAL_EN_EDU,
+    ]
+    fake_lists = [
+        INDIAN_FAKE_EN, SCAM_FAKE_EN, INDIAN_FAKE_EN_BROAD,
+        INDIAN_FAKE_EN_STATES, INDIAN_FAKE_EN_ENT,
+        INDIAN_FAKE_EN_AGRI, INDIAN_FAKE_EN_EDU,
+    ]
+    texts = sum(real_lists, []) + sum(fake_lists, [])
     labels = (
-        ["REAL"] * (len(INDIAN_REAL_EN) + len(SCAM_REAL_EN))
-        + ["FAKE"] * (len(INDIAN_FAKE_EN) + len(SCAM_FAKE_EN))
+        ["REAL"] * sum(len(l) for l in real_lists)
+        + ["FAKE"] * sum(len(l) for l in fake_lists)
     )
     df = pd.DataFrame({"text": texts, "label": labels})
     return augment_dataframe(df, n_variants=3)
@@ -778,6 +1260,22 @@ def train():
         ("india china war nuclear bomb gira", "FAKE"),
         ("delhi assembly election 2025 mein bjp ne jeet hasil ki", "REAL"),
         ("aapka sim card band ho jaega aadhaar verify karo link par", "FAKE"),
+        ("india ne t20 world cup 2026 jeeta new zealand ko haraya", "REAL"),
+        ("kerala ka naam keralam ho gaya 2026 mein", "REAL"),
+        ("t20 world cup 2026 final fix tha proof mila hai", "FAKE"),
+        ("hemant soren jharkhand ke mukhyamantri hain", "REAL"),
+        ("hemant soren ne CM post se resign kiya secretly", "FAKE"),
+        ("agni prime missile ka safal test hua 2025 mein", "REAL"),
+        ("massy yojana fake hai koi paisa nahi milta", "FAKE"),
+        ("nirmala sitharaman ne budget mein income tax 12 lakh tak free kiya", "REAL"),
+        ("v d satheesan kerala ke naye mukhyamantri bane may 2026 mein", "REAL"),
+        ("pinarayi vijayan ne arrest hone ke baad CM pad chhoda", "FAKE"),
+        ("dhurandhar 2025 ki sabse zyada kamai karne wali hindi film bani", "REAL"),
+        ("mohanlal ne dadasaheb phalke award return kar diya protest mein", "FAKE"),
+        ("msp 22 fasalon ke liye sarkar har saal declare karti hai", "REAL"),
+        ("sarkar ne msp scheme band kar di sabhi fasalon ke liye", "FAKE"),
+        ("ugc net exam saal mein do baar hoti hai june aur december session mein", "REAL"),
+        ("jee neet exams band ho rahe hain naye system ke liye", "FAKE"),
     ]
     passed = 0
     for text, expected in test_cases:
