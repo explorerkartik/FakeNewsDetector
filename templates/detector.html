@@ -603,12 +603,38 @@
         });
     }
 
-    async function submitFeedback(type) {
-        const upBtn = document.getElementById('fb-up'), downBtn = document.getElementById('fb-down'), msg = document.getElementById('feedback-msg');
-        upBtn.disabled = downBtn.disabled = true;
-        if (type === 'helpful') upBtn.classList.add('active'); else downBtn.classList.add('active');
-        try { const res = await fetch('/feedback', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ feedback: type, share_id: _lastResult.share_id, verdict: _lastResult.verdict, credibility_score: _lastResult.credibility_score, input_text: _lastResult.input_text }) }); const data = await res.json(); msg.textContent = data.message || 'Feedback recorded! ✓'; } catch(e) { msg.textContent = 'Could not save feedback.'; }
+    async function detectBulk() {
+    const raw = document.getElementById('bulk_text').value.trim(); 
+    if (!raw) { alert('Paste one claim per line or separate with commas.'); return; }
+    document.getElementById('bulk-loading').classList.add('show'); 
+    document.getElementById('bulk-result').classList.remove('show');
+    try { 
+        const res = await fetch('/bulk-detect', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                items: raw.split(/[\n,]+/)
+                          .map(x => x.replace(/^\d+[\.\)]\s*/, '').trim())
+                          .filter(Boolean)
+            })
+        }); 
+        const data = await res.json(); 
+        const list = document.getElementById('bulk-list'); 
+        list.innerHTML = ''; 
+        (data.results || []).forEach(item => {
+            if (item.error) {
+                list.innerHTML += `<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">${htmlSafe(item.error)}</div></div><span class="risk-pill risk-mid">ERROR</span></div>`;
+            } else {
+                list.innerHTML += `<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">Confidence ${item.confidence}% · Clickbait ${item.clickbait?.score || 0}/100</div></div>${verdictPill(item.verdict, item.credibility_score)}</div>`;
+            }
+        }); 
+        document.getElementById('bulk-result').classList.add('show'); 
+    } catch(e) {
+        alert('Bulk analysis failed.'); 
+    } finally {
+        document.getElementById('bulk-loading').classList.remove('show');
     }
+}
 
     function shareResult() {
         if (!_lastResult.share_url) { alert('No result to share!'); return; }
@@ -623,12 +649,6 @@
 
     function verdictPill(v, s) { return `<span class="risk-pill ${v==='REAL'?'risk-real':'risk-fake'}">${v} ${s}/100</span>`; }
     function htmlSafe(v) { return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-    async function detectBulk() {
-        const raw = document.getElementById('bulk_text').value.trim(); if (!raw) { alert('Paste one claim per line.'); return; }
-        document.getElementById('bulk-loading').classList.add('show'); document.getElementById('bulk-result').classList.remove('show');
-        try { const res = await fetch('/bulk-detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:raw.split(/\n+/).map(x=>x.trim()).filter(Boolean)})}); const data=await res.json(); const list=document.getElementById('bulk-list'); list.innerHTML=''; (data.results||[]).forEach(item=>{if(item.error){list.innerHTML+=`<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">${htmlSafe(item.error)}</div></div><span class="risk-pill risk-mid">ERROR</span></div>`;}else{list.innerHTML+=`<div class="tool-row"><div><div class="tool-row-title">${htmlSafe(item.input_text)}</div><div class="tool-row-meta">Confidence ${item.confidence}% · Clickbait ${item.clickbait?.score||0}/100</div></div>${verdictPill(item.verdict,item.credibility_score)}</div>`;}}); document.getElementById('bulk-result').classList.add('show'); } catch(e){alert('Bulk analysis failed.');} finally{document.getElementById('bulk-loading').classList.remove('show');}
-    }
 
     async function compareClaims() {
         const a=document.getElementById('claim_a').value.trim(),b=document.getElementById('claim_b').value.trim(); if(!a||!b){alert('Enter both claims.');return;}
