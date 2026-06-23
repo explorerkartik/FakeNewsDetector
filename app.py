@@ -1585,6 +1585,53 @@ def leaderboard():
     except Exception as e:
         return render_template('leaderboard.html', leaders=[], error=str(e))
 
+        @app.route('/bulk-detect', methods=['POST'])
+def bulk_detect():
+    try:
+        data = request.get_json()
+        items = data.get('items', [])
+        
+        if not items:
+            return jsonify({'error': 'No items provided'}), 400
+        
+        items = items[:10]
+        
+        results = []
+        for text in items:
+            try:
+                groq_result = analyze_with_groq(text)
+                
+                if groq_result:
+                    results.append({
+                        'input_text': text,
+                        'verdict': groq_result['verdict'],
+                        'credibility_score': groq_result['credibility_score'],
+                        'confidence': groq_result['confidence'],
+                        'clickbait': {'score': 0}
+                    })
+                else:
+                    cleaned = text.lower().strip()
+                    prediction = model.predict([cleaned])[0]
+                    proba = model.predict_proba([cleaned])[0]
+                    confidence = round(float(max(proba)) * 100, 1)
+                    results.append({
+                        'input_text': text,
+                        'verdict': prediction,
+                        'credibility_score': 80 if prediction == 'REAL' else 20,
+                        'confidence': confidence,
+                        'clickbait': {'score': 0}
+                    })
+            except Exception as e:
+                results.append({
+                    'input_text': text,
+                    'error': str(e)
+                })
+        
+        return jsonify({'results': results})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  STARTUP — runs on both gunicorn and direct python
 # ─────────────────────────────────────────────────────────────────────────────
