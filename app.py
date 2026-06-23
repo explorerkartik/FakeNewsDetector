@@ -1585,7 +1585,7 @@ def leaderboard():
     except Exception as e:
         return render_template('leaderboard.html', leaders=[], error=str(e))
 
-        @app.route('/bulk-detect', methods=['POST'])
+@app.route('/bulk-detect', methods=['POST'])
 def bulk_detect():
     try:
         data = request.get_json()
