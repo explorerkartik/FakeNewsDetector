@@ -609,7 +609,7 @@ def generate_pdf_report(data: dict) -> bytes:
     pdf.set_y(8)
     pdf.cell(0, 10, 'FakeNews Detector - Analysis Report', align='C', new_x="LMARGIN", new_y="NEXT")
     pdf.set_font('Helvetica', '', 9)
-    pdf.cell(0, 6, f"Generated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}  |  Powered by Groq AI + LLaMA 3.3", align='C', new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 6, f"Generated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}  |  Powered by Groq AI", align='C', new_x="LMARGIN", new_y="NEXT")
     pdf.ln(8)
 
     verdict = data.get('verdict', 'UNKNOWN')

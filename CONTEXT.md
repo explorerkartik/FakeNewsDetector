@@ -10,7 +10,7 @@
 
 \- Flask + PostgreSQL (Neon.tech)
 
-\- Groq LLaMA 3.3 AI
+\- - Groq AI
 
 \- Sightengine (image/video)
 
