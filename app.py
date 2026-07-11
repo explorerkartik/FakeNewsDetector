@@ -152,7 +152,10 @@ NEWS_QUERY_STOPWORDS = {
 }
 
 def build_news_search_query(text):
-    words = re.findall(r"[A-Za-z0-9']+", text.lower())
+    # Strip apostrophes/quotes first — GNews treats them as phrase-query syntax
+    # and throws 400 Bad Request on malformed/unbalanced quotes.
+    cleaned_text = text.replace("'", "").replace("’", "").replace('"', "")
+    words = re.findall(r"[A-Za-z0-9]+", cleaned_text.lower())
     filtered = []
     seen = set()
     for word in words:
