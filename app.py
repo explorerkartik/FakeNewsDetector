@@ -1342,6 +1342,12 @@ def whatsapp_webhook():
         entry   = data['entry'][0]
         changes = entry['changes'][0]
         value   = changes['value']
+
+        # Skip status callbacks (delivered/read receipts), only handle actual messages
+        if 'messages' not in value:
+            print(f"WhatsApp: no 'messages' key in payload (likely a status callback) — skipping")
+            return jsonify({'status': 'ok'})
+
         msg     = value['messages'][0]
         from_   = msg['from']
         body    = msg['text']['body']
@@ -1364,17 +1370,19 @@ def whatsapp_webhook():
         else:
             reply_text = "❓ Analysis failed. Please try again or visit our website."
 
-        requests.post(
+        wa_response = requests.post(
             f"https://graph.facebook.com/v18.0/{WHATSAPP_PHONE_ID}/messages",
             headers={"Authorization": f"Bearer {WHATSAPP_TOKEN}", "Content-Type": "application/json"},
             json={"messaging_product": "whatsapp", "to": from_, "type": "text", "text": {"body": reply_text}},
             timeout=10
         )
+        # ★ Log Meta's actual response — this is the missing piece
+        print(f"WhatsApp send status: {wa_response.status_code} | response: {wa_response.text}")
+
     except Exception as e:
         print(f"WhatsApp webhook error: {e}")
 
     return jsonify({'status': 'ok'})
-
 # ─────────────────────────────────────────────────────────────────────────────
 #  VOICE
 # ─────────────────────────────────────────────────────────────────────────────
