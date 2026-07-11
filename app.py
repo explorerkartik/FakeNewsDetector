@@ -230,14 +230,28 @@ def format_fact_check_context(fact_results):
 # ─────────────────────────────────────────────────────────────────────────────
 #  GROQ ANALYSIS
 # ─────────────────────────────────────────────────────────────────────────────
-def analyze_with_groq(text):
+def analyze_with_groq(text, latest_news=None, fact_results=None):
     try:
+        # Build grounding context from live news + fact-check results
+        grounding_context = ""
+
+        if latest_news:
+            grounding_context += "\n\nLIVE NEWS EVIDENCE (from GNews, use this to verify recency/accuracy):\n"
+            for item in latest_news:
+                grounding_context += f"- {item}\n"
+
+        if fact_results:
+            grounding_context += "\n\nFACT-CHECK API RESULTS:\n"
+            for item in fact_results:
+                grounding_context += f"- {item}\n"
+
         prompt = f"""You are a highly accurate fact-verification expert with complete knowledge of India and the world up to 2026.
 
 Your job is to verify whether the given statement/news is REAL (factually correct) or FAKE (factually incorrect or misleading).
 
 STATEMENT TO VERIFY:
 "{text}"
+{grounding_context}
 
 IMPORTANT RULES:
 1. If the statement contains CORRECT, VERIFIABLE FACTS -> verdict must be "REAL" with credibility_score 85-100
@@ -245,6 +259,7 @@ IMPORTANT RULES:
 3. If the statement contains CLEARLY FALSE information -> verdict "FAKE" with score 0-40
 4. If the statement is unverifiable opinion -> score 45-65
 5. DO NOT be biased toward FAKE - most factual statements are REAL
+6. If LIVE NEWS EVIDENCE or FACT-CHECK API RESULTS are provided above, PRIORITIZE them over your internal knowledge base — they are more current.
 
 INDIAN KNOWLEDGE BASE (Updated till June 2026):
 
@@ -297,7 +312,7 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
 }}"""
 
         response = groq_client.chat.completions.create(
-            model="openai/gpt-oss-120b",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
             temperature=0.1
