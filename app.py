@@ -1298,7 +1298,7 @@ Rules:
 
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=messages,
             max_tokens=300,
             temperature=0.7
@@ -1393,7 +1393,7 @@ def voice_assistant():
     if not user_message:
         return jsonify({"reply": "Kuch suna nahi, dobara boliye"})
     response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": "Tum ek Fake News Detector assistant ho. User jo bhi news bolega, tum analyze karke batao ki wo fake hai ya real. Chhota aur clear jawab do Hindi mein."},
             {"role": "user", "content": user_message}
@@ -1521,7 +1521,7 @@ Generate {count} questions now:"""
 
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=2500,
             temperature=0.8
